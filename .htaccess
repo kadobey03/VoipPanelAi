@@ -1,6 +1,12 @@
 Options -Indexes
 RewriteEngine On
 
+# Eğer .env yoksa install klasörüne yönlendir
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/../.env !-f
+RewriteRule ^(.*)$ install/ [L]
+
 # Tüm istekleri public klasörüne yönlendir
 RewriteCond %{REQUEST_URI} !^/public/
 RewriteCond %{REQUEST_FILENAME} !-f
