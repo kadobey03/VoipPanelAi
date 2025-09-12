@@ -1,4 +1,18 @@
+
 RewriteEngine On
+
+# Eğer .env yoksa install.php'ye yönlendir
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/../.env !-f
+RewriteRule ^(.*)$ /public/install.php [L]
+
+# install.php varsa ve .env varsa install.php'yi silmeye yönlendir
+RewriteCond %{DOCUMENT_ROOT}/../.env -f
+RewriteCond %{DOCUMENT_ROOT}/install.php -f
+RewriteRule ^(.*)$ /public/install.php?delete=1 [L]
+
+# Normal route
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ /index.php [QSA,L]

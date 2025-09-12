@@ -1,4 +1,3 @@
-<?php
 session_start();
 if (file_exists(__DIR__.'/../.env') && isset($_GET['done'])) {
     echo '<h2>Kurulum tamamlandı. <a href="/">Panele git</a></h2>';
@@ -108,3 +107,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 </body>
 </html>
+
+
+// install.php silme işlemi
+if (file_exists(__DIR__.'/../.env') && (isset($_GET['delete']) || isset($_GET['done']))) {
+    $installFile = __FILE__;
+    echo '<h2>Kurulum tamamlandı. Güvenlik için <b>install.php</b> dosyasını silmeniz gerekmektedir.<br><br>';
+    echo '<form method="post"><button name="delete_install" class="bg-red-600 text-white p-2 rounded">install.php dosyasını sil</button></form>';
+    echo '</h2>';
+    if (isset($_POST['delete_install'])) {
+        unlink($installFile);
+        echo '<h2>install.php silindi. <a href="/">Panele git</a></h2>';
+        exit;
+    }
+    exit;
+}
