@@ -3,6 +3,8 @@ namespace App\Core;
 class Router {
     protected $routes = [];
     public function __construct() {
+        // Expose $this as $router for the route file
+        $router = $this;
         require __DIR__.'/../../routes/web.php';
     }
     public function add($method, $uri, $action) {
@@ -10,6 +12,7 @@ class Router {
     }
     public function dispatch() {
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        if ($uri === '/index.php') { $uri = '/'; }
         $method = $_SERVER['REQUEST_METHOD'];
         foreach ($this->routes as $route) {
             if ($route['uri'] === $uri && $route['method'] === $method) {

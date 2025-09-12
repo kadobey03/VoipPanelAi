@@ -16,18 +16,36 @@ class ApiClient {
 
     private function post($loc, $data = []) {
         $data['apikey'] = $this->apiKey;
-        $ch = curl_init($this->baseUrl.'?loc='.$loc);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        $response = curl_exec($ch);
-        if ($response === false) {
-            $err = curl_error($ch);
+        $url = $this->baseUrl.'?loc='.$loc;
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            $response = curl_exec($ch);
+            if ($response === false) {
+                $err = curl_error($ch);
+                curl_close($ch);
+                throw new \RuntimeException('API request failed: '.$err);
+            }
             curl_close($ch);
-            throw new \RuntimeException('API request failed: '.$err);
+            return $response;
+        } else {
+            // Fallback without cURL
+            $opts = [
+                'http' => [
+                    'method' => 'POST',
+                    'header' => 'Content-Type: application/x-www-form-urlencoded',
+                    'content' => http_build_query($data)
+                ]
+            ];
+            $context = stream_context_create($opts);
+            $response = @file_get_contents($url, false, $context);
+            if ($response === false) {
+                throw new \RuntimeException('API request failed (no cURL)');
+            }
+            return $response;
         }
-        curl_close($ch);
-        return $response;
     }
 
     // 7) Get Customer balance
@@ -112,4 +130,3 @@ class ApiClient {
         return json_decode($res, true);
     }
 }
-
