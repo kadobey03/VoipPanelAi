@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yeni Kullanıcı - PapaM VoIP Panel</title>
+  <link href="/assets/css/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+  <div class="container mx-auto p-4 max-w-lg">
+    <div class="mb-4 flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Yeni Kullanıcı</h1>
+      <a href="/users" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Geri</a>
+    </div>
+    <?php if (!empty($error)): ?>
+      <div class="mb-3 p-2 rounded bg-red-100 text-red-700"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
+    <?php if (!empty($ok)): ?>
+      <div class="mb-3 p-2 rounded bg-green-100 text-green-700"><?= htmlspecialchars($ok) ?></div>
+    <?php endif; ?>
+    <form method="post" class="space-y-3 bg-white dark:bg-gray-800 p-4 rounded shadow">
+      <div>
+        <label class="block text-sm mb-1">Kullanıcı Adı</label>
+        <input name="login" required class="w-full border rounded p-2 bg-white dark:bg-gray-800">
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Şifre</label>
+        <input type="password" name="password" required class="w-full border rounded p-2 bg-white dark:bg-gray-800">
+      </div>
+      <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']==='superadmin'): ?>
+      <div>
+        <label class="block text-sm mb-1">Rol</label>
+        <select name="role" class="w-full border rounded p-2 bg-white dark:bg-gray-800">
+          <option value="groupadmin">groupadmin</option>
+          <option value="superadmin">superadmin</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Grup ID</label>
+        <input type="number" name="group_id" class="w-full border rounded p-2 bg-white dark:bg-gray-800" placeholder="(opsiyonel)">
+      </div>
+      <?php endif; ?>
+      <button class="w-full bg-blue-600 text-white rounded p-2">Kaydet</button>
+    </form>
+  </div>
+</body>
+</html>
+

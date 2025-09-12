@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <div class="mb-2">
             <label class="block">API Key</label>
-            <input name="api_key" class="border p-2 w-full" required>
+            <input name="api_key" class="border p-2 w-full" required value="b14rrNepNDrAb2hMgfJWD8ia81LJaEMe">
         </div>
         <button class="mt-4 w-full bg-blue-600 text-white p-2 rounded" type="submit">Kurulumu Başlat</button>
     </form>

@@ -15,8 +15,23 @@
             <div class="p-4 bg-white dark:bg-gray-800 rounded shadow">Son İşlemler</div>
         </div>
         <canvas id="chart" height="100"></canvas>
+        <div class="mt-6 flex gap-2">
+            <a href="/users" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded">Kullanıcılar</a>
+            <a href="/balance" class="px-4 py-2 bg-blue-600 text-white rounded">Bakiye Yükle</a>
+            <a href="/logout" class="px-4 py-2 bg-red-600 text-white rounded">Çıkış</a>
+            <button id="theme-toggle" class="px-4 py-2 bg-gray-800 text-white rounded">Tema</button>
+        </div>
         <button id="theme-toggle" class="mt-6 px-4 py-2 bg-gray-800 text-white rounded">Tema Değiştir</button>
     </div>
+    <script>
+      // Sunucudan gelen bakiye verisini başlangıçta yerleştir
+      <?php if (isset($balanceData)): ?>
+      try {
+        var el = document.getElementById('balance');
+        if (el) { el.textContent = <?php echo json_encode($balanceData, JSON_UNESCAPED_UNICODE); ?>; }
+      } catch(e){}
+      <?php endif; ?>
+    </script>
     <script src="/assets/js/chart.min.js"></script>
     <script>if(typeof Chart==='undefined'){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js';document.head.appendChild(s);}</script>
     <script src="/assets/js/dashboard.js"></script>
