@@ -23,10 +23,10 @@ class UserController {
         $this->requireAuth();
         $mysqli = DB::conn();
         if ($this->isSuperAdmin()) {
-            $res = $mysqli->query('SELECT id, login, role, group_id FROM users ORDER BY id DESC');
+            $res = $mysqli->query('SELECT id, login, role, group_id, exten FROM users ORDER BY id DESC');
         } else {
             $gid = (int)($_SESSION['user']['group_id'] ?? 0);
-            $stmt = $mysqli->prepare('SELECT id, login, role, group_id FROM users WHERE group_id=? ORDER BY id DESC');
+            $stmt = $mysqli->prepare('SELECT id, login, role, group_id, exten FROM users WHERE group_id=? ORDER BY id DESC');
             $stmt->bind_param('i', $gid);
             $stmt->execute();
             $res = $stmt->get_result();
@@ -44,12 +44,13 @@ class UserController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $login = trim($_POST['login'] ?? '');
             $password = $_POST['password'] ?? '';
+            $exten = trim($_POST['exten'] ?? '');
             $role = $this->isSuperAdmin() ? ($_POST['role'] ?? 'groupadmin') : 'groupadmin';
             $group_id = $this->isSuperAdmin() ? (int)($_POST['group_id'] ?? 0) : (int)($_SESSION['user']['group_id'] ?? 0);
             if ($login && $password) {
                 $hash = Security::hash($password);
-                $stmt = $mysqli->prepare('INSERT INTO users (login, password, role, group_id) VALUES (?,?,?,?)');
-                $stmt->bind_param('sssi', $login, $hash, $role, $group_id);
+                $stmt = $mysqli->prepare('INSERT INTO users (login, password, exten, role, group_id) VALUES (?,?,?,?,?)');
+                $stmt->bind_param('ssssi', $login, $hash, $exten, $role, $group_id);
                 if ($stmt->execute()) {
                     $ok = 'Kullanıcı oluşturuldu';
                 } else {
@@ -72,6 +73,7 @@ class UserController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $login = trim($_POST['login'] ?? '');
             $password = $_POST['password'] ?? '';
+            $exten = isset($_POST['exten']) ? trim($_POST['exten']) : null;
             $role = $this->isSuperAdmin() ? ($_POST['role'] ?? 'groupadmin') : null;
             $group_id = $this->isSuperAdmin() ? (int)($_POST['group_id'] ?? 0) : null;
 
@@ -79,6 +81,7 @@ class UserController {
             $types = 's';
             $params = [$login];
             if ($password !== '') { $sql .= ', password=?'; $types.='s'; $params[] = Security::hash($password); }
+            if ($exten !== null) { $sql .= ', exten=?'; $types.='s'; $params[] = $exten; }
             if ($role !== null) { $sql .= ', role=?'; $types.='s'; $params[] = $role; }
             if ($group_id !== null) { $sql .= ', group_id=?'; $types.='i'; $params[] = $group_id; }
             $sql .= ' WHERE id=?'; $types.='i'; $params[] = $id;
@@ -90,7 +93,7 @@ class UserController {
             $stmt->close();
         }
         // fetch current
-        $stmt = $mysqli->prepare('SELECT id, login, role, group_id FROM users WHERE id=?');
+        $stmt = $mysqli->prepare('SELECT id, login, role, group_id, exten FROM users WHERE id=?');
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();

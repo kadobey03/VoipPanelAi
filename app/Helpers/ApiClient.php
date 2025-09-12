@@ -43,6 +43,24 @@ class ApiClient {
         return json_decode($res, true);
     }
 
+    public function listCalls($from, $to, $extra = []) {
+        // Confirm loc and date param names with API PDF
+        $payload = array_merge([
+            'from' => $from,
+            'to' => $to,
+            'start_date' => $from,
+            'end_date' => $to,
+        ], $extra);
+        $res = $this->post('voip_api_cdr_list', $payload);
+        $data = json_decode($res, true);
+        // Normalise depending on API response format
+        if (is_array($data)) {
+            if (isset($data['data']) && is_array($data['data'])) return $data['data'];
+            if (isset($data['records']) && is_array($data['records'])) return $data['records'];
+            return $data; // assume array of CDRs
+        }
+        return [];
+    }
+
     // Diğer API fonksiyonları buraya eklenecek
 }
-

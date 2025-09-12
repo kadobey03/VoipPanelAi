@@ -27,6 +27,10 @@
         <label class="block text-sm mb-1">Şifre</label>
         <input type="password" name="password" required class="w-full border rounded p-2 bg-white dark:bg-gray-800">
       </div>
+      <div>
+        <label class="block text-sm mb-1">Dahili (exten)</label>
+        <input name="exten" class="w-full border rounded p-2 bg-white dark:bg-gray-800" placeholder="1001">
+      </div>
       <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']==='superadmin'): ?>
       <div>
         <label class="block text-sm mb-1">Rol</label>
@@ -45,4 +49,3 @@
   </div>
 </body>
 </html>
-

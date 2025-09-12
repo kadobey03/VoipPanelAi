@@ -18,3 +18,17 @@ $router->add('POST', '/users/delete', 'UserController@delete');
 // Balance
 $router->add('GET', '/balance', 'BalanceController@index');
 $router->add('POST', '/balance', 'BalanceController@index');
+
+// Groups
+$router->add('GET', '/groups', 'GroupController@index');
+$router->add('GET', '/groups/edit', 'GroupController@edit');
+$router->add('POST', '/groups/edit', 'GroupController@edit');
+$router->add('GET', '/groups/create', 'GroupController@create');
+$router->add('POST', '/groups/create', 'GroupController@create');
+$router->add('GET', '/groups/topup', 'GroupController@topup');
+$router->add('POST', '/groups/topup', 'GroupController@topup');
+$router->add('GET', '/groups/show', 'GroupController@show');
+
+// Calls
+$router->add('GET', '/calls', 'CallsController@index');
+$router->add('POST', '/calls/sync', 'CallsController@sync');

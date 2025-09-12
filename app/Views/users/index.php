@@ -24,6 +24,7 @@
             <th class="p-2">ID</th>
             <th class="p-2">Kullanıcı</th>
             <th class="p-2">Rol</th>
+            <th class="p-2">Exten</th>
             <th class="p-2">Grup</th>
             <th class="p-2">İşlem</th>
           </tr>
@@ -34,6 +35,7 @@
             <td class="p-2"><?= (int)$u['id'] ?></td>
             <td class="p-2"><?= htmlspecialchars($u['login']) ?></td>
             <td class="p-2"><?= htmlspecialchars($u['role']) ?></td>
+            <td class="p-2"><?= htmlspecialchars((string)($u['exten'] ?? '')) ?></td>
             <td class="p-2"><?= htmlspecialchars((string)$u['group_id']) ?></td>
             <td class="p-2 space-x-2">
               <a class="text-blue-600" href="/users/edit?id=<?= (int)$u['id'] ?>">Düzenle</a>
@@ -52,4 +54,3 @@
   </div>
 </body>
 </html>
-

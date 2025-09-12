@@ -27,6 +27,9 @@ CREATE TABLE calls (
     disposition VARCHAR(50),
     group_id INT,
     user_id INT,
+    cost_api DECIMAL(12,6) DEFAULT 0.000000,
+    margin_percent DECIMAL(5,2) DEFAULT 0.00,
+    amount_charged DECIMAL(12,6) DEFAULT 0.000000,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -40,6 +43,17 @@ CREATE TABLE settings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     value TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Bakiye hareketleri
+CREATE TABLE transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    group_id INT NOT NULL,
+    type ENUM('topup','debit_call','adjust') NOT NULL,
+    amount DECIMAL(12,4) NOT NULL,
+    reference VARCHAR(64) NULL,
+    description VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
