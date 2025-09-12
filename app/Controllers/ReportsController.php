@@ -38,7 +38,7 @@ class ReportsController {
         $res = $db->query('SELECT id, name FROM groups');
         while($row=$res->fetch_assoc()){ $groups[(int)$row['id']] = $row['name']; }
 
-        // Daily trend
+        // Daily trend (local aggregated)
         $sql2 = "SELECT DATE(start) d, SUM(cost_api) cost, SUM(amount_charged) revenue FROM calls WHERE $where GROUP BY DATE(start) ORDER BY d";
         $stmt = $db->prepare($sql2);
         $stmt->bind_param($types, ...$params);
@@ -46,7 +46,15 @@ class ReportsController {
         $trend = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
+        // API Call Plane (per user) for the same period
+        $callStat = [];
+        try {
+            $api = new \App\Helpers\ApiClient();
+            $callStat = $api->getCallStat($from, $to);
+        } catch (\Throwable $e) {
+            // ignore API errors in report
+        }
+
         require __DIR__.'/../Views/reports/index.php';
     }
 }
-

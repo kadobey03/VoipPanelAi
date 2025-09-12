@@ -35,3 +35,14 @@ $router->add('POST', '/calls/sync', 'CallsController@sync');
 
 // Reports
 $router->add('GET', '/reports', 'ReportsController@index');
+
+// Agents
+$router->add('GET', '/agents', 'AgentsController@index');
+
+// Numbers
+$router->add('GET', '/numbers', 'NumbersController@index');
+$router->add('POST', '/numbers/active', 'NumbersController@setActive');
+$router->add('POST', '/numbers/spam', 'NumbersController@setSpam');
+
+// Webhook
+$router->add('POST', '/webhook/momvoip', 'WebhookController@momvoip');

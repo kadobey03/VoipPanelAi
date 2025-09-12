@@ -13,8 +13,10 @@ class DashboardController {
         $api = new ApiClient();
         try {
             $balanceData = $api->getBalance();
+            $balanceValue = is_array($balanceData) && isset($balanceData['balance']) ? $balanceData['balance'] : null;
         } catch (\Throwable $e) {
             $balanceData = ['error' => $e->getMessage()];
+            $balanceValue = null;
         }
         require __DIR__.'/../Views/dashboard.php';
     }

@@ -49,9 +49,40 @@
       <?php endforeach; ?>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded shadow p-4">
+  <div class="bg-white dark:bg-gray-800 rounded shadow p-4">
       <div class="text-lg font-semibold mb-2">Günlük Trend</div>
       <canvas id="trend" height="120"></canvas>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded shadow p-4 mt-6">
+      <div class="text-lg font-semibold mb-2">API Call Plane (Kullanıcı Bazlı)</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-xs md:text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700 text-left">
+              <th class="p-2">Login</th>
+              <th class="p-2">Grup</th>
+              <th class="p-2">Çağrı</th>
+              <th class="p-2">Cevap</th>
+              <th class="p-2">Billsec</th>
+              <th class="p-2">Cost</th>
+              <th class="p-2">Exten</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach (($callStat ?? []) as $r): ?>
+            <tr class="border-b border-gray-100 dark:border-gray-700">
+              <td class="p-2"><?= htmlspecialchars($r['user_login'] ?? '') ?></td>
+              <td class="p-2"><?= htmlspecialchars($r['group_name'] ?? '') ?></td>
+              <td class="p-2"><?= (int)($r['calls'] ?? 0) ?></td>
+              <td class="p-2"><?= (int)($r['answer'] ?? 0) ?></td>
+              <td class="p-2"><?= (int)($r['billsec'] ?? 0) ?></td>
+              <td class="p-2"><?= number_format((float)($r['cost'] ?? 0),2) ?></td>
+              <td class="p-2"><?= htmlspecialchars($r['voip_exten'] ?? '') ?></td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -75,4 +106,3 @@
   </script>
 </body>
 </html>
-

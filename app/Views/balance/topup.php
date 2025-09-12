@@ -18,27 +18,15 @@
     </div>
     <div class="grid md:grid-cols-2 gap-4">
       <div class="bg-white dark:bg-gray-800 rounded shadow p-4">
-        <h2 class="text-lg font-semibold mb-2">Mevcut Bakiye</h2>
+        <h2 class="text-lg font-semibold mb-2">Mevcut Ana Bakiye</h2>
         <pre class="text-sm bg-gray-50 dark:bg-gray-900 p-2 rounded overflow-auto"><?php echo htmlspecialchars(json_encode($balance, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE)); ?></pre>
+        <div class="mt-2 text-xs text-gray-500">Not: Ana bakiye API üzerinden sadece görüntülenir. Yükleme işlemi dış sistemden yapılır.</div>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded shadow p-4">
-        <h2 class="text-lg font-semibold mb-2">Bakiye Yükle</h2>
-        <?php if (!empty($message)): ?>
-          <div class="mb-2 p-2 rounded bg-green-100 text-green-700"><?= htmlspecialchars($message) ?></div>
-        <?php endif; ?>
-        <?php if (!empty($error)): ?>
-          <div class="mb-2 p-2 rounded bg-red-100 text-red-700"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-        <form method="post" class="space-y-3">
-          <div>
-            <label class="block text-sm mb-1">Tutar</label>
-            <input type="number" name="amount" step="0.01" min="0" class="w-full border rounded p-2 bg-white dark:bg-gray-800" required>
-          </div>
-          <button class="w-full bg-blue-600 text-white rounded p-2">Yükle</button>
-        </form>
+        <h2 class="text-lg font-semibold mb-2">Grup Bakiye Yönetimi</h2>
+        <p class="text-sm">Gruplara bakiye eklemek için <a class="text-blue-600" href="/groups">Gruplar</a> sayfasından ilgili grupta “Bakiye Yükle” bölümünü kullanın.</p>
       </div>
     </div>
   </div>
 </body>
 </html>
-

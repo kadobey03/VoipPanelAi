@@ -30,37 +30,86 @@ class ApiClient {
         return $response;
     }
 
+    // 7) Get Customer balance
     public function getBalance() {
         $res = $this->post('voip_api_get_balance');
         return json_decode($res, true);
     }
 
-    public function addBalance($amount) {
-        // Confirm exact endpoint/params with API PDF
-        $res = $this->post('voip_api_add_balance', [
-            'amount' => $amount,
-        ]);
+    // 1) Create call from user to client
+    public function createCall($userId, $number, $exNumber = null) {
+        $payload = ['user_id' => $userId, 'number' => $number];
+        if ($exNumber !== null && $exNumber !== '') { $payload['ex_number'] = $exNumber; }
+        $res = $this->post('voip_api_call', $payload);
         return json_decode($res, true);
     }
 
-    public function listCalls($from, $to, $extra = []) {
-        // Confirm loc and date param names with API PDF
-        $payload = array_merge([
-            'from' => $from,
-            'to' => $to,
-            'start_date' => $from,
-            'end_date' => $to,
-        ], $extra);
-        $res = $this->post('voip_api_cdr_list', $payload);
-        $data = json_decode($res, true);
-        // Normalise depending on API response format
-        if (is_array($data)) {
-            if (isset($data['data']) && is_array($data['data'])) return $data['data'];
-            if (isset($data['records']) && is_array($data['records'])) return $data['records'];
-            return $data; // assume array of CDRs
-        }
-        return [];
+    // 2) Get agents status information
+    public function getAgentsStatus() {
+        $res = $this->post('voip_api_get_status');
+        return json_decode($res, true);
     }
 
-    // Diğer API fonksiyonları buraya eklenecek
+    // 3) Get agent status information
+    public function getAgentStatus($userId) {
+        $res = $this->post('voip_api_get_status_exten', [ 'user_id' => $userId ]);
+        return json_decode($res, true);
+    }
+
+    // 4) Get external numbers
+    public function getExternalNumbers() {
+        $res = $this->post('voip_api_get_numbers');
+        return json_decode($res, true);
+    }
+
+    // 5) Set status external number “ACTIVE”
+    public function setNumberActive($number) {
+        $res = $this->post('voip_api_number_set_active', [ 'number' => $number ]);
+        return json_decode($res, true);
+    }
+
+    // 6) Set status external number “SPAM”
+    public function setNumberSpam($number) {
+        $res = $this->post('voip_api_number_set_spam', [ 'number' => $number ]);
+        return json_decode($res, true);
+    }
+
+    // 8) Get call history by agent (10 rows per page)
+    public function getCallHistoryByAgent($userId, $page = 1) {
+        $res = $this->post('voip_api_get_call_history', [ 'user_id' => $userId, 'page' => $page ]);
+        return json_decode($res, true);
+    }
+
+    // 10) Download file call audio record (returns raw WAV)
+    public function getAudioRecord($callId) {
+        return $this->post('voip_api_get_audio_record', [ 'call_id' => $callId ]);
+    }
+
+    // 11) Get “Call Plane” data
+    public function getCallStat($sdate, $edate) {
+        $res = $this->post('voip_api_get_call_stat', [ 'sdate' => $sdate, 'edate' => $edate ]);
+        return json_decode($res, true);
+    }
+
+    // 12) Get Users
+    public function getUsers() {
+        $res = $this->post('voip_api_get_users');
+        return json_decode($res, true);
+    }
+
+    // 13) Get Groups
+    public function getGroups() {
+        $res = $this->post('voip_api_get_groups');
+        return json_decode($res, true);
+    }
+
+    // 14) Get call history, filter (100 rows per page)
+    public function getCallHistoryFilter($sdate, $edate, $src = null, $dst = null, $page = 1) {
+        $payload = ['sdate' => $sdate, 'edate' => $edate, 'page' => $page];
+        if ($src) $payload['src'] = $src;
+        if ($dst) $payload['dst'] = $dst;
+        $res = $this->post('voip_api_get_call_history_filter', $payload);
+        return json_decode($res, true);
+    }
 }
+
