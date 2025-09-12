@@ -32,3 +32,6 @@ $router->add('GET', '/groups/show', 'GroupController@show');
 // Calls
 $router->add('GET', '/calls', 'CallsController@index');
 $router->add('POST', '/calls/sync', 'CallsController@sync');
+
+// Reports
+$router->add('GET', '/reports', 'ReportsController@index');

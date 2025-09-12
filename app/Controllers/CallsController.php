@@ -81,7 +81,7 @@ class CallsController {
 
                 // insert call
                 $stmt=$db->prepare('INSERT INTO calls (call_id, src, dst, start, duration, billsec, disposition, group_id, user_id, cost_api, margin_percent, amount_charged) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
-                $stmt->bind_param('ssssissiiidd', $callId, $src, $dst, $start, $duration, $billsec, $disp, $groupId, $userId, $costApi, $margin, $amountCharged);
+                $stmt->bind_param('ssssiisiiddd', $callId, $src, $dst, $start, $duration, $billsec, $disp, $groupId, $userId, $costApi, $margin, $amountCharged);
                 $stmt->execute();
                 $stmt->close();
 
@@ -94,7 +94,7 @@ class CallsController {
                         $stmt->execute();
                         $stmt->close();
 
-                        $type='debit_call'; $ref=$callId; $desc='Çağrı ücreti';
+                        $type='debit_call'; $ref=$callId; $desc='Cagri ucreti';
                         $neg = -$amountCharged;
                         $stmt=$db->prepare('INSERT INTO transactions (group_id, type, amount, reference, description) VALUES (?,?,?,?,?)');
                         $stmt->bind_param('isdss', $groupId, $type, $neg, $ref, $desc);
