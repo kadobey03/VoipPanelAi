@@ -18,6 +18,7 @@
         <button id="theme-toggle" class="mt-6 px-4 py-2 bg-gray-800 text-white rounded">Tema Değiştir</button>
     </div>
     <script src="/assets/js/chart.min.js"></script>
+    <script>if(typeof Chart==='undefined'){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js';document.head.appendChild(s);}</script>
     <script src="/assets/js/dashboard.js"></script>
 </body>
 </html>
