@@ -212,6 +212,16 @@ class CallsController {
         }
         $api = new ApiClient();
         try {
+            $wav = $api->getAudioRecord($callId);
+            header('Content-Type: audio/x-wav');
+            header('Content-Disposition: inline; filename="'.$callId.'.wav"');
+            echo $wav;
+        } catch (\Throwable $e) {
+            http_response_code(502);
+            echo 'Kayıt alınamadı: '.$e->getMessage();
+        }
+    }
+
     public function syncCallStats(){
         // Only for cron or superadmin, but assume cron
         $api = new ApiClient();
@@ -288,15 +298,5 @@ class CallsController {
         // Simple response
         header('Content-Type: application/json');
         echo json_encode(['status' => 'ok']);
-    }
-}
-            $wav = $api->getAudioRecord($callId);
-            header('Content-Type: audio/x-wav');
-            header('Content-Disposition: inline; filename="'.$callId.'.wav"');
-            echo $wav;
-        } catch (\Throwable $e) {
-            http_response_code(502);
-            echo 'Kayıt alınamadı: '.$e->getMessage();
-        }
     }
 }
