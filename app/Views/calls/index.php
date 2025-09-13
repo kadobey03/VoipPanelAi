@@ -16,6 +16,7 @@
   </form>
   <?php endif; ?>
 
+  <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
   <div class="bg-white/80 dark:bg-slate-800 rounded-xl shadow overflow-x-auto">
     <table class="min-w-full text-xs md:text-sm">
       <thead class="bg-slate-50 dark:bg-slate-900/40">
@@ -27,8 +28,8 @@
           <th class="p-2">Billsec</th>
           <th class="p-2">Durum</th>
           <th class="p-2">Grup</th>
-          <th class="p-2">Cost(API)</th>
-          <th class="p-2">Margin%</th>
+          <?php if ($isSuper): ?><th class="p-2">Cost(API)</th><?php endif; ?>
+          <?php if ($isSuper): ?><th class="p-2">Margin%</th><?php endif; ?>
           <th class="p-2">Tahsil</th>
           <th class="p-2">Kayıt</th>
         </tr>
@@ -49,8 +50,8 @@
             elseif (isset($groupNamesByApi) && isset($groupNamesByApi[$gid])) { $gn=$groupNamesByApi[$gid]; }
           ?>
           <td class="p-2"><?= htmlspecialchars(is_string($gn)?$gn:('#'.$gid)) ?></td>
-          <td class="p-2"><?= number_format((float)$c['cost_api'],6) ?></td>
-          <td class="p-2"><?= number_format((float)$c['margin_percent'],2) ?></td>
+          <?php if ($isSuper): ?><td class="p-2"><?= number_format((float)$c['cost_api'],6) ?></td><?php endif; ?>
+          <?php if ($isSuper): ?><td class="p-2"><?= number_format((float)$c['margin_percent'],2) ?></td><?php endif; ?>
           <td class="p-2"><?= number_format((float)$c['amount_charged'],6) ?></td>
           <td class="p-2">
             <?php if (!empty($c['call_id']) && strtoupper($c['disposition'])==='ANSWERED'): ?>

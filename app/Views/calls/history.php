@@ -56,8 +56,8 @@
           <th class="p-2">Disposition</th>
           <th class="p-2">Süre</th>
           <th class="p-2">Billsec</th>
-          <th class="p-2">Cost(API)</th>
-          <th class="p-2">Margin%</th>
+          <?php if ($isSuper): ?><th class="p-2">Cost(API)</th><?php endif; ?>
+          <?php if ($isSuper): ?><th class="p-2">Margin%</th><?php endif; ?>
           <th class="p-2">Tahsil</th>
           <th class="p-2">Kayıt</th>
         </tr>
@@ -76,14 +76,14 @@
             <td class="p-2"><span class="px-2 py-0.5 rounded text-xs <?= strtoupper($c['disposition'])==='ANSWERED'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200':'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' ?>"><?= htmlspecialchars($c['disposition']) ?></span></td>
             <td class="p-2"><?= (int)$c['duration'] ?></td>
             <td class="p-2"><?= (int)$c['billsec'] ?></td>
-            <td class="p-2"><?= number_format((float)$c['cost_api'],6) ?></td>
-            <td class="p-2"><?= number_format((float)$c['margin_percent'],2) ?></td>
+            <?php if ($isSuper): ?><td class="p-2"><?= number_format((float)$c['cost_api'],6) ?></td><?php endif; ?>
+            <?php if ($isSuper): ?><td class="p-2"><?= number_format((float)$c['margin_percent'],2) ?></td><?php endif; ?>
             <td class="p-2"><?= number_format((float)$c['amount_charged'],6) ?></td>
             <td class="p-2"><?php if (!empty($c['call_id']) && strtoupper($c['disposition'])==='ANSWERED'): ?><a class="inline-flex items-center gap-1 text-blue-600 hover:underline" href="<?= \App\Helpers\Url::to('/calls/record') ?>?call_id=<?= urlencode($c['call_id']) ?>" target="_blank"><i class="fa-regular fa-circle-play"></i> Dinle</a><?php endif; ?></td>
           </tr>
           <?php endforeach; ?>
         <?php else: ?>
-          <tr><td class="p-2 text-slate-500" colspan="<?= $isSuper ? 11 : 10 ?>">Kayıt bulunamadı.</td></tr>
+          <tr><td class="p-2 text-slate-500" colspan="<?= $isSuper ? 11 : 8 ?>">Kayıt bulunamadı.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
@@ -99,3 +99,5 @@
     <?php endif; ?>
   </div>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
+
+
