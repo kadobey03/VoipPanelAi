@@ -59,10 +59,10 @@ class ReportsController {
                    LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
                    WHERE $where";
         $types3 = $types; $params3 = $params;
-        if ($groupFilter && !$this->isGroupMember()) { $sql2 .= ' AND cg.id=?'; $types .= 'i'; $params[] = $groupFilter; }
+        if ($groupFilter && !$this->isGroupMember()) { $sql2 .= ' AND cg.id=?'; $types3 .= 'i'; $params3[] = $groupFilter; }
         $sql2 .= ' GROUP BY DATE(c.start) ORDER BY d';
         $stmt = $db->prepare($sql2);
-        $stmt->bind_param($types, ...$params);
+        $stmt->bind_param($types3, ...$params3);
         $stmt->execute();
         $trend = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();

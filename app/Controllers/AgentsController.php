@@ -40,6 +40,7 @@ class AgentsController {
 
         $isSuper = $this->isSuper();
         $isUser = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'user';
+        $isGroupMember = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'groupmember';
         $userGroupName = '';
         $userAgentId = 0;
         if (!$isSuper) {
@@ -101,6 +102,11 @@ class AgentsController {
                 $agentsDb = array_filter($agentsDb, function($a) use ($userAgentId) {
                     return ($a['active'] ?? 1) == 1 && $a['id'] == $userAgentId;
                 });
+            } elseif ($isGroupMember) {
+                // Groupmember sadece kendi agent_id'sine ait agenti görür
+                $agentsDb = array_filter($agentsDb, function($a) use ($userAgentId) {
+                    return ($a['active'] ?? 1) == 1 && $a['id'] == $userAgentId;
+                });
             } else {
                 $agentsDb = array_filter($agentsDb, function($a) use ($userGroupName) {
                     return ($a['active'] ?? 1) == 1 && strtolower($a['group_name']) === strtolower($userGroupName);
@@ -124,7 +130,14 @@ class AgentsController {
         foreach ($agents as $agent) {
             $group = $agent['group'] ?? $agent['group_name'] ?? ''; // API yoksa DB'den fallback
             // Case-insensitive karşılaştırma
-            if ($isSuper || strtolower($group) === strtolower($userGroupName)) {
+            if ($isSuper || (!$isGroupMember && strtolower($group) === strtolower($userGroupName))) {
+                if (!isset($agentsByGroup[$group])) {
+                    $agentsByGroup[$group] = [];
+                }
+                $agentsByGroup[$group][] = $agent;
+            } elseif ($isGroupMember) {
+                // Groupmember sadece kendi agent'ını görür
+                $group = 'Kendi Agentınız';
                 if (!isset($agentsByGroup[$group])) {
                     $agentsByGroup[$group] = [];
                 }
