@@ -128,8 +128,8 @@ class AgentsController {
             $apiGroup = $agent['group'] ?? '';
             $localGroup = '';
             if ($apiGroup) {
-                $stmt = $db->prepare('SELECT name FROM groups WHERE api_group_name=? OR api_group_id=?');
-                $stmt->bind_param('ss', $apiGroup, $apiGroup);
+                $stmt = $db->prepare('SELECT name FROM groups WHERE api_group_name=?');
+                $stmt->bind_param('s', $apiGroup);
                 $stmt->execute();
                 $r = $stmt->get_result()->fetch_assoc();
                 if ($r) $localGroup = $r['name'];
