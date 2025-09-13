@@ -68,6 +68,6 @@ class AgentsController {
         $stmt->bind_param('s', $exten);
         $stmt->execute();
         $stmt->close();
-        header('Location: /agents');
+        header('Location: ' . \App\Helpers\Url::to('/agents'));
     }
 }
