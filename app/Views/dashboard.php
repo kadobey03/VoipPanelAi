@@ -1,6 +1,7 @@
 <?php $title='Dashboard - PapaM VoIP Panel'; require __DIR__.'/partials/header.php'; ?>
 
   <?php $isSuper = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '')==='superadmin'); ?>
+  <?php $isGroupMember = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '')==='groupmember'); ?>
 
   <section class="mb-6">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -32,7 +33,7 @@
           </div>
         </div>
       </div>
-      <?php else: ?>
+      <?php elseif (!$isGroupMember): ?>
       <div class="p-5 rounded-xl bg-white/80 dark:bg-slate-800 shadow hover:shadow-lg transition transform hover:-translate-y-0.5">
         <div class="flex items-center gap-3">
           <div class="h-10 w-10 rounded-lg bg-emerald-600/10 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-piggy-bank"></i></div>
@@ -51,7 +52,7 @@
           </div>
         </div>
       </a>
-      <?php endif; ?>
+      <?php elseif (!$isGroupMember): ?>
       <div class="p-5 rounded-xl bg-white/80 dark:bg-slate-800 shadow hover:shadow-lg transition transform hover:-translate-y-0.5">
         <div class="flex items-center gap-3">
           <div class="h-10 w-10 rounded-lg bg-rose-600/10 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-sack-dollar"></i></div>
@@ -66,14 +67,22 @@
           </div>
         </div>
       </div>
+      <?php endif; ?>
     </div>
   </section>
 
   <section class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <?php if (!$isGroupMember): ?>
     <a href="<?= \App\Helpers\Url::to('/users') ?>" class="group rounded-lg p-4 bg-white/70 dark:bg-slate-800 shadow hover:shadow-xl transition flex items-center gap-3">
       <i class="fa-solid fa-users text-indigo-600 group-hover:animate-bounce"></i>
       <div class="font-medium">Kullanıcılar</div>
     </a>
+    <?php endif; ?>
+    <a href="<?= \App\Helpers\Url::to('/calls/history') ?>" class="group rounded-lg p-4 bg-white/70 dark:bg-slate-800 shadow hover:shadow-xl transition flex items-center gap-3">
+      <i class="fa-solid fa-phone text-blue-600 group-hover:animate-bounce"></i>
+      <div class="font-medium">Çağrılar</div>
+    </a>
+    <?php if (!$isGroupMember): ?>
     <a href="<?= \App\Helpers\Url::to('/reports') ?>" class="group rounded-lg p-4 bg-white/70 dark:bg-slate-800 shadow hover:shadow-xl transition flex items-center gap-3">
       <i class="fa-solid fa-chart-line text-emerald-600 group-hover:animate-bounce"></i>
       <div class="font-medium">Raporlar</div>
@@ -86,6 +95,12 @@
       <i class="fa-solid fa-address-book text-amber-600 group-hover:animate-bounce"></i>
       <div class="font-medium">Dış Numaralar</div>
     </a>
+    <?php else: ?>
+    <a href="<?= \App\Helpers\Url::to('/reports') ?>" class="group rounded-lg p-4 bg-white/70 dark:bg-slate-800 shadow hover:shadow-xl transition flex items-center gap-3">
+      <i class="fa-solid fa-chart-line text-emerald-600 group-hover:animate-bounce"></i>
+      <div class="font-medium">Raporlar</div>
+    </a>
+    <?php endif; ?>
     <?php if ($isSuper): ?>
     <a href="<?= \App\Helpers\Url::to('/balance') ?>" class="group rounded-lg p-4 bg-white/70 dark:bg-slate-800 shadow hover:shadow-xl transition flex items-center gap-3">
       <i class="fa-solid fa-wallet text-fuchsia-600 group-hover:animate-bounce"></i>
@@ -98,6 +113,7 @@
     </a>
   </section>
 
+  <?php if (!$isGroupMember): ?>
   <section class="mt-6 grid md:grid-cols-2 gap-4">
     <div class="bg-white/80 dark:bg-slate-800 rounded-xl shadow p-4">
       <h3 class="text-sm text-slate-500 mb-2"><?php echo $isSuper ? 'Gelir/Maliyet (7 Gün)' : 'Harcama (7 Gün)'; ?></h3>
@@ -108,7 +124,9 @@
       <canvas id="callsBar" height="140"></canvas>
     </div>
   </section>
+  <?php endif; ?>
 
+  <?php if (!$isGroupMember): ?>
   <script src="<?= \App\Helpers\Url::to('/public/assets/js/chart.min.js') ?>"></script>
   <script>if(typeof Chart==='undefined'){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js';document.head.appendChild(s);}</script>
   <script>
@@ -134,7 +152,10 @@
       draw();
     })();
   </script>
+  <?php endif; ?>
+  <?php if (!$isGroupMember): ?>
   <script src="<?= \App\Helpers\Url::to('/public/assets/js/dashboard.js') ?>"></script>
+  <?php endif; ?>
 
 <?php require __DIR__.'/partials/footer.php'; ?>
 
