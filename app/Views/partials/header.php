@@ -28,13 +28,13 @@ use App\Helpers\Url;
         <nav class="hidden md:flex items-center gap-4 text-white/90">
           <a class="hover:text-white transition" href="<?= Url::to('/users') ?>"><i class="fa-solid fa-users"></i> Kullanıcılar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/groups') ?>"><i class="fa-solid fa-layer-group"></i> Gruplar</a>
-          <a class="hover:text-white transition" href="<?= Url::to('/calls') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
+          <a class="hover:text-white transition" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
           <a class="hover:text-white transition" href="<?= Url::to('/numbers') ?>"><i class="fa-solid fa-address-book"></i> Numaralar</a>
-          <div class="relative group">
-            <a class="hover:text-white transition inline-flex items-center gap-1" href="#"><i class="fa-solid fa-wallet"></i> Bakiye <i class="fa-solid fa-caret-down text-xs"></i></a>
-            <div class="absolute hidden group-hover:block right-0 mt-2 w-60 bg-white text-slate-800 rounded shadow-lg py-2">
+          <div class="relative">
+            <button id="balance-menu-btn" class="hover:text-white transition inline-flex items-center gap-1"><i class="fa-solid fa-wallet"></i> Bakiye <i class="fa-solid fa-caret-down text-xs"></i></button>
+            <div id="balance-menu" class="absolute hidden right-0 mt-2 w-60 bg-white text-slate-800 rounded shadow-lg py-2">
               <a class="block px-3 py-2 hover:bg-slate-50" href="<?= Url::to('/topups') ?>"><i class="fa-solid fa-inbox"></i> Bakiye Yükleme Talepleri</a>
               <a class="block px-3 py-2 hover:bg-slate-50" href="<?= Url::to('/balance/topup') ?>"><i class="fa-solid fa-circle-plus"></i> Bakiye Yükle</a>
               <a class="block px-3 py-2 hover:bg-slate-50" href="<?= Url::to('/transactions') ?>"><i class="fa-solid fa-clock-rotate-left"></i> Bakiye Geçmişi</a>
@@ -54,7 +54,7 @@ use App\Helpers\Url;
         <div class="grid grid-cols-2 gap-2 text-sm">
           <a class="hover:text-white" href="<?= Url::to('/users') ?>"><i class="fa-solid fa-users"></i> Kullanıcılar</a>
           <a class="hover:text-white" href="<?= Url::to('/groups') ?>"><i class="fa-solid fa-layer-group"></i> Gruplar</a>
-          <a class="hover:text-white" href="<?= Url::to('/calls') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
+          <a class="hover:text-white" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
           <a class="hover:text-white" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
           <a class="hover:text-white" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
           <a class="hover:text-white" href="<?= Url::to('/numbers') ?>"><i class="fa-solid fa-address-book"></i> Numaralar</a>
@@ -78,7 +78,15 @@ use App\Helpers\Url;
       function tog(){document.documentElement.classList.toggle('dark');try{localStorage.setItem('theme',document.documentElement.classList.contains('dark')?'dark':'light')}catch(e){} }
       var t=document.getElementById('toggle-theme'); if(t){t.addEventListener('click',tog)}
       var tm=document.getElementById('toggle-theme-m'); if(tm){tm.addEventListener('click',tog)}
+      // Balance menu toggle on click
+      var bbtn=document.getElementById('balance-menu-btn'); var bmenu=document.getElementById('balance-menu');
+      if(bbtn && bmenu){
+        bbtn.addEventListener('click', function(e){ e.preventDefault(); bmenu.classList.toggle('hidden'); });
+        // Close if click is outside both the menu and the button (including its children)
+        document.addEventListener('click', function(e){ if(!bmenu.contains(e.target) && !bbtn.contains(e.target)){ bmenu.classList.add('hidden'); } });
+      }
     });
   </script>
 <?php endif; ?>
   <main class="max-w-7xl mx-auto px-4 py-6">
+

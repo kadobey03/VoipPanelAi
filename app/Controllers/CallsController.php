@@ -27,6 +27,48 @@ class CallsController {
         require __DIR__.'/../Views/calls/index.php';
     }
 
+    public function history(){
+        $this->requireAuth();
+        $api = new ApiClient();
+        $db = DB::conn();
+        $user = $_SESSION['user'];
+        $isSuper = ($user['role'] ?? '') === 'superadmin';
+        $from = $_GET['from'] ?? date('Y-m-d 00:00:00', strtotime('-1 day'));
+        $to   = $_GET['to']   ?? date('Y-m-d 23:59:59');
+        $src  = $_GET['src']  ?? '';
+        $dst  = $_GET['dst']  ?? '';
+        $maxPages = (int)($_GET['pages'] ?? 3); if ($maxPages<1) $maxPages=1; if ($maxPages>20) $maxPages=20;
+        $selectedGroup = $isSuper ? (isset($_GET['group_id']) && $_GET['group_id']!=='' ? (int)$_GET['group_id'] : null) : (int)($user['group_id'] ?? 0);
+        $results = [];
+        if (isset($_GET['search'])) {
+            try {
+                for ($p=1; $p<=$maxPages; $p++) {
+                    $rows = $api->getCallHistoryFilter($from, $to, $src ?: null, $dst ?: null, $p);
+                    if (!is_array($rows) || count($rows)===0) break;
+                    foreach ($rows as $r) {
+                        $ext = (string)($r['src'] ?? '');
+                        if (!$isSuper) {
+                            // filter by group via exten mapping
+                            if ($ext!=='') {
+                                $stmt=$db->prepare('SELECT group_id FROM users WHERE exten=? LIMIT 1'); $stmt->bind_param('s',$ext); $stmt->execute(); $g=$stmt->get_result()->fetch_assoc(); $stmt->close();
+                                if (!$g || (int)$g['group_id'] !== $selectedGroup) { continue; }
+                            } else { continue; }
+                        } else if ($selectedGroup) {
+                            if ($ext!=='') {
+                                $stmt=$db->prepare('SELECT group_id FROM users WHERE exten=? LIMIT 1'); $stmt->bind_param('s',$ext); $stmt->execute(); $g=$stmt->get_result()->fetch_assoc(); $stmt->close();
+                                if (!$g || (int)$g['group_id'] !== $selectedGroup) { continue; }
+                            }
+                        }
+                        $results[] = $r;
+                    }
+                    if (count($rows) < 100) break;
+                }
+            } catch (\Throwable $e) { $results = ['error'=>$e->getMessage()]; }
+        }
+        // group options for super admin
+        $groups=[]; if ($isSuper) { if($res=$db->query('SELECT id,name FROM groups ORDER BY name')){ while($row=$res->fetch_assoc()){$groups[]=$row;} } }
+        require __DIR__.'/../Views/calls/history.php';
+    }
     public function sync(){
         $this->requireAuth();
         if (!$this->isSuper()) { http_response_code(403); echo 'Yetkisiz'; return; }
