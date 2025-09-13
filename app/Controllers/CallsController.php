@@ -33,8 +33,8 @@ class CallsController {
         $db = DB::conn();
         $user = $_SESSION['user'];
         $isSuper = ($user['role'] ?? '') === 'superadmin';
-        $from = $_GET['from'] ?? date('Y-m-d 00:00:00', strtotime('-1 day'));
-        $to   = $_GET['to']   ?? date('Y-m-d 23:59:59');
+        $from = date('Y-m-d H:i:s', strtotime($_GET['from'] ?? '-1 day'));
+        $to   = date('Y-m-d H:i:s', strtotime($_GET['to']   ?? 'now'));
         $src  = $_GET['src']  ?? '';
         $dst  = $_GET['dst']  ?? '';
         $maxPages = (int)($_GET['pages'] ?? 3); if ($maxPages<1) $maxPages=1; if ($maxPages>20) $maxPages=20;
