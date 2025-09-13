@@ -55,21 +55,29 @@ class GroupController {
         try { $apiGroups = (new ApiClient())->getGroups() ?? []; } catch (\Throwable $e) { $apiGroups = []; }
         if ($_SERVER['REQUEST_METHOD']==='POST') {
             $name = trim($_POST['name'] ?? '');
-            $margin = (float)($_POST['margin'] ?? 0);
-            $api_group_id = isset($_POST['api_group_id']) && $_POST['api_group_id']!=='' ? (int)$_POST['api_group_id'] : null;
-            $api_group_name = null;
-            if ($api_group_id) {
-                foreach ($apiGroups as $ag) { if ((int)($ag['id'] ?? 0) === $api_group_id) { $api_group_name = (string)($ag['name'] ?? ''); break; } }
-            } else {
-                // Try auto-match by name (case-insensitive)
-                foreach ($apiGroups as $ag) { if (strcasecmp((string)($ag['name'] ?? ''), $name) === 0) { $api_group_id = (int)($ag['id'] ?? 0); $api_group_name = (string)($ag['name'] ?? ''); break; } }
+            if ($name === '') { $error='İsim gerekli'; }
+            else {
+                if ($this->isSuper()) {
+                    $margin = (float)($_POST['margin'] ?? 0);
+                    $api_group_id = isset($_POST['api_group_id']) && $_POST['api_group_id']!=='' ? (int)$_POST['api_group_id'] : null;
+                    $api_group_name = null;
+                    if ($api_group_id) {
+                        foreach ($apiGroups as $ag) { if ((int)($ag['id'] ?? 0) === $api_group_id) { $api_group_name = (string)($ag['name'] ?? ''); break; } }
+                    } else {
+                        foreach ($apiGroups as $ag) { if (strcasecmp((string)($ag['name'] ?? ''), $name) === 0) { $api_group_id = (int)($ag['id'] ?? 0); $api_group_name = (string)($ag['name'] ?? ''); break; } }
+                    }
+                    $stmt = $db->prepare('UPDATE groups SET name=?, margin=?, api_group_id=?, api_group_name=? WHERE id=?');
+                    $stmt->bind_param('sdisi', $name, $margin, $api_group_id, $api_group_name, $id);
+                    $ok = $stmt->execute() ? 'Güncellendi' : 'Güncelleme hatası';
+                    $stmt->close();
+                } else {
+                    // Group admin cannot change margin or mapping
+                    $stmt = $db->prepare('UPDATE groups SET name=? WHERE id=?');
+                    $stmt->bind_param('si', $name, $id);
+                    $ok = $stmt->execute() ? 'Güncellendi' : 'Güncelleme hatası';
+                    $stmt->close();
+                }
             }
-            if ($name !== '') {
-                $stmt = $db->prepare('UPDATE groups SET name=?, margin=?, api_group_id=?, api_group_name=? WHERE id=?');
-                $stmt->bind_param('sdisi', $name, $margin, $api_group_id, $api_group_name, $id);
-                if ($stmt->execute()) { $ok='Güncellendi'; } else { $error='Güncelleme hatası'; }
-                $stmt->close();
-            } else { $error='İsim gerekli'; }
         }
         try {
             $stmt = $db->prepare('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups WHERE id=?');

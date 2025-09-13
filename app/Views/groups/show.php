@@ -6,15 +6,18 @@
       <a href="<?= \App\Helpers\Url::to('/groups/topup') ?>?id=<?= (int)$group['id'] ?>" class="px-3 py-2 rounded bg-emerald-600 text-white"><i class="fa-solid fa-circle-plus"></i> Bakiye Yükle</a>
     </div>
   </div>
+  <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
   <div class="grid md:grid-cols-3 gap-4 mb-6">
     <div class="bg-white dark:bg-slate-800 rounded p-4 shadow">
       <div class="text-sm text-slate-500">Bakiye</div>
       <div class="text-2xl font-semibold"><?= number_format((float)$group['balance'],2) ?></div>
     </div>
-    <div class="bg-white dark:bg-slate-800 rounded p-4 shadow">
-      <div class="text-sm text-slate-500">Margin</div>
-      <div class="text-2xl font-semibold"><?= number_format((float)$group['margin'],2) ?>%</div>
-    </div>
+    <?php if ($isSuper): ?>
+      <div class="bg-white dark:bg-slate-800 rounded p-4 shadow">
+        <div class="text-sm text-slate-500">Margin</div>
+        <div class="text-2xl font-semibold"><?= number_format((float)$group['margin'],2) ?>%</div>
+      </div>
+    <?php endif; ?>
     <div class="bg-white dark:bg-slate-800 rounded p-4 shadow">
       <div class="text-sm text-slate-500">Grup ID</div>
       <div class="text-2xl font-semibold"><?= (int)$group['id'] ?></div>
@@ -45,4 +48,3 @@
     </table>
   </div>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
-

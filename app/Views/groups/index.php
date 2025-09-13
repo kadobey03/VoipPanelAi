@@ -13,7 +13,8 @@
         <tr class="border-b border-slate-200 dark:border-slate-700 text-left">
           <th class="p-3">ID</th>
           <th class="p-3">Ad</th>
-          <th class="p-3">Margin %</th>
+          <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
+          <?php if ($isSuper): ?><th class="p-3">Margin %</th><?php endif; ?>
           <th class="p-3">Bakiye</th>
           <th class="p-3">API Grup</th>
           <th class="p-3">İşlem</th>
@@ -24,7 +25,7 @@
         <tr class="border-b border-slate-100 dark:border-slate-700/60 hover:bg-slate-50/60 dark:hover:bg-slate-900/20 transition">
           <td class="p-3 font-mono text-xs">#<?= (int)$g['id'] ?></td>
           <td class="p-3 font-medium"><?= htmlspecialchars($g['name']) ?></td>
-          <td class="p-3"><?= number_format((float)$g['margin'],2) ?>%</td>
+          <?php if ($isSuper): ?><td class="p-3"><?= number_format((float)$g['margin'],2) ?>%</td><?php endif; ?>
           <td class="p-3"><?= number_format((float)$g['balance'],2) ?></td>
           <td class="p-3">
             <?php if (!empty($g['api_group_name'])): ?>

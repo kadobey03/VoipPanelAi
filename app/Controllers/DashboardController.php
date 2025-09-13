@@ -51,6 +51,20 @@ class DashboardController {
         $weeklyRevenue = (float)($profitRow['rev'] ?? 0); $weeklyCost=(float)($profitRow['cost'] ?? 0);
         $weeklyProfit = $weeklyRevenue - $weeklyCost;
 
+        // Build 7-day chart data
+        $chartLabels = []; $chartRevenue = []; $chartCost = []; $chartCalls = [];
+        if ($isSuper) {
+            $stmt = $db->prepare('SELECT DATE(start) d, SUM(amount_charged) rev, SUM(cost_api) cost, COUNT(*) c FROM calls WHERE start >= ? GROUP BY DATE(start) ORDER BY d');
+            $stmt->bind_param('s', $from);
+        } else {
+            $stmt = $db->prepare('SELECT DATE(start) d, SUM(amount_charged) rev, SUM(cost_api) cost, COUNT(*) c FROM calls WHERE start >= ? AND group_id=? GROUP BY DATE(start) ORDER BY d');
+            $gid = (int)($user['group_id'] ?? 0);
+            $stmt->bind_param('si', $from, $gid);
+        }
+        $stmt->execute(); $rs=$stmt->get_result();
+        while ($row=$rs->fetch_assoc()) { $chartLabels[]=$row['d']; $chartRevenue[]=(float)$row['rev']; $chartCost[]=(float)$row['cost']; $chartCalls[]=(int)$row['c']; }
+        $stmt->close();
+
         $diff = $isSuper && $balanceValue !== null ? $balanceValue - $groupsTotal : null;
 
         require __DIR__.'/../Views/dashboard.php';
