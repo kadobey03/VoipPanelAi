@@ -55,17 +55,31 @@ class CallsController {
         if ($isGroupMember) {
             // Groupmember için agent_id'den exten al
             $agentExten = '';
-            if (isset($user['agent_id']) && (int)$user['agent_id'] > 0) {
+            $agentId = (int)$user['agent_id'];
+            error_log("Groupmember agent_id: " . $agentId);
+            if ($agentId > 0) {
                 $stmt = $db->prepare('SELECT exten FROM agents WHERE id=?');
-                $stmt->bind_param('i', (int)$user['agent_id']);
+                $stmt->bind_param('i', $agentId);
                 $stmt->execute();
                 $r = $stmt->get_result()->fetch_assoc();
-                if ($r) $agentExten = $r['exten'];
+                if ($r) {
+                    $agentExten = $r['exten'];
+                    error_log("Found agent exten: " . $agentExten);
+                } else {
+                    error_log("Agent not found for id: " . $agentId);
+                }
                 $stmt->close();
+            } else {
+                error_log("No agent_id for groupmember");
             }
-            $where .= ' AND src=?';
-            $types.='s';
-            $params[] = $agentExten;
+            if (!empty($agentExten)) {
+                $where .= ' AND src=?';
+                $types.='s';
+                $params[] = $agentExten;
+                error_log("Applying filter with exten: " . $agentExten);
+            } else {
+                error_log("No exten found, no filter applied");
+            }
         }
         if ($isSuper && $selectedGroup) { $where .= ' AND group_id=?'; $types.='i'; $params[] = $selectedGroup; }
         if ($src !== '') { $where .= ' AND src LIKE ?'; $types.='s'; $params[] = $src.'%'; }
