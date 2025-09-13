@@ -227,8 +227,8 @@ class CallsController {
         // Only for cron or superadmin, but assume cron
         $api = new ApiClient();
         $db = DB::conn();
-        $from = date('Y-m-d 00:00:00', strtotime('-1 day')); // Yesterday 00:00
-        $to = date('Y-m-d 23:59:59'); // Today 23:59
+        $from = date('Y-m-d 00:00:00', strtotime('-1 day')); // Yesterday
+        $to = date('Y-m-d 23:59:59', strtotime('-1 day'));
         $last100 = \App\Models\CallStat::getLast100();
         $existingKeys = [];
         foreach ($last100 as $stat) {
