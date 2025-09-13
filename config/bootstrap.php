@@ -1,4 +1,7 @@
 <?php
+// Session start
+session_start();
+
 // Autoloading
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
