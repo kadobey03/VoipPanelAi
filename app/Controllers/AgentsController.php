@@ -73,19 +73,6 @@ class AgentsController {
             }
         }
 
-        // Get hidden status from DB
-        $hiddenMap = [];
-        $result = $db->query('SELECT exten, hidden FROM users');
-        while ($row = $result->fetch_assoc()) {
-            $hiddenMap[$row['exten']] = $row['hidden'];
-        }
-        foreach ($agents as &$agent) {
-            $agent['hidden'] = $hiddenMap[$agent['exten']] ?? 0;
-        }
-        // Filter out hidden agents
-        $agents = array_filter($agents, function($agent) {
-            return !$agent['hidden'];
-        });
 
         $agentsByGroup = [];
         foreach ($agents as $agent) {
