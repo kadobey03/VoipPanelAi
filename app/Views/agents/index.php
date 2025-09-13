@@ -165,7 +165,12 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <?php foreach (($groupData['agents'] ?? []) as $agentIndex => $a): ?>
-        <!-- Agent card removed due to syntax issues -->
+        <div class="bg-white p-4 m-2 border rounded">
+          <div>Exten: <?php echo htmlspecialchars($a['exten'] ?? ''); ?></div>
+          <div>Login: <?php echo htmlspecialchars($a['user_login'] ?? ''); ?></div>
+          <div>Status: <?php echo htmlspecialchars($a['status'] ?? ''); ?></div>
+          <div>Active: <?php echo htmlspecialchars($a['active'] ?? ''); ?></div>
+        </div>
         <?php endforeach; ?>
       </div>
     </div>
@@ -176,7 +181,6 @@
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     <?php
     $agents = $agentsByGroup[key($agentsByGroup ?? [])] ?? [];
-    <?php
     foreach ($agents as $agentIndex => $a):
     ?>
     <div class="bg-white p-4 m-2 border rounded">
