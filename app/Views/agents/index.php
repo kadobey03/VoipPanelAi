@@ -315,7 +315,9 @@
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     <?php
     $agents = $agentsByGroup[key($agentsByGroup ?? [])] ?? [];
+    echo "Total agents to display: " . count($agents) . "<br>";
     foreach ($agents as $agentIndex => $a):
+    echo "Rendering agent: " . htmlspecialchars($a['exten'] ?? 'no exten') . "<br>";
     ?>
     <div class="agent-card group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:-translate-y-2 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden animate-in slide-in-from-bottom-4 duration-500" style="animation-delay: <?= $agentIndex * 50 ?>ms">
       <!-- Status Indicator -->
