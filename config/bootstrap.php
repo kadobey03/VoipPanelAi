@@ -22,3 +22,8 @@ if (file_exists(__DIR__.'/../.env')) {
         }
     }
 }
+// Error handling & logging
+require_once __DIR__.'/../app/Core/ErrorHandler.php';
+$debugEnv = getenv('APP_DEBUG');
+$debug = is_string($debugEnv) ? in_array(strtolower($debugEnv), ['1','true','on','yes'], true) : false;
+\App\Core\ErrorHandler::register($debug);
