@@ -15,10 +15,6 @@ class Lang {
         return self::$lang[$key] ?? $key;
     }
 
-    public static function getCurrentLang() {
-        return $_SESSION['lang'] ?? 'tr';
-    }
-
     public static function current() {
         return $_SESSION['lang'] ?? 'tr';
     }
