@@ -66,10 +66,9 @@
           <th class="p-2">Tarih</th>
           <th class="p-2">Ülke</th>
           <th class="p-2">From</th>
-          <th class="p-2">Grup</th>
+          <?php if ($isSuper): ?><th class="p-2">Grup</th><?php endif; ?>
           <th class="p-2">To</th>
           <th class="p-2">Disposition</th>
-          <th class="p-2">Hangup</th>
           <th class="p-2">Süre</th>
           <th class="p-2">Billsec</th>
           <th class="p-2">Cost</th>
@@ -78,17 +77,16 @@
       </thead>
       <tbody>
         <?php if (isset($results['error'])): ?>
-          <tr><td class="p-2 text-red-600" colspan="11">Hata: <?= htmlspecialchars($results['error']) ?></td></tr>
+          <tr><td class="p-2 text-red-600" colspan="<?= $isSuper ? 10 : 9 ?>">Hata: <?= htmlspecialchars($results['error']) ?></td></tr>
         <?php elseif (!empty($results)): ?>
           <?php foreach ($results as $i=>$r): ?>
           <tr class="border-b border-slate-100 dark:border-slate-700/60 hover:bg-slate-50/60 dark:hover:bg-slate-900/20 transition">
             <td class="p-2 whitespace-nowrap"><?= htmlspecialchars((string)($r['start'] ?? $r['date'] ?? '')) ?></td>
-            <td class="p-2"><?= htmlspecialchars((string)($r['country'] ?? '')) ?></td>
+            <td class="p-2"><?php $dst = (string)($r['dst'] ?? $r['to'] ?? ''); if (str_starts_with($dst, '90')) echo '🇹🇷'; ?></td>
             <td class="p-2"><?= htmlspecialchars((string)($r['src'] ?? $r['from'] ?? '')) ?></td>
-            <td class="p-2"><?= htmlspecialchars((string)($r['group'] ?? '')) ?></td>
-            <td class="p-2"><?= htmlspecialchars((string)($r['dst'] ?? $r['to'] ?? '')) ?></td>
+            <?php if ($isSuper): ?><td class="p-2"><?= htmlspecialchars((string)($r['group'] ?? '')) ?></td><?php endif; ?>
+            <td class="p-2"><?= htmlspecialchars($dst) ?></td>
             <td class="p-2"><span class="px-2 py-0.5 rounded text-xs <?= strtoupper((string)($r['disposition'] ?? ''))==='ANSWERED'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200':'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' ?>"><?= htmlspecialchars((string)($r['disposition'] ?? '')) ?></span></td>
-            <td class="p-2"><?= htmlspecialchars((string)($r['hangup'] ?? '')) ?></td>
             <td class="p-2"><?= (int)($r['duration'] ?? 0) ?></td>
             <td class="p-2"><?= (int)($r['billsec'] ?? 0) ?></td>
             <td class="p-2"><?= is_numeric($r['cost'] ?? null) ? number_format((float)$r['cost'],6) : htmlspecialchars((string)($r['cost'] ?? '')) ?></td>
@@ -100,7 +98,7 @@
           </tr>
           <?php endforeach; ?>
         <?php else: ?>
-          <tr><td class="p-2 text-slate-500" colspan="11">Kayıt bulunamadı. Filtreler ile arayın.</td></tr>
+          <tr><td class="p-2 text-slate-500" colspan="<?= $isSuper ? 10 : 9 ?>">Kayıt bulunamadı. Filtreler ile arayın.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
