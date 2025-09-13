@@ -34,6 +34,8 @@ $router->add('GET', '/calls', 'CallsController@index');
 $router->add('GET', '/calls/history', 'CallsController@history');
 $router->add('POST', '/calls/sync', 'CallsController@sync');
 $router->add('POST', '/calls/sync-historical-call-stats', 'CallsController@syncHistoricalCallStats');
+$router->add('GET', '/calls/sync-call-stats', 'CallsController@syncCallStats');
+$router->add('GET', '/calls/sync-historical-call-stats', 'CallsController@syncHistoricalCallStats');
 $router->add('POST', '/calls/sync-call-stats', 'CallsController@syncCallStats');
 $router->add('GET', '/calls/record', 'CallsController@record');
 
