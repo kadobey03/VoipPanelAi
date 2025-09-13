@@ -44,7 +44,7 @@ function __($key) {
 
       <!-- Content -->
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16 lg:h-20">
+        <div class="flex items-center justify-between h-14 lg:h-16">
           <!-- Logo & Brand -->
           <div class="flex items-center space-x-3">
             <a href="<?= Url::to('/') ?>" class="group relative flex items-center space-x-3 p-2 rounded-xl hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
@@ -52,14 +52,14 @@ function __($key) {
               <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               <!-- Logo Icon -->
-              <div class="relative p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-all duration-300">
-                <i class="fa-solid fa-wave-square text-2xl text-white animate-pulse"></i>
+              <div class="relative p-1.5 bg-white/20 rounded-lg group-hover:bg-white/30 transition-all duration-300">
+                <i class="fa-solid fa-wave-square text-xl text-white animate-pulse"></i>
               </div>
 
               <!-- Brand Text -->
               <div class="relative">
-                <span class="text-white font-bold text-lg lg:text-xl tracking-wide">PapaM VoIP Panel</span>
-                <div class="text-white/70 text-xs font-medium">Moden İletişim Çözümleri</div>
+                <span class="text-white font-bold text-base lg:text-lg tracking-wide">PapaM VoIP Panel</span>
+                <div class="text-white/70 text-xs font-medium hidden sm:block">Modern İletişim Çözümleri</div>
               </div>
             </a>
           </div>
@@ -67,40 +67,47 @@ function __($key) {
           <!-- Desktop Navigation -->
           <nav class="hidden lg:flex items-center space-x-1">
             <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
+              <!-- Dashboard/Home -->
+              <a href="<?= Url::to('/') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+                <i class="fa-solid fa-house text-base"></i>
+                <span class="font-medium text-sm">Anasayfa</span>
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </a>
+  
               <!-- Users -->
-              <a href="<?= Url::to('/users') ?>" class="relative group flex items-center space-x-2 px-4 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-                <i class="fa-solid fa-users text-lg"></i>
-                <span class="font-medium">Kullanıcılar</span>
+              <a href="<?= Url::to('/users') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+                <i class="fa-solid fa-users text-base"></i>
+                <span class="font-medium text-sm">Kullanıcılar</span>
                 <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </a>
-
+  
               <!-- Groups -->
-              <a href="<?= Url::to('/groups') ?>" class="relative group flex items-center space-x-2 px-4 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-                <i class="fa-solid fa-layer-group text-lg"></i>
-                <span class="font-medium">Gruplar</span>
+              <a href="<?= Url::to('/groups') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+                <i class="fa-solid fa-layer-group text-base"></i>
+                <span class="font-medium text-sm">Gruplar</span>
                 <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </a>
             <?php endif; ?>
 
             <!-- Calls -->
-            <a href="<?= Url::to('/calls/history') ?>" class="relative group flex items-center space-x-2 px-4 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-              <i class="fa-solid fa-phone text-lg"></i>
-              <span class="font-medium">Çağrılar</span>
+            <a href="<?= Url::to('/calls/history') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+              <i class="fa-solid fa-phone text-base"></i>
+              <span class="font-medium text-sm">Çağrılar</span>
               <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
 
             <!-- Reports -->
-            <a href="<?= Url::to('/reports') ?>" class="relative group flex items-center space-x-2 px-4 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-              <i class="fa-solid fa-chart-line text-lg"></i>
-              <span class="font-medium">Raporlar</span>
+            <a href="<?= Url::to('/reports') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+              <i class="fa-solid fa-chart-line text-base"></i>
+              <span class="font-medium text-sm">Raporlar</span>
               <div class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
 
             <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
             <!-- Agents -->
-            <a href="<?= Url::to('/agents') ?>" class="relative group flex items-center space-x-2 px-4 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-              <i class="fa-solid fa-user-nurse text-lg"></i>
-              <span class="font-medium">Agent</span>
+            <a href="<?= Url::to('/agents') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+              <i class="fa-solid fa-user-nurse text-base"></i>
+              <span class="font-medium text-sm">Agent</span>
               <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
             <?php endif; ?>
@@ -108,10 +115,10 @@ function __($key) {
             <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='groupmember'): ?>
             <!-- Balance Dropdown -->
             <div class="relative" id="balance-menu-container">
-              <button id="balance-menu-btn" class="relative group flex items-center space-x-2 px-4 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-                <i class="fa-solid fa-wallet text-lg"></i>
-                <span class="font-medium">Bakiye</span>
-                <i class="fa-solid fa-chevron-down text-sm transition-transform duration-300 group-hover:rotate-180"></i>
+              <button id="balance-menu-btn" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+                <i class="fa-solid fa-wallet text-base"></i>
+                <span class="font-medium text-sm">Bakiye</span>
+                <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300 group-hover:rotate-180"></i>
                 <div class="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
 
@@ -165,61 +172,117 @@ function __($key) {
             </div>
             <?php endif; ?>
 
-            <!-- Profile -->
-            <a href="<?= Url::to('/profile') ?>" class="relative group flex items-center space-x-2 px-4 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-              <i class="fa-solid fa-user-gear text-lg"></i>
-              <span class="font-medium">Profil</span>
-              <div class="absolute inset-0 bg-gradient-to-r from-slate-500/20 to-gray-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </a>
-
             <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
             <!-- Settings -->
-            <a href="<?= Url::to('/settings') ?>" class="relative group flex items-center space-x-2 px-4 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-              <i class="fa-solid fa-cogs text-lg"></i>
-              <span class="font-medium">Ayarlar</span>
+            <a href="<?= Url::to('/settings') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+              <i class="fa-solid fa-cogs text-base"></i>
+              <span class="font-medium text-sm">Ayarlar</span>
               <div class="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
             <?php endif; ?>
           </nav>
 
           <!-- Right Side Actions -->
-          <div class="flex items-center space-x-3">
-            <!-- Language Selector -->
-            <div class="relative">
-              <form method="post" action="/change-lang" class="inline-block">
-                <select name="lang" id="lang-select" class="appearance-none bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg border border-white/20 hover:border-white/30 transition-all duration-300 cursor-pointer pr-8">
-                  <option value="tr" <?= Lang::current() === 'tr' ? 'selected' : '' ?>>🇹🇷 TR</option>
-                  <option value="en" <?= Lang::current() === 'en' ? 'selected' : '' ?>>🇺🇸 EN</option>
-                </select>
-                <div class="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <i class="fa-solid fa-chevron-down text-white/70 text-xs"></i>
-                </div>
-              </form>
+          <div class="flex items-center space-x-2">
+            <!-- Language Selector with Flags -->
+            <div class="relative" id="lang-menu-container">
+              <button id="lang-menu-btn" class="relative group flex items-center space-x-1 px-2 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 transform hover:scale-105">
+                <?php if(Lang::current() === 'tr'): ?>
+                  <span class="text-base">🇹🇷</span>
+                <?php else: ?>
+                  <span class="text-base">🇺🇸</span>
+                <?php endif; ?>
+                <i class="fa-solid fa-chevron-down text-white/70 text-xs transition-transform duration-300 group-hover:rotate-180"></i>
+                <div class="absolute inset-0 bg-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
+
+              <!-- Language Dropdown -->
+              <div id="lang-menu" class="absolute hidden right-0 mt-2 w-32 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/20 py-2 z-50">
+                <form method="post" action="/change-lang">
+                  <button type="submit" name="lang" value="tr" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
+                    <span class="text-lg">🇹🇷</span>
+                    <span class="text-sm font-medium text-slate-800 dark:text-white">Türkçe</span>
+                  </button>
+                  <button type="submit" name="lang" value="en" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
+                    <span class="text-lg">🇺🇸</span>
+                    <span class="text-sm font-medium text-slate-800 dark:text-white">English</span>
+                  </button>
+                </form>
+              </div>
             </div>
 
             <!-- Theme Toggle -->
-            <button id="toggle-theme" class="relative group p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 transform hover:scale-110">
-              <i class="fa-solid fa-moon text-white text-lg"></i>
+            <button id="toggle-theme" class="relative group p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 transform hover:scale-110">
+              <i class="fa-solid fa-moon text-white text-base"></i>
               <div class="absolute inset-0 bg-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
 
             <!-- User Menu (if logged in) -->
             <?php if(isset($_SESSION['user'])): ?>
-            <div class="hidden lg:flex items-center space-x-2 pl-4 border-l border-white/20">
-              <div class="flex items-center space-x-2 text-white">
-                <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                  <span class="text-sm font-semibold"><?php echo substr($_SESSION['user']['login'] ?? 'U', 0, 1); ?></span>
-                </div>
-                <div class="hidden xl:block">
-                  <div class="text-sm font-medium"><?php echo htmlspecialchars($_SESSION['user']['login'] ?? ''); ?></div>
-                  <div class="text-xs text-white/70"><?php echo ucfirst($_SESSION['user']['role'] ?? ''); ?></div>
+            <div class="hidden lg:flex items-center pl-3 border-l border-white/20">
+              <!-- Profile Dropdown -->
+              <div class="relative" id="profile-menu-container">
+                <button id="profile-menu-btn" class="relative group flex items-center space-x-2 text-white hover:text-white/90 rounded-lg transition-all duration-300">
+                  <div class="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center">
+                    <span class="text-xs font-semibold"><?php echo substr($_SESSION['user']['login'] ?? 'U', 0, 1); ?></span>
+                  </div>
+                  <div class="hidden xl:block text-left">
+                    <div class="text-xs font-medium"><?php echo htmlspecialchars($_SESSION['user']['login'] ?? ''); ?></div>
+                    <div class="text-xs text-white/70"><?php echo ucfirst($_SESSION['user']['role'] ?? ''); ?></div>
+                  </div>
+                  <i class="fa-solid fa-chevron-down text-white/70 text-xs transition-transform duration-300 group-hover:rotate-180"></i>
+                  <div class="absolute inset-0 bg-white/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+
+                <!-- Profile Dropdown Menu -->
+                <div id="profile-menu" class="absolute hidden right-0 mt-2 w-56 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/20 py-3 z-50">
+                  <div class="px-4 py-3 border-b border-slate-200/50 dark:border-slate-700/50">
+                    <div class="flex items-center space-x-3">
+                      <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <span class="text-white font-semibold"><?php echo substr($_SESSION['user']['login'] ?? 'U', 0, 1); ?></span>
+                      </div>
+                      <div>
+                        <div class="text-sm font-semibold text-slate-800 dark:text-white"><?php echo htmlspecialchars($_SESSION['user']['login'] ?? ''); ?></div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400"><?php echo ucfirst($_SESSION['user']['role'] ?? ''); ?></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="py-2">
+                    <a href="<?= Url::to('/profile') ?>" class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
+                      <div class="p-1.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
+                        <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-sm"></i>
+                      </div>
+                      <div>
+                        <div class="text-sm font-medium text-slate-800 dark:text-white">Profil</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Hesap ayarları</div>
+                      </div>
+                    </a>
+
+                    <a href="<?= Url::to('/profile') ?>" class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
+                      <div class="p-1.5 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                        <i class="fa-solid fa-gear text-blue-600 dark:text-blue-400 text-sm"></i>
+                      </div>
+                      <div>
+                        <div class="text-sm font-medium text-slate-800 dark:text-white">Ayarlar</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Tercihler</div>
+                      </div>
+                    </a>
+                  </div>
+
+                  <div class="border-t border-slate-200/50 dark:border-slate-700/50 pt-2">
+                    <a href="<?= Url::to('/logout') ?>" class="flex items-center space-x-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
+                      <div class="p-1.5 bg-red-100 dark:bg-red-900/50 rounded-lg">
+                        <i class="fa-solid fa-right-from-bracket text-red-600 dark:text-red-400 text-sm"></i>
+                      </div>
+                      <div>
+                        <div class="text-sm font-medium text-slate-800 dark:text-white">Çıkış Yap</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Oturumu kapat</div>
+                      </div>
+                    </a>
+                  </div>
                 </div>
               </div>
-
-              <a href="<?= Url::to('/logout') ?>" class="group relative p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-all duration-300 transform hover:scale-110">
-                <i class="fa-solid fa-right-from-bracket text-white text-lg"></i>
-                <div class="absolute inset-0 bg-red-500/30 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </a>
             </div>
             <?php endif; ?>
 
@@ -239,12 +302,12 @@ function __($key) {
             <?php if(isset($_SESSION['user'])): ?>
             <!-- User Info Mobile -->
             <div class="flex items-center space-x-3 p-3 bg-white/10 rounded-lg">
-              <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <span class="text-white font-semibold"><?php echo substr($_SESSION['user']['login'] ?? 'U', 0, 1); ?></span>
+              <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <span class="text-white font-semibold text-sm"><?php echo substr($_SESSION['user']['login'] ?? 'U', 0, 1); ?></span>
               </div>
               <div>
-                <div class="text-white font-medium"><?php echo htmlspecialchars($_SESSION['user']['login'] ?? ''); ?></div>
-                <div class="text-white/70 text-sm"><?php echo ucfirst($_SESSION['user']['role'] ?? ''); ?></div>
+                <div class="text-white font-medium text-sm"><?php echo htmlspecialchars($_SESSION['user']['login'] ?? ''); ?></div>
+                <div class="text-white/70 text-xs"><?php echo ucfirst($_SESSION['user']['role'] ?? ''); ?></div>
               </div>
             </div>
             <?php endif; ?>
@@ -252,6 +315,10 @@ function __($key) {
             <!-- Mobile Navigation Links -->
             <div class="grid grid-cols-2 gap-2">
               <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
+              <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/') ?>">
+                <i class="fa-solid fa-house text-white"></i>
+                <span class="text-white font-medium">Anasayfa</span>
+              </a>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/users') ?>">
                 <i class="fa-solid fa-users text-white"></i>
                 <span class="text-white font-medium">Kullanıcılar</span>
@@ -385,6 +452,66 @@ function __($key) {
           if (balanceContainer && !balanceContainer.contains(e.target)) {
             balanceMenu.classList.add('hidden');
             const chevron = balanceBtn.querySelector('.fa-chevron-down');
+            if (chevron) {
+              chevron.classList.remove('rotate-180');
+            }
+          }
+        });
+      }
+
+      // Language menu toggle
+      const langBtn = document.getElementById('lang-menu-btn');
+      const langMenu = document.getElementById('lang-menu');
+      const langContainer = document.getElementById('lang-menu-container');
+
+      if (langBtn && langMenu) {
+        langBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          langMenu.classList.toggle('hidden');
+
+          // Rotate chevron icon
+          const chevron = langBtn.querySelector('.fa-chevron-down');
+          if (chevron) {
+            chevron.classList.toggle('rotate-180');
+          }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+          if (langContainer && !langContainer.contains(e.target)) {
+            langMenu.classList.add('hidden');
+            const chevron = langBtn.querySelector('.fa-chevron-down');
+            if (chevron) {
+              chevron.classList.remove('rotate-180');
+            }
+          }
+        });
+      }
+
+      // Profile menu toggle
+      const profileBtn = document.getElementById('profile-menu-btn');
+      const profileMenu = document.getElementById('profile-menu');
+      const profileContainer = document.getElementById('profile-menu-container');
+
+      if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          profileMenu.classList.toggle('hidden');
+
+          // Rotate chevron icon
+          const chevron = profileBtn.querySelector('.fa-chevron-down');
+          if (chevron) {
+            chevron.classList.toggle('rotate-180');
+          }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+          if (profileContainer && !profileContainer.contains(e.target)) {
+            profileMenu.classList.add('hidden');
+            const chevron = profileBtn.querySelector('.fa-chevron-down');
             if (chevron) {
               chevron.classList.remove('rotate-180');
             }
