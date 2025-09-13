@@ -38,7 +38,8 @@ class CallsController {
         $src  = $_GET['src']  ?? '';
         $dst  = $_GET['dst']  ?? '';
         $maxPages = (int)($_GET['pages'] ?? 3); if ($maxPages<1) $maxPages=1; if ($maxPages>20) $maxPages=20;
-        $statLimit = (int)($_GET['stat_limit'] ?? 20); if ($statLimit<10) $statLimit=10; if ($statLimit>100) $statLimit=100;
+        $statLimit = (int)($_GET['stat_limit'] ?? 25); if ($statLimit<10) $statLimit=10; if ($statLimit>100) $statLimit=100;
+        $statPage = (int)($_GET['stat_page'] ?? 1); if ($statPage<1) $statPage=1;
         $selectedGroup = $isSuper ? (isset($_GET['group_id']) && $_GET['group_id']!=='' ? (int)$_GET['group_id'] : null) : (int)($user['group_id'] ?? 0);
         $results = [];
         $callStat = null;
@@ -67,7 +68,10 @@ class CallsController {
                 }
                 // Get Call Stat from DB if super admin
                 if ($isSuper) {
-                    $callStat = \App\Models\CallStat::getByDateRange($from, $to, $statLimit);
+                    $statOffset = ($statPage - 1) * $statLimit;
+                    $callStat = \App\Models\CallStat::getByDateRange($from, $to, $statLimit, $statOffset);
+                    $statTotal = \App\Models\CallStat::getCount($from, $to);
+                    $statTotalPages = ceil($statTotal / $statLimit);
                 }
             } catch (\Throwable $e) { $results = ['error'=>$e->getMessage()]; $callStat = ['error'=>$e->getMessage()]; }
         }

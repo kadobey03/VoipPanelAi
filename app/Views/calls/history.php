@@ -37,9 +37,9 @@
     <div>
       <label class="block text-xs">Call Stat Göster</label>
       <select name="stat_limit" class="border rounded p-1 bg-white dark:bg-slate-900">
-        <option value="20" <?= (int)($_GET['stat_limit'] ?? 20) === 20 ? 'selected' : '' ?>>20</option>
-        <option value="50" <?= (int)($_GET['stat_limit'] ?? 20) === 50 ? 'selected' : '' ?>>50</option>
-        <option value="100" <?= (int)($_GET['stat_limit'] ?? 20) === 100 ? 'selected' : '' ?>>100</option>
+        <option value="25" <?= (int)($_GET['stat_limit'] ?? 25) === 25 ? 'selected' : '' ?>>25</option>
+        <option value="50" <?= (int)($_GET['stat_limit'] ?? 25) === 50 ? 'selected' : '' ?>>50</option>
+        <option value="100" <?= (int)($_GET['stat_limit'] ?? 25) === 100 ? 'selected' : '' ?>>100</option>
       </select>
     </div>
     <?php endif; ?>
@@ -156,6 +156,15 @@
       </tbody>
     </table>
   </div>
+  <?php if (isset($statTotalPages) && $statTotalPages > 1): ?>
+  <div class="mt-4 flex justify-center">
+    <div class="flex space-x-2">
+      <?php for ($p=1; $p<=$statTotalPages; $p++): ?>
+        <a href="?<?= http_build_query(array_merge($_GET, ['stat_page' => $p])) ?>" class="px-3 py-1 border rounded <?= $p === ($statPage ?? 1) ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700' ?> transition"><?= $p ?></a>
+      <?php endfor; ?>
+    </div>
+  </div>
+  <?php endif; ?>
   <?php endif; ?>
 
  <?php require dirname(__DIR__).'/partials/footer.php'; ?>

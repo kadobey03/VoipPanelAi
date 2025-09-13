@@ -22,10 +22,10 @@ class CallStat {
         return $stats;
     }
 
-    public static function getByDateRange($from, $to, $limit = null) {
+    public static function getByDateRange($from, $to, $limit = null, $offset = 0) {
         $db = \App\Helpers\DB::conn();
         $sql = 'SELECT * FROM call_stats WHERE date_from >= ? AND date_to <= ? ORDER BY id DESC';
-        if ($limit) $sql .= ' LIMIT ' . (int)$limit;
+        if ($limit) $sql .= ' LIMIT ' . (int)$limit . ' OFFSET ' . (int)$offset;
         $stmt = $db->prepare($sql);
         $stmt->bind_param('ss', $from, $to);
         $stmt->execute();
@@ -36,5 +36,16 @@ class CallStat {
         }
         $stmt->close();
         return $stats;
+    }
+
+    public static function getCount($from, $to) {
+        $db = \App\Helpers\DB::conn();
+        $stmt = $db->prepare('SELECT COUNT(*) as cnt FROM call_stats WHERE date_from >= ? AND date_to <= ?');
+        $stmt->bind_param('ss', $from, $to);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $row = $res->fetch_assoc();
+        $stmt->close();
+        return (int)($row['cnt'] ?? 0);
     }
 }
