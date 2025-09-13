@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Grup Düzenle - PapaM VoIP Panel</title>
-  <link href="/assets/css/tailwind.min.css" rel="stylesheet">
+  <link href="<?= \App\Helpers\Url::to('/assets/css/tailwind.min.css') ?>" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
   <div class="container mx-auto p-4 max-w-lg">
     <div class="mb-4 flex items-center justify-between">
       <h1 class="text-2xl font-bold">Grup Düzenle</h1>
-      <a href="/groups" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Geri</a>
+      <a href="<?= \App\Helpers\Url::to('/groups') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Geri</a>
     </div>
     <?php if (!empty($error)): ?>
       <div class="mb-3 p-2 rounded bg-red-100 text-red-700"><?= htmlspecialchars($error) ?></div>
@@ -33,4 +33,3 @@
   </div>
 </body>
 </html>
-

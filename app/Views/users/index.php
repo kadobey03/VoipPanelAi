@@ -12,9 +12,9 @@
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-bold">Kullanıcılar</h1>
       <div class="space-x-2">
-        <a href="/" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Dashboard</a>
-        <a href="/users/create" class="px-3 py-2 rounded bg-blue-600 text-white">Yeni Kullanıcı</a>
-        <a href="/logout" class="px-3 py-2 rounded bg-red-600 text-white">Çıkış</a>
+        <a href="<?= \App\Helpers\Url::to('/') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Dashboard</a>
+        <a href="<?= \App\Helpers\Url::to('/users/create') ?>" class="px-3 py-2 rounded bg-blue-600 text-white">Yeni Kullanıcı</a>
+        <a href="<?= \App\Helpers\Url::to('/logout') ?>" class="px-3 py-2 rounded bg-red-600 text-white">Çıkış</a>
       </div>
     </div>
     <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded shadow">
@@ -38,9 +38,9 @@
             <td class="p-2"><?= htmlspecialchars((string)($u['exten'] ?? '')) ?></td>
             <td class="p-2"><?= htmlspecialchars((string)$u['group_id']) ?></td>
             <td class="p-2 space-x-2">
-              <a class="text-blue-600" href="/users/edit?id=<?= (int)$u['id'] ?>">Düzenle</a>
+              <a class="text-blue-600" href="<?= \App\Helpers\Url::to('/users/edit') ?>?id=<?= (int)$u['id'] ?>">Düzenle</a>
               <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']==='superadmin' && (int)$u['id']>1): ?>
-              <form method="post" action="/users/delete" style="display:inline" onsubmit="return confirm('Silinsin mi?')">
+              <form method="post" action="<?= \App\Helpers\Url::to('/users/delete') ?>" style="display:inline" onsubmit="return confirm('Silinsin mi?')">
                 <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
                 <button class="text-red-600">Sil</button>
               </form>

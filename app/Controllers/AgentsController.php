@@ -5,7 +5,7 @@ use App\Helpers\ApiClient;
 
 class AgentsController {
     private function startSession(){ if(session_status()===PHP_SESSION_NONE) session_start(); }
-    private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ header('Location: /login'); exit; } }
+    private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ \App\Helpers\Url::redirect('/login'); } }
 
     public function index(){
         $this->requireAuth();
@@ -15,4 +15,3 @@ class AgentsController {
         require __DIR__.'/../Views/agents/index.php';
     }
 }
-

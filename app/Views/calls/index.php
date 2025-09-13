@@ -4,20 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Çağrılar - PapaM VoIP Panel</title>
-  <link href="/assets/css/tailwind.min.css" rel="stylesheet">
+  <link href="<?= \App\Helpers\Url::to('/assets/css/tailwind.min.css') ?>" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
   <div class="container mx-auto p-4">
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-bold">Çağrılar</h1>
       <div class="space-x-2">
-        <a href="/" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Dashboard</a>
-        <a href="/groups" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Gruplar</a>
-        <a href="/logout" class="px-3 py-2 rounded bg-red-600 text-white">Çıkış</a>
+        <a href="<?= \App\Helpers\Url::to('/') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Dashboard</a>
+        <a href="<?= \App\Helpers\Url::to('/groups') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Gruplar</a>
+        <a href="<?= \App\Helpers\Url::to('/logout') ?>" class="px-3 py-2 rounded bg-red-600 text-white">Çıkış</a>
       </div>
     </div>
     <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']==='superadmin'): ?>
-    <form method="post" action="/calls/sync" class="mb-4 bg-white dark:bg-gray-800 p-3 rounded shadow flex flex-wrap items-end gap-2">
+    <form method="post" action="<?= \App\Helpers\Url::to('/calls/sync') ?>" class="mb-4 bg-white dark:bg-gray-800 p-3 rounded shadow flex flex-wrap items-end gap-2">
       <div>
         <label class="block text-xs">Başlangıç</label>
         <input type="datetime-local" name="from" class="border rounded p-1 bg-white dark:bg-gray-900">
@@ -61,7 +61,7 @@
             <td class="p-2"><?= number_format((float)$c['amount_charged'],6) ?></td>
             <td class="p-2">
               <?php if (!empty($c['call_id'])): ?>
-                <a class="text-blue-600" href="/calls/record?call_id=<?= urlencode($c['call_id']) ?>" target="_blank">Dinle</a>
+                <a class="text-blue-600" href="<?= \App\Helpers\Url::to('/calls/record') ?>?call_id=<?= urlencode($c['call_id']) ?>" target="_blank">Dinle</a>
               <?php endif; ?>
             </td>
           </tr>

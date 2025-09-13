@@ -49,4 +49,3 @@ class WebhookController {
         echo json_encode(['ok'=>true]);
     }
 }
-

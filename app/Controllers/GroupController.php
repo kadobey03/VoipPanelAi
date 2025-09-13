@@ -7,7 +7,7 @@ class GroupController {
     private function startSession() { if (session_status()===PHP_SESSION_NONE) session_start(); }
     private function requireSuperOrGroupAdmin() {
         $this->startSession();
-        if (!isset($_SESSION['user'])) { header('Location: /login'); exit; }
+        if (!isset($_SESSION['user'])) { \App\Helpers\Url::redirect('/login'); }
     }
     private function isSuper(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='superadmin'; }
     private function currentGroupId(): ?int { return $_SESSION['user']['group_id'] ?? null; }
@@ -34,7 +34,7 @@ class GroupController {
         $this->requireSuperOrGroupAdmin();
         $db = DB::conn();
         $id = (int)($_GET['id'] ?? 0);
-        if (!$id) { header('Location: /groups'); exit; }
+        if (!$id) { \App\Helpers\Url::redirect('/groups'); }
         if (!$this->isSuper() && $this->currentGroupId() !== $id) { http_response_code(403); echo 'Yetkisiz'; return; }
         $error = null; $ok = null;
         if ($_SERVER['REQUEST_METHOD']==='POST') {
@@ -134,4 +134,3 @@ class GroupController {
         require __DIR__.'/../Views/groups/show.php';
     }
 }
-

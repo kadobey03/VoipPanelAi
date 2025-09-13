@@ -11,12 +11,12 @@
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-bold">Gruplar</h1>
       <div class="space-x-2">
-        <a href="/" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Dashboard</a>
-        <a href="/users" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Kullanıcılar</a>
+        <a href="<?= \App\Helpers\Url::to('/') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Dashboard</a>
+        <a href="<?= \App\Helpers\Url::to('/users') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Kullanıcılar</a>
         <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']==='superadmin'): ?>
-        <a href="/groups/create" class="px-3 py-2 rounded bg-indigo-600 text-white">Yeni Grup</a>
+        <a href="<?= \App\Helpers\Url::to('/groups/create') ?>" class="px-3 py-2 rounded bg-indigo-600 text-white">Yeni Grup</a>
         <?php endif; ?>
-        <a href="/logout" class="px-3 py-2 rounded bg-red-600 text-white">Çıkış</a>
+        <a href="<?= \App\Helpers\Url::to('/logout') ?>" class="px-3 py-2 rounded bg-red-600 text-white">Çıkış</a>
       </div>
     </div>
     <div class="bg-white dark:bg-gray-800 rounded shadow overflow-x-auto">
@@ -38,9 +38,9 @@
             <td class="p-2"><?= number_format((float)$g['margin'],2) ?></td>
             <td class="p-2"><?= number_format((float)$g['balance'],2) ?></td>
             <td class="p-2 space-x-2">
-              <a class="text-blue-600" href="/groups/show?id=<?= (int)$g['id'] ?>">Detay</a>
-              <a class="text-indigo-600" href="/groups/edit?id=<?= (int)$g['id'] ?>">Düzenle</a>
-              <a class="text-green-600" href="/groups/topup?id=<?= (int)$g['id'] ?>">Bakiye Yükle</a>
+              <a class="text-blue-600" href="<?= \App\Helpers\Url::to('/groups/show') ?>?id=<?= (int)$g['id'] ?>">Detay</a>
+              <a class="text-indigo-600" href="<?= \App\Helpers\Url::to('/groups/edit') ?>?id=<?= (int)$g['id'] ?>">Düzenle</a>
+              <a class="text-green-600" href="<?= \App\Helpers\Url::to('/groups/topup') ?>?id=<?= (int)$g['id'] ?>">Bakiye Yükle</a>
             </td>
           </tr>
           <?php endforeach; ?>

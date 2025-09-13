@@ -5,7 +5,7 @@ use App\Helpers\ApiClient;
 
 class NumbersController {
     private function startSession(){ if(session_status()===PHP_SESSION_NONE) session_start(); }
-    private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ header('Location: /login'); exit; } }
+    private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ \App\Helpers\Url::redirect('/login'); } }
 
     public function index(){
         $this->requireAuth();
@@ -20,13 +20,12 @@ class NumbersController {
 
     private function setStatus($status){
         $this->requireAuth();
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location: /numbers'); return; }
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { \App\Helpers\Url::redirect('/numbers'); return; }
         $number = $_POST['number'] ?? '';
         $api = new ApiClient();
         try {
             if ($status==='active') $api->setNumberActive($number); else $api->setNumberSpam($number);
         } catch (\Throwable $e) { /* ignore here, reflect on UI next load */ }
-        header('Location: /numbers');
+        \App\Helpers\Url::redirect('/numbers');
     }
 }
-

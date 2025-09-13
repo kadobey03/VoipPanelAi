@@ -6,7 +6,7 @@ use App\Helpers\ApiClient;
 
 class CallsController {
     private function startSession(){ if(session_status()===PHP_SESSION_NONE) session_start(); }
-    private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ header('Location: /login'); exit; } }
+    private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ \App\Helpers\Url::redirect('/login'); } }
     private function isSuper(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='superadmin'; }
     private function currentGroupId(): ?int { return $_SESSION['user']['group_id'] ?? null; }
 

@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Helpers\DB;
 use App\Helpers\Security;
+use App\Helpers\Url;
 
 class AuthController {
     private function startSession() {
@@ -31,8 +32,7 @@ class AuthController {
                         'role' => $user['role'],
                         'group_id' => $user['group_id'] ? (int)$user['group_id'] : null,
                     ];
-                    header('Location: /');
-                    exit;
+                    Url::redirect('/');
                 } else {
                     $error = 'Geçersiz kullanıcı adı veya şifre';
                 }
@@ -54,8 +54,6 @@ class AuthController {
             );
         }
         session_destroy();
-        header('Location: /login');
-        exit;
+        Url::redirect('/login');
     }
 }
-

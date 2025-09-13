@@ -10,7 +10,7 @@
   <div class="container mx-auto p-4 max-w-lg">
     <div class="mb-4 flex items-center justify-between">
       <h1 class="text-2xl font-bold">Yeni Kullanıcı</h1>
-      <a href="/users" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Geri</a>
+      <a href="<?= \App\Helpers\Url::to('/users') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Geri</a>
     </div>
     <?php if (!empty($error)): ?>
       <div class="mb-3 p-2 rounded bg-red-100 text-red-700"><?= htmlspecialchars($error) ?></div>

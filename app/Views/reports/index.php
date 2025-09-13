@@ -4,17 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Raporlar - PapaM VoIP Panel</title>
-  <link href="/assets/css/tailwind.min.css" rel="stylesheet">
+  <link href="<?= \App\Helpers\Url::to('/assets/css/tailwind.min.css') ?>" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
   <div class="container mx-auto p-4">
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-bold">Raporlar</h1>
       <div class="space-x-2">
-        <a href="/" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Dashboard</a>
-        <a href="/groups" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Gruplar</a>
-        <a href="/calls" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Çağrılar</a>
-        <a href="/logout" class="px-3 py-2 rounded bg-red-600 text-white">Çıkış</a>
+        <a href="<?= \App\Helpers\Url::to('/') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Dashboard</a>
+        <a href="<?= \App\Helpers\Url::to('/groups') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Gruplar</a>
+        <a href="<?= \App\Helpers\Url::to('/calls') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Çağrılar</a>
+        <a href="<?= \App\Helpers\Url::to('/logout') ?>" class="px-3 py-2 rounded bg-red-600 text-white">Çıkış</a>
       </div>
     </div>
 

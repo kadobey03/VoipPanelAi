@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giriş Yap - PapaM VoIP Panel</title>
-    <link href="/assets/css/tailwind.min.css" rel="stylesheet">
+    <link href="<?= \App\Helpers\Url::to('/assets/css/tailwind.min.css') ?>" rel="stylesheet">
     <meta name="color-scheme" content="light dark">
     <style>body{min-height:100vh}</style>
     <script>
@@ -40,8 +40,7 @@
       </div>
       <button type="submit" class="w-full bg-blue-600 text-white rounded p-2">Giriş Yap</button>
     </form>
-    <div class="mt-3 text-center text-xs text-gray-500">Kurulum: /install/</div>
+    <div class="mt-3 text-center text-xs text-gray-500">Kurulum: <?= \App\Helpers\Url::to('/install/') ?></div>
   </div>
 </body>
 </html>
-

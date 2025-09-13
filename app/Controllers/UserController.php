@@ -10,10 +10,7 @@ class UserController {
     }
     private function requireAuth() {
         $this->startSession();
-        if (!isset($_SESSION['user'])) {
-            header('Location: /login');
-            exit;
-        }
+        if (!isset($_SESSION['user'])) { \App\Helpers\Url::redirect('/login'); }
     }
     private function isSuperAdmin(): bool {
         return isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'superadmin';
@@ -74,7 +71,7 @@ class UserController {
         $this->requireAuth();
         $mysqli = DB::conn();
         $id = (int)($_GET['id'] ?? 0);
-        if (!$id) { header('Location: /users'); exit; }
+        if (!$id) { \App\Helpers\Url::redirect('/users'); }
         $error = null; $ok = null;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $login = trim($_POST['login'] ?? '');
@@ -124,8 +121,7 @@ class UserController {
             $stmt->execute();
             $stmt->close();
         }
-        header('Location: /users');
-        exit;
+        \App\Helpers\Url::redirect('/users');
     }
 }
 
