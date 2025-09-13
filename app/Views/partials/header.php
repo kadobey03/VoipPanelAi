@@ -135,5 +135,23 @@ function __($key) {
     }
   </script>
 <?php endif; ?>
+
+  <!-- Admin Impersonation Sticky Button -->
+  <?php if (isset($_SESSION['impersonator'])): ?>
+  <div id="admin-return-btn" class="fixed bottom-6 right-6 z-50">
+    <a href="<?= Url::to('/admin/impersonate/stop') ?>"
+       class="inline-flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-red-500/25 transform hover:scale-105 transition-all duration-300 animate-pulse">
+      <div class="flex items-center justify-center w-8 h-8 bg-white/20 rounded-lg">
+        <i class="fa-solid fa-arrow-left text-lg"></i>
+      </div>
+      <div class="text-left">
+        <div class="text-sm opacity-90">Şu anda giriş yaptığınız:</div>
+        <div class="text-base font-bold"><?= htmlspecialchars($_SESSION['user']['login'] ?? '') ?></div>
+      </div>
+      <div class="text-sm font-medium">Admin'e Geri Dön</div>
+    </a>
+  </div>
+  <?php endif; ?>
+
   <main class="max-w-7xl mx-auto px-4 py-6">
 
