@@ -14,9 +14,10 @@ class CallsController {
         $this->requireAuth();
         $db=DB::conn();
         $gid = isset($_GET['group_id']) ? (int)$_GET['group_id'] : ($this->isSuper()? null : (int)$this->currentGroupId());
-        // groups map for display
-        $groupNames = [];
-        if ($res=$db->query('SELECT id,name FROM groups')){ while($r=$res->fetch_assoc()){ $groupNames[(int)$r['id']]=$r['name']; } }
+        // groups map for display (by local id and api_group_id)
+        $groupNamesById = [];
+        $groupNamesByApi = [];
+        if ($res=$db->query('SELECT id, api_group_id, name FROM groups')){ while($r=$res->fetch_assoc()){ $groupNamesById[(int)$r['id']]=$r['name']; if(!empty($r['api_group_id'])){$groupNamesByApi[(int)$r['api_group_id']]=$r['name'];} } }
         if ($gid) {
             $stmt=$db->prepare('SELECT call_id, src, dst, start, duration, billsec, disposition, group_id, user_id, cost_api, margin_percent, amount_charged FROM calls WHERE group_id=? ORDER BY start DESC LIMIT 200');
             $stmt->bind_param('i',$gid);
@@ -65,8 +66,8 @@ class CallsController {
         $calls=[]; while($row=$res->fetch_assoc()){$calls[]=$row;} $stmt->close();
 
         // groups map for display (and options for super admin)
-        $groupNames=[]; $groups=[];
-        if($r=$db->query('SELECT id,name FROM groups ORDER BY name')){ while($rw=$r->fetch_assoc()){ $groupNames[(int)$rw['id']]=$rw['name']; $groups[]=$rw; } }
+        $groupNamesById=[]; $groupNamesByApi=[]; $groups=[];
+        if($r=$db->query('SELECT id, api_group_id, name FROM groups ORDER BY name')){ while($rw=$r->fetch_assoc()){ $groupNamesById[(int)$rw['id']]=$rw['name']; if(!empty($rw['api_group_id'])){$groupNamesByApi[(int)$rw['api_group_id']]=$rw['name'];} $groups[]=$rw; } }
 
         require __DIR__.'/../Views/calls/history.php';
     }
@@ -157,6 +158,53 @@ class CallsController {
                 $page++;
             }
         } catch (\Throwable $e) { $errors[]=$e->getMessage(); }
+        // Distribute Call Plane total cost per agent to answered calls by billsec
+        try {
+            $stats = $api->getCallStat($from, $to);
+            if (is_array($stats)) {
+                foreach ($stats as $st) {
+                    $ext = (string)($st['voip_exten'] ?? $st['user_login'] ?? '');
+                    $totalCost = (float)($st['cost'] ?? 0);
+                    if ($ext === '' || $totalCost <= 0) continue;
+                    $stmt=$db->prepare("SELECT call_id, billsec, group_id, amount_charged, margin_percent FROM calls WHERE src=? AND start BETWEEN ? AND ? AND UPPER(disposition) IN ('ANSWERED','ANSWER')");
+                    $stmt->bind_param('sss',$ext,$from,$to);
+                    $stmt->execute(); $res=$stmt->get_result();
+                    $rows=[]; $sum=0; while($r=$res->fetch_assoc()){ $rows[]=$r; $sum += (int)$r['billsec']; }
+                    $stmt->close();
+                    if ($sum <= 0 || count($rows)===0) continue;
+                    foreach ($rows as $r) {
+                        $share = $totalCost * ((int)$r['billsec'] / $sum);
+                        $gidRaw = (int)$r['group_id']; $margin = (float)$r['margin_percent']; $localGid = $gidRaw;
+                        if ($margin == 0.0 || $gidRaw == 0) {
+                            $stmt=$db->prepare('SELECT id, margin FROM groups WHERE id=? OR api_group_id=? ORDER BY id LIMIT 1');
+                            $stmt->bind_param('ii',$gidRaw,$gidRaw);
+                            $stmt->execute(); $g=$stmt->get_result()->fetch_assoc(); $stmt->close();
+                            if ($g){ $localGid=(int)$g['id']; $margin=(float)$g['margin']; }
+                        } else {
+                            $stmt=$db->prepare('SELECT id FROM groups WHERE id=? OR api_group_id=? ORDER BY id LIMIT 1');
+                            $stmt->bind_param('ii',$gidRaw,$gidRaw); $stmt->execute(); $g=$stmt->get_result()->fetch_assoc(); $stmt->close(); if($g){$localGid=(int)$g['id'];}
+                        }
+                        $amount = $share > 0 ? round($share * (1 + $margin/100), 6) : 0.0;
+                        $old = (float)$r['amount_charged']; $delta = $amount - $old;
+                        $stmt=$db->prepare('UPDATE calls SET cost_api=?, margin_percent=?, amount_charged=?, group_id=? WHERE call_id=?');
+                        $stmt->bind_param('dddis', $share, $margin, $amount, $localGid, $r['call_id']);
+                        $stmt->execute(); $stmt->close();
+                        if ($localGid && abs($delta) > 0.000001) {
+                            $db->begin_transaction();
+                            try{
+                                $stmt=$db->prepare('UPDATE groups SET balance = balance - ? WHERE id=?');
+                                $stmt->bind_param('di', $delta, $localGid); $stmt->execute(); $stmt->close();
+                                $type = ($old > 0) ? 'debit_call_adj' : 'debit_call';
+                                $ref = $r['call_id']; $desc = ($old > 0) ? 'Cagri tutar guncelleme' : 'Cagri ucreti'; $neg = -$delta;
+                                $stmt=$db->prepare('INSERT INTO transactions (group_id, type, amount, reference, description) VALUES (?,?,?,?,?)');
+                                $stmt->bind_param('isdss', $localGid, $type, $neg, $ref, $desc); $stmt->execute(); $stmt->close();
+                                $db->commit();
+                            } catch(\Throwable $e){ $db->rollback(); $errors[]='dist:'.$e->getMessage(); }
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) { $errors[]='callstat:'.$e->getMessage(); }
         header('Content-Type: application/json'); echo json_encode([
             'from'=>$from,
             'to'=>$to,
