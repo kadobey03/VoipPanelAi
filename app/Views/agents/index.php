@@ -180,8 +180,9 @@
   <?php endif; ?>
 <!-- Agents Grid -->
 <?php if ($isSuper): ?>
+
   <?php foreach (($agentsByGroup ?? []) as $groupIndex => $groupData): ?>
-    <div class="mb-8 animate-in slide-in-from-bottom-4 duration-500" style="animation-delay: <?= $groupIndex * 100 ?>ms">
+    <div class="mb-8 animate-in slide-in-from-bottom-4 duration-500" style="animation-delay: <?= crc32($groupIndex) % 500 ?>ms">
       <div class="flex items-center gap-3 mb-6">
         <div class="p-2 bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl">
           <i class="fa-solid fa-users text-white text-lg"></i>
@@ -197,7 +198,7 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <?php foreach (($agentsByGroup[$groupIndex]['agents'] ?? []) as $agentIndex => $a): ?>
+        <?php foreach (($groupData['agents'] ?? []) as $agentIndex => $a): ?>
         <div class="agent-card group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:-translate-y-2 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden animate-in slide-in-from-bottom-4 duration-500" style="animation-delay: <?= ($groupIndex * 100) + ($agentIndex * 50) ?>ms">
           <!-- Status Indicator -->
           <div class="absolute top-4 right-4 z-10">

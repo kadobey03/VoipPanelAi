@@ -175,6 +175,8 @@ class AgentsController {
         // error_log("UserGroupName: " . $userGroupName);
         // error_log("Agents count: " . count($agents));
         // error_log("AgentsByGroup keys: " . implode(', ', array_keys($agentsByGroup)));
+        // error_log("IsSuper: " . ($isSuper ? 'true' : 'false'));
+        // error_log("AgentsByGroup structure: " . json_encode($agentsByGroup));
 
         require __DIR__.'/../Views/agents/index.php';
     }
