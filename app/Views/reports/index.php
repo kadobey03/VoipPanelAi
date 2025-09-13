@@ -170,7 +170,7 @@
     </div>
   </div>
 
-  <script src="<?= \App\Helpers\Url::to('/public/assets/js/chart.min.js') ?>"></script>
+  <script src="<?= \App\Helpers\Url::to('/assets/js/chart.min.js') ?>"></script>
   <script>
     const labels = <?= json_encode(array_map(function($t){return $t['d'];}, $trend ?? []), JSON_UNESCAPED_UNICODE) ?>;
     const cost = <?= json_encode(array_map(function($t){return (float)$t['cost'];}, $trend ?? [])) ?>;
