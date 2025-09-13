@@ -86,5 +86,9 @@ $router->add('POST', '/payment-methods/delete', 'PaymentMethodsController@delete
 // Transactions (balance history)
 $router->add('GET', '/transactions', 'TransactionsController@index');
 
+// Settings
+$router->add('GET', '/settings', 'SettingsController@index');
+$router->add('POST', '/settings', 'SettingsController@index');
+
 // Balance helper (topup select)
 $router->add('GET', '/balance/topup', 'BalanceMenuController@topupSelect');

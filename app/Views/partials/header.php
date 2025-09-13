@@ -4,11 +4,18 @@ use App\Helpers\Url;
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#3b82f6">
-  <link rel="manifest" href="/manifest.json">
-  <title><?= isset($title) ? htmlspecialchars($title) : 'PapaM VoIP Panel' ?></title>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta name="theme-color" content="#3b82f6">
+   <link rel="manifest" href="/manifest.json">
+   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+   <meta name="description" content="PapaM VoIP Panel - VoIP çağrı yönetimi ve raporlama sistemi">
+   <meta name="keywords" content="voip, çağrı, panel, rapor, telefon, iletişim, voip panel, çağrı merkezi">
+   <meta property="og:title" content="PapaM VoIP Panel">
+   <meta property="og:description" content="VoIP çağrı yönetimi ve raporlama sistemi">
+   <meta property="og:image" content="/assets/images/seo-image.png">
+   <meta property="og:type" content="website">
+   <title><?= isset($title) ? htmlspecialchars($title) : 'PapaM VoIP Panel' ?></title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <script>
@@ -46,6 +53,9 @@ use App\Helpers\Url;
             </div>
           </div>
           <a class="hover:text-white transition" href="<?= Url::to('/profile') ?>"><i class="fa-solid fa-user-gear"></i> Profil</a>
+          <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
+          <a class="hover:text-white transition" href="<?= Url::to('/settings') ?>"><i class="fa-solid fa-cogs"></i> Ayarlar</a>
+          <?php endif; ?>
           <a class="hover:text-white transition" href="<?= Url::to('/logout') ?>"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</a>
           <button id="toggle-theme" class="ml-2 px-3 py-1 rounded bg-white/20 hover:bg-white/30 text-white"><i class="fa-solid fa-moon"></i></button>
         </nav>
@@ -64,7 +74,10 @@ use App\Helpers\Url;
           <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
           <a class="hover:text-white" href="<?= Url::to('/payment-methods') ?>"><i class="fa-solid fa-money-bill-transfer"></i> Ödeme Yöntemleri</a>
           <?php endif; ?>
-          <a class="hover:text-white" href="<?= Url::to('/balance') ?>"><i class="fa-solid fa-wallet"></i> Bakiye</a>
+          <a class="hover:text-white" href="<?= Url::to('/profile') ?>"><i class="fa-solid fa-user-gear"></i> Profil</a>
+          <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
+          <a class="hover:text-white" href="<?= Url::to('/settings') ?>"><i class="fa-solid fa-cogs"></i> Ayarlar</a>
+          <?php endif; ?>
           <a class="hover:text-white" href="<?= Url::to('/logout') ?>"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</a>
           <button id="toggle-theme-m" class="mt-2 px-3 py-1 rounded bg-white/20 hover:bg-white/30 text-white col-span-2"><i class="fa-solid fa-moon"></i> Tema</button>
         </div>
