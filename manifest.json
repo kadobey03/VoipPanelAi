@@ -3,6 +3,7 @@
   "short_name": "PapaM Panel",
   "description": "VoIP Panel Uygulaması",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#1e293b",
   "theme_color": "#3b82f6",

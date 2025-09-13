@@ -4,7 +4,8 @@ const urlsToCache = [
   '/assets/css/tailwind.min.css',
   '/assets/js/chart.min.js',
   '/assets/icons/icon-192.png',
-  '/assets/icons/icon-512.png'
+  '/assets/icons/icon-512.png',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', event => {

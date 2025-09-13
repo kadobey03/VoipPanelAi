@@ -6,6 +6,17 @@
           <i class="fa-solid fa-download"></i> Uygulamayı İndir
         </button>
       </div>
+      <div class="mb-4">
+        <h3 class="font-semibold mb-2">İletişim</h3>
+        <div class="flex items-center justify-center gap-4">
+          <a href="https://t.me/lionmw" target="_blank" class="flex items-center gap-1 hover:text-blue-500 transition">
+            <i class="fab fa-telegram"></i> @lionmw
+          </a>
+          <a href="https://t.me/Itsupportemre" target="_blank" class="flex items-center gap-1 hover:text-blue-500 transition">
+            <i class="fab fa-telegram"></i> @Itsupportemre
+          </a>
+        </div>
+      </div>
       © <?= date('Y') ?> PapaM VoIP Panel
     </div>
   </footer>
