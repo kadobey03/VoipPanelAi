@@ -70,6 +70,7 @@ class CallsController {
             // Groupmember için agent_id'den exten al
             $agentExten = '';
             $agentId = isset($user['agent_id']) ? (int)$user['agent_id'] : 0;
+            error_log("Groupmember agent_id: " . $agentId . ", user_id: " . $user['id']);
             if ($agentId > 0) {
                 $stmt = $db->prepare('SELECT exten FROM agents WHERE id=?');
                 $stmt->bind_param('i', $agentId);
@@ -77,13 +78,21 @@ class CallsController {
                 $r = $stmt->get_result()->fetch_assoc();
                 if ($r) {
                     $agentExten = $r['exten'];
+                    error_log("Found agent exten: " . $agentExten . " for agent_id: " . $agentId);
+                } else {
+                    error_log("Agent not found for agent_id: " . $agentId);
                 }
                 $stmt->close();
+            } else {
+                error_log("No agent_id found for groupmember with user_id: " . $user['id']);
             }
             if (!empty($agentExten)) {
                 $where .= ' AND src=?';
                 $types.='s';
                 $params[] = $agentExten;
+                error_log("Applying filter: src=" . $agentExten . ", group_id=" . ($user['group_id'] ?? 0));
+            } else {
+                error_log("No agent exten found, applying only group filter for groupmember");
             }
         }
         if ($isSuper && $selectedGroup) { $where .= ' AND group_id=?'; $types.='i'; $params[] = $selectedGroup; }
