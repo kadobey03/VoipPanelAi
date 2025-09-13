@@ -165,138 +165,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <?php foreach (($groupData['agents'] ?? []) as $agentIndex => $a): ?>
-        <div class="agent-card group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:-translate-y-2 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden animate-in slide-in-from-bottom-4 duration-500" style="animation-delay: <?= ($groupIndex * 100) + ($agentIndex * 50) ?>ms">
-          <!-- Status Indicator -->
-          <div class="absolute top-4 right-4 z-10">
-            <?php
-            $status = strtolower($a['status'] ?? '');
-            $statusClass = '';
-            $statusColor = '';
-            $pulseClass = '';
-
-            if ($status === 'up' || $status === 'online') {
-              $statusClass = 'bg-emerald-500';
-              $statusColor = 'emerald';
-              $pulseClass = 'animate-pulse';
-            } elseif ($status === 'ring' || $status === 'ringing') {
-              $statusClass = 'bg-amber-500';
-              $statusColor = 'amber';
-              $pulseClass = 'animate-bounce';
-            } elseif ($status === 'busy') {
-              $statusClass = 'bg-red-500';
-              $statusColor = 'red';
-            } else {
-              $statusClass = 'bg-slate-400';
-              $statusColor = 'slate';
-            }
-            ?>
-            <div class="w-4 h-4 <?= $statusClass ?> rounded-full ring-4 ring-white dark:ring-slate-900 shadow-lg <?= $pulseClass ?>">
-              <div class="absolute inset-0 rounded-full bg-current opacity-75 animate-ping"></div>
-            </div>
-          </div>
-
-          <!-- Card Header -->
-          <div class="p-6 pb-4">
-            <div class="flex items-center gap-4 mb-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-                <span class="text-white font-bold text-lg">
-                  <?= strtoupper(substr(htmlspecialchars($a['user_login'] ?? 'A'), 0, 1)) ?>
-                </span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <h4 class="text-lg font-bold text-slate-900 dark:text-white truncate">
-                  <?= htmlspecialchars($a['user_login'] ?? '') ?>
-                </h4>
-                <p class="text-sm text-slate-600 dark:text-slate-400">
-                  <i class="fa-solid fa-hashtag mr-1"></i>
-                  <?= htmlspecialchars($a['exten'] ?? '') ?>
-                </p>
-              </div>
-            </div>
-
-            <!-- Status Badge -->
-            <div class="mb-4">
-              <?php
-              $statusText = '';
-              $statusBadgeClass = '';
-
-              if ($status === 'up' || $status === 'online') {
-                $statusText = 'Çevrimiçi';
-                $statusBadgeClass = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300';
-              } elseif ($status === 'ring' || $status === 'ringing') {
-                $statusText = 'Çalıyor';
-                $statusBadgeClass = 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300';
-              } elseif ($status === 'busy') {
-                $statusText = 'Meşgul';
-                $statusBadgeClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
-              } else {
-                $statusText = 'Çevrimdışı';
-                $statusBadgeClass = 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300';
-              }
-              ?>
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium <?= $statusBadgeClass ?>">
-                <i class="fa-solid fa-circle mr-2 text-xs"></i>
-                <?= $statusText ?>
-              </span>
-            </div>
-
-            <!-- Agent Details -->
-            <div class="space-y-3">
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-slate-600 dark:text-slate-400">
-                  <i class="fa-solid fa-user-headset mr-1"></i>Son Çağrı
-                </span>
-                <span class="text-sm font-medium text-slate-900 dark:text-white">
-                  <?= htmlspecialchars((string)($a['las_call_time'] ?? '-')) ?>
-                </span>
-              </div>
-
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-slate-600 dark:text-slate-400">
-                  <i class="fa-solid fa-user-tie mr-1"></i>Lead
-                </span>
-                <span class="text-sm font-medium text-slate-900 dark:text-white truncate max-w-20">
-                  <?= htmlspecialchars($a['lead'] ?? '-') ?>
-                </span>
-              </div>
-
-              <?php if ($isSuper): ?>
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-slate-600 dark:text-slate-400">
-                  <i class="fa-solid fa-toggle-on mr-1"></i>Durum
-                </span>
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                  <?= ($a['active'] ?? 1) ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300' ?>">
-                  <?= ($a['active'] ?? 1) ? 'Aktif' : 'Pasif' ?>
-                </span>
-              </div>
-              <?php endif; ?>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex gap-2 mt-6 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
-              <button onclick="showAgentDetails(<?= $groupIndex ?>, <?= $agentIndex ?>)"
-                      class="flex-1 inline-flex items-center justify-center px-3 py-2 rounded-lg text-xs font-medium bg-rose-100 text-rose-800 hover:bg-rose-200 dark:bg-rose-900/50 dark:text-rose-300 dark:hover:bg-rose-900/70 transition-colors duration-200">
-                <i class="fa-solid fa-eye mr-1"></i>Detay
-              </button>
-
-              <?php if ($isSuper): ?>
-              <form method="post" action="/agents/toggle-hidden" style="display:inline;">
-                <input type="hidden" name="exten" value="<?= htmlspecialchars($a['exten']) ?>">
-                <button type="submit" class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium
-                  <?= ($a['active'] ?? 1) ? 'bg-slate-600 text-white hover:bg-slate-700' : 'bg-emerald-600 text-white hover:bg-emerald-700' ?>
-                  transition-colors duration-200">
-                  <i class="fa-solid fa-<?= ($a['active'] ?? 1) ? 'ban' : 'check' ?> mr-1"></i>
-                  <?= ($a['active'] ?? 1) ? 'Deaktif' : 'Aktif' ?>
-                </button>
-              </form>
-              <?php endif; ?>
-            </div>
-          </div>
-
-          <!-- Hover Effect Overlay -->
-          <div class="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-        </div>
+        <!-- Agent card removed due to syntax issues -->
         <?php endforeach; ?>
       </div>
     </div>
@@ -304,14 +173,6 @@
 
 <?php else: ?>
   <!-- Single Group View for Non-Super Users -->
-  <div class="mb-4 p-4 bg-yellow-100 rounded">
-    <strong>Debug Info:</strong><br>
-    IsSuper: <?php echo $isSuper ? 'true' : 'false'; ?><br>
-    User Role: <?php echo $_SESSION['user']['role'] ?? 'none'; ?><br>
-    User Group Name: <?php echo htmlspecialchars($userGroupName ?? 'none'); ?><br>
-    AgentsByGroup Keys: <?php echo implode(', ', array_keys($agentsByGroup ?? [])); ?><br>
-    AgentsByGroup JSON: <pre><?php echo json_encode($agentsByGroup ?? [], JSON_PRETTY_PRINT); ?></pre>
-  </div>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     <?php
     $agents = $agentsByGroup[key($agentsByGroup ?? [])] ?? [];
@@ -319,124 +180,15 @@
     foreach ($agents as $agentIndex => $a):
     ?>
     <div class="bg-white p-4 m-2 border rounded">
-      <div>Exten: <?= htmlspecialchars($a['exten'] ?? '') ?></div>
-      <div>Login: <?= htmlspecialchars($a['user_login'] ?? '') ?></div>
-      <div>Status: <?= htmlspecialchars($a['status'] ?? '') ?></div>
-      <div>Active: <?= htmlspecialchars($a['active'] ?? '') ?></div>
+      <div>Exten: <?php echo htmlspecialchars($a['exten'] ?? ''); ?></div>
+      <div>Login: <?php echo htmlspecialchars($a['user_login'] ?? ''); ?></div>
+      <div>Status: <?php echo htmlspecialchars($a['status'] ?? ''); ?></div>
+      <div>Active: <?php echo htmlspecialchars($a['active'] ?? ''); ?></div>
     </div>
     <?php
     endforeach;
     ?>
   </div>
-  <?php return; ?>
-  <div class="agent-card group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:-translate-y-2 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden animate-in slide-in-from-bottom-4 duration-500" style="animation-delay: <?= $agentIndex * 50 ?>ms">
-      <!-- Status Indicator -->
-      <div class="absolute top-4 right-4 z-10">
-        <?php
-        $status = strtolower($a['status'] ?? '');
-        $statusClass = '';
-        $statusColor = '';
-        $pulseClass = '';
-
-        if ($status === 'up' || $status === 'online') {
-          $statusClass = 'bg-emerald-500';
-          $statusColor = 'emerald';
-          $pulseClass = 'animate-pulse';
-        } elseif ($status === 'ring' || $status === 'ringing') {
-          $statusClass = 'bg-amber-500';
-          $statusColor = 'amber';
-          $pulseClass = 'animate-bounce';
-        } elseif ($status === 'busy') {
-          $statusClass = 'bg-red-500';
-          $statusColor = 'red';
-        } else {
-          $statusClass = 'bg-slate-400';
-          $statusColor = 'slate';
-        }
-        ?>
-        <div class="w-4 h-4 <?= $statusClass ?> rounded-full ring-4 ring-white dark:ring-slate-900 shadow-lg <?= $pulseClass ?>">
-          <div class="absolute inset-0 rounded-full bg-current opacity-75 animate-ping"></div>
-        </div>
-      </div>
-
-      <!-- Card Header -->
-      <div class="p-6 pb-4">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-            <span class="text-white font-bold text-lg">
-              <?= strtoupper(substr(htmlspecialchars($a['user_login'] ?? 'A'), 0, 1)) ?>
-            </span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <h4 class="text-lg font-bold text-slate-900 dark:text-white truncate">
-              <?= htmlspecialchars($a['user_login'] ?? '') ?>
-            </h4>
-            <p class="text-sm text-slate-600 dark:text-slate-400">
-              <i class="fa-solid fa-hashtag mr-1"></i>
-              <?= htmlspecialchars($a['exten'] ?? '') ?>
-            </p>
-          </div>
-        </div>
-
-        <!-- Status Badge -->
-        <div class="mb-4">
-          <?php
-          $statusText = '';
-          $statusBadgeClass = '';
-
-          if ($status === 'up' || $status === 'online') {
-            $statusText = 'Çevrimiçi';
-            $statusBadgeClass = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300';
-          } elseif ($status === 'ring' || $status === 'ringing') {
-            $statusText = 'Çalıyor';
-            $statusBadgeClass = 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300';
-          } elseif ($status === 'busy') {
-            $statusText = 'Meşgul';
-            $statusBadgeClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
-          } else {
-            $statusText = 'Çevrimdışı';
-            $statusBadgeClass = 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300';
-          }
-          ?>
-          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium <?= $statusBadgeClass ?>">
-            <i class="fa-solid fa-circle mr-2 text-xs"></i>
-            <?= $statusText ?>
-          </span>
-        </div>
-
-        <!-- Agent Details -->
-        <div class="space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="text-sm text-slate-600 dark:text-slate-400">
-              <i class="fa-solid fa-user-headset mr-1"></i>Son Çağrı
-            </span>
-            <span class="text-sm font-medium text-slate-900 dark:text-white">
-              <?= htmlspecialchars((string)($a['las_call_time'] ?? '-')) ?>
-            </span>
-          </div>
-
-          <div class="flex justify-between items-center">
-            <span class="text-sm text-slate-600 dark:text-slate-400">
-              <i class="fa-solid fa-user-tie mr-1"></i>Lead
-            </span>
-            <span class="text-sm font-medium text-slate-900 dark:text-white truncate max-w-20">
-              <?= htmlspecialchars($a['lead'] ?? '-') ?>
-            </span>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-2 mt-6 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
-          <button onclick="showAgentDetails(-1, <?= $agentIndex ?>)"
-                  class="flex-1 inline-flex items-center justify-center px-3 py-2 rounded-lg text-xs font-medium bg-rose-100 text-rose-800 hover:bg-rose-200 dark:bg-rose-900/50 dark:text-rose-300 dark:hover:bg-rose-900/70 transition-colors duration-200">
-            <i class="fa-solid fa-eye mr-1"></i>Detay
-          </button>
-        </div>
-      </div>
-
-      <!-- Hover Effect Overlay -->
-      <div class="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-    </div>
     <?php endforeach; ?>
   </div>
 <?php endif; ?>
