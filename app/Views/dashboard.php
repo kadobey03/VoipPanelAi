@@ -1,34 +1,65 @@
 <?php $title='Dashboard - PapaM VoIP Panel'; require __DIR__.'/partials/header.php'; ?>
 
   <section class="mb-6">
+    <?php $isSuper = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '')==='superadmin'); ?>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <?php if ($isSuper): ?>
       <div class="p-5 rounded-xl bg-white/80 dark:bg-slate-800 shadow hover:shadow-lg transition transform hover:-translate-y-0.5">
         <div class="flex items-center gap-3">
           <div class="h-10 w-10 rounded-lg bg-indigo-600/10 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-wallet"></i></div>
           <div>
             <div class="text-sm text-slate-500">Ana Bakiye (API)</div>
-            <div class="text-2xl font-semibold"><span id="balance"><?= isset($balanceValue) && $balanceValue!==null ? htmlspecialchars((string)$balanceValue) : '...' ?></span></div>
+            <div class="text-2xl font-semibold"><span id="balance"><?= isset($balanceValue) && $balanceValue!==null ? htmlspecialchars(number_format((float)$balanceValue,2)) : '...' ?></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="p-5 rounded-xl bg-white/80 dark:bg-slate-800 shadow hover:shadow-lg transition transform hover:-translate-y-0.5">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-layer-group"></i></div>
+          <div>
+            <div class="text-sm text-slate-500">Gruplar Toplam Bakiye</div>
+            <div class="text-2xl font-semibold"><?= htmlspecialchars(number_format((float)($groupsTotal ?? 0),2)) ?></div>
+          </div>
+        </div>
+      </div>
+      <div class="p-5 rounded-xl bg-white/80 dark:bg-slate-800 shadow hover:shadow-lg transition transform hover:-translate-y-0.5">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-lg bg-amber-600/10 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-scale-balanced"></i></div>
+          <div>
+            <div class="text-sm text-slate-500">Fark (Ana - Gruplar)</div>
+            <div class="text-2xl font-semibold"><?= isset($diff) && $diff!==null ? htmlspecialchars(number_format((float)$diff,2)) : '...' ?></div>
+          </div>
+        </div>
+      </div>
+      <?php else: ?>
+      <div class="p-5 rounded-xl bg-white/80 dark:bg-slate-800 shadow hover:shadow-lg transition transform hover:-translate-y-0.5">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-lg bg-emerald-600/10 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-piggy-bank"></i></div>
+          <div>
+            <div class="text-sm text-slate-500">Grup Bakiyesi</div>
+            <div class="text-2xl font-semibold"><?= htmlspecialchars(number_format((float)($ownGroupBalance ?? 0),2)) ?></div>
           </div>
         </div>
       </div>
       <a href="<?= \App\Helpers\Url::to('/groups') ?>" class="p-5 rounded-xl bg-white/80 dark:bg-slate-800 shadow hover:shadow-lg transition transform hover:-translate-y-0.5 block">
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-lg bg-emerald-600/10 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-layer-group"></i></div>
+          <div class="h-10 w-10 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-layer-group"></i></div>
           <div>
-            <div class="text-sm text-slate-500">Gruplar</div>
-            <div class="text-lg font-medium">Yönet ve Görüntüle</div>
+            <div class="text-sm text-slate-500">Grubum</div>
+            <div class="text-lg font-medium">Görüntüle</div>
           </div>
         </div>
       </a>
-      <a href="<?= \App\Helpers\Url::to('/calls') ?>" class="p-5 rounded-xl bg-white/80 dark:bg-slate-800 shadow hover:shadow-lg transition transform hover:-translate-y-0.5 block">
+      <?php endif; ?>
+      <div class="p-5 rounded-xl bg-white/80 dark:bg-slate-800 shadow hover:shadow-lg transition transform hover:-translate-y-0.5">
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-lg bg-rose-600/10 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-phone"></i></div>
+          <div class="h-10 w-10 rounded-lg bg-rose-600/10 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-sack-dollar"></i></div>
           <div>
-            <div class="text-sm text-slate-500">Çağrılar</div>
-            <div class="text-lg font-medium">Liste ve Kayıt Dinleme</div>
+            <div class="text-sm text-slate-500">Haftalık Kâr</div>
+            <div class="text-2xl font-semibold"><?= htmlspecialchars(number_format((float)($weeklyProfit ?? 0),2)) ?></div>
           </div>
         </div>
-      </a>
+      </div>
     </div>
   </section>
 
@@ -49,10 +80,12 @@
       <i class="fa-solid fa-address-book text-amber-600 group-hover:animate-bounce"></i>
       <div class="font-medium">Dış Numaralar</div>
     </a>
+    <?php if ($isSuper): ?>
     <a href="<?= \App\Helpers\Url::to('/balance') ?>" class="group rounded-lg p-4 bg-white/70 dark:bg-slate-800 shadow hover:shadow-xl transition flex items-center gap-3">
       <i class="fa-solid fa-wallet text-fuchsia-600 group-hover:animate-bounce"></i>
       <div class="font-medium">Ana Bakiye</div>
     </a>
+    <?php endif; ?>
     <a href="<?= \App\Helpers\Url::to('/logout') ?>" class="group rounded-lg p-4 bg-white/70 dark:bg-slate-800 shadow hover:shadow-xl transition flex items-center gap-3">
       <i class="fa-solid fa-right-from-bracket text-slate-600 group-hover:animate-bounce"></i>
       <div class="font-medium">Çıkış</div>

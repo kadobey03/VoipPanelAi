@@ -49,5 +49,32 @@ class DB {
         if (!$hasCol('groups', 'api_group_name')) {
             $db->query('ALTER TABLE `groups` ADD COLUMN `api_group_name` VARCHAR(100) NULL AFTER `api_group_id`');
         }
+
+        // calls cost/margin columns
+        if (!$hasCol('calls', 'cost_api')) {
+            $db->query('ALTER TABLE `calls` ADD COLUMN `cost_api` DECIMAL(12,6) DEFAULT 0.000000 AFTER `user_id`');
+        }
+        if (!$hasCol('calls', 'margin_percent')) {
+            $db->query('ALTER TABLE `calls` ADD COLUMN `margin_percent` DECIMAL(5,2) DEFAULT 0.00 AFTER `cost_api`');
+        }
+        if (!$hasCol('calls', 'amount_charged')) {
+            $db->query('ALTER TABLE `calls` ADD COLUMN `amount_charged` DECIMAL(12,6) DEFAULT 0.000000 AFTER `margin_percent`');
+        }
+
+        // transactions table
+        $hasTransactions = false;
+        $res = $db->query("SHOW TABLES LIKE 'transactions'");
+        if ($res) { $hasTransactions = $res->num_rows > 0; $res->free(); }
+        if (!$hasTransactions) {
+            $db->query("CREATE TABLE IF NOT EXISTS `transactions` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `group_id` INT NOT NULL,
+                `type` ENUM('topup','debit_call','adjust') NOT NULL,
+                `amount` DECIMAL(12,4) NOT NULL,
+                `reference` VARCHAR(64) NULL,
+                `description` VARCHAR(255) NULL,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        }
     }
 }
