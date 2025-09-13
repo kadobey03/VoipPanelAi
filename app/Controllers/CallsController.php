@@ -52,7 +52,21 @@ class CallsController {
         $params = [$from, $to];
         if (!$isSuper) { $where .= ' AND group_id=?'; $types.='i'; $params[] = (int)($user['group_id'] ?? 0); }
         if (($user['role'] ?? '') === 'user') { $where .= ' AND src=?'; $types.='s'; $params[] = $user['exten'] ?? ''; }
-        if ($isGroupMember) { $where .= ' AND src=?'; $types.='s'; $params[] = $user['exten'] ?? ''; }
+        if ($isGroupMember) {
+            // Groupmember için agent_id'den exten al
+            $agentExten = '';
+            if (isset($user['agent_id']) && (int)$user['agent_id'] > 0) {
+                $stmt = $db->prepare('SELECT exten FROM agents WHERE id=?');
+                $stmt->bind_param('i', (int)$user['agent_id']);
+                $stmt->execute();
+                $r = $stmt->get_result()->fetch_assoc();
+                if ($r) $agentExten = $r['exten'];
+                $stmt->close();
+            }
+            $where .= ' AND src=?';
+            $types.='s';
+            $params[] = $agentExten;
+        }
         if ($isSuper && $selectedGroup) { $where .= ' AND group_id=?'; $types.='i'; $params[] = $selectedGroup; }
         if ($src !== '') { $where .= ' AND src LIKE ?'; $types.='s'; $params[] = $src.'%'; }
         if ($dst !== '') { $where .= ' AND dst LIKE ?'; $types.='s'; $params[] = $dst.'%'; }

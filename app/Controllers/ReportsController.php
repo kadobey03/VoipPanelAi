@@ -29,9 +29,19 @@ class ReportsController {
 
         // Add groupmember src filter
         if ($this->isGroupMember()) {
+            // Groupmember için agent_id'den exten al
+            $agentExten = '';
+            if (isset($_SESSION['user']['agent_id']) && (int)$_SESSION['user']['agent_id'] > 0) {
+                $stmt = $db->prepare('SELECT exten FROM agents WHERE id=?');
+                $stmt->bind_param('i', (int)$_SESSION['user']['agent_id']);
+                $stmt->execute();
+                $r = $stmt->get_result()->fetch_assoc();
+                if ($r) $agentExten = $r['exten'];
+                $stmt->close();
+            }
             $where .= ' AND c.src=?';
             $types .= 's';
-            $params[] = $_SESSION['user']['exten'] ?? '';
+            $params[] = $agentExten;
         }
 
         // Summary per group (map to local group id)
