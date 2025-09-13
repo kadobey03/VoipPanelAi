@@ -73,14 +73,24 @@ class AgentsController {
             }
         }
 
-
+        // Case-insensitive gruplama ve fallback
         $agentsByGroup = [];
         foreach ($agents as $agent) {
-            $group = $agent['group'] ?? '';
-            if ($isSuper || $group === $userGroupName) {
+            $group = $agent['group'] ?? $agent['group_name'] ?? ''; // API yoksa DB'den fallback
+            // Case-insensitive karşılaştırma
+            if ($isSuper || strtolower($group) === strtolower($userGroupName)) {
+                if (!isset($agentsByGroup[$group])) {
+                    $agentsByGroup[$group] = [];
+                }
                 $agentsByGroup[$group][] = $agent;
             }
         }
+
+        // DEBUGGING İÇİN (production'da kaldırın):
+        // error_log("UserGroupName: " . $userGroupName);
+        // error_log("Agents count: " . count($agents));
+        // error_log("AgentsByGroup keys: " . implode(', ', array_keys($agentsByGroup)));
+
         require __DIR__.'/../Views/agents/index.php';
     }
 
