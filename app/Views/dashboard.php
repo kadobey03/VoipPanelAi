@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PapaM VoIP Panel</title>
-  <link href="<?= \App\Helpers\Url::to('/assets/css/tailwind.min.css') ?>" rel="stylesheet">
+  <link href="<?= \App\Helpers\Url::to('/public/assets/css/tailwind.min.css') ?>" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
   <div class="container mx-auto p-4">
@@ -35,9 +35,8 @@
       if(btn){ btn.addEventListener('click', function(){ document.documentElement.classList.toggle('dark'); }); }
     })();
   </script>
-  <script src="<?= \App\Helpers\Url::to('/assets/js/chart.min.js') ?>"></script>
+  <script src="<?= \App\Helpers\Url::to('/public/assets/js/chart.min.js') ?>"></script>
   <script>if(typeof Chart==='undefined'){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js';document.head.appendChild(s);}</script>
-  <script src="<?= \App\Helpers\Url::to('/assets/js/dashboard.js') ?>"></script>
+  <script src="<?= \App\Helpers\Url::to('/public/assets/js/dashboard.js') ?>"></script>
 </body>
 </html>
-

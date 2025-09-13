@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giriş Yap - PapaM VoIP Panel</title>
-    <link href="<?= \App\Helpers\Url::to('/assets/css/tailwind.min.css') ?>" rel="stylesheet">
+    <link href="<?= \App\Helpers\Url::to('/public/assets/css/tailwind.min.css') ?>" rel="stylesheet">
     <meta name="color-scheme" content="light dark">
     <style>body{min-height:100vh}</style>
     <script>
