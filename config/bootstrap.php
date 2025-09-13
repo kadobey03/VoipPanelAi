@@ -1,4 +1,7 @@
 <?php
+// Output buffer başlat (headers already sent hatalarını önlemek için)
+ob_start();
+
 // Session start
 session_start();
 
