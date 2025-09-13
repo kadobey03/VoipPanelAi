@@ -39,6 +39,7 @@ class AgentsController {
         }
 
         $isSuper = $this->isSuper();
+        $isGroupAdmin = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'groupadmin';
         $isUser = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'user';
         $isGroupMember = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'groupmember';
 
@@ -56,6 +57,7 @@ class AgentsController {
         }
         $userGroupName = '';
         $userAgentId = 0;
+        $userExten = '';
         if (!$isSuper) {
             $groupId = (int)($_SESSION['user']['group_id'] ?? 0);
             $stmt = $db->prepare('SELECT name FROM groups WHERE id=?');
@@ -64,8 +66,21 @@ class AgentsController {
             $r = $stmt->get_result()->fetch_assoc();
             $stmt->close();
             if ($r) $userGroupName = $r['name'];
-            if ($isGroupMember) {
-                // Groupmember için doğrudan exten üzerinden filtreleme yapılacak
+
+            if ($isUser) {
+                // User için agent_id çek
+                $userId = (int)$_SESSION['user']['id'];
+                $stmt = $db->prepare('SELECT agent_id FROM users WHERE id=?');
+                $stmt->bind_param('i', $userId);
+                $stmt->execute();
+                $r = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                if ($r && $r['agent_id']) {
+                    $userAgentId = (int)$r['agent_id'];
+                    $_SESSION['user']['agent_id'] = $userAgentId;
+                }
+            } elseif ($isGroupMember) {
+                // Groupmember için exten çek
                 $userExten = $_SESSION['user']['exten'] ?? '';
             }
         }
@@ -113,8 +128,18 @@ class AgentsController {
         // Filter for group admin or member
         if (!$isSuper) {
             if ($isUser) {
-                $agentsDb = array_filter($agentsDb, function($a) use ($userAgentId) {
-                    return ($a['active'] ?? 1) == 1 && $a['id'] == $userAgentId;
+                // User için agent_id'den agent bilgilerini çek
+                $userAgentExten = '';
+                if ($userAgentId) {
+                    $stmt = $db->prepare('SELECT exten FROM agents WHERE id=?');
+                    $stmt->bind_param('i', $userAgentId);
+                    $stmt->execute();
+                    $r = $stmt->get_result()->fetch_assoc();
+                    $stmt->close();
+                    if ($r) $userAgentExten = $r['exten'];
+                }
+                $agentsDb = array_filter($agentsDb, function($a) use ($userAgentExten) {
+                    return ($a['active'] ?? 1) == 1 && $a['exten'] == $userAgentExten;
                 });
             } elseif ($isGroupMember) {
                 // Groupmember sadece kendi exten'ine ait agenti görür
@@ -122,6 +147,7 @@ class AgentsController {
                     return ($a['active'] ?? 1) == 1 && $a['exten'] == $userExten;
                 });
             } else {
+                // Grup admini kendi grubu agentlerini görür
                 $agentsDb = array_filter($agentsDb, function($a) use ($userGroupName) {
                     return ($a['active'] ?? 1) == 1 && strtolower($a['group_name']) === strtolower($userGroupName);
                 });
@@ -151,11 +177,11 @@ class AgentsController {
                 $agentsByGroup[$group]['agents'][] = $agent;
             }
         } else {
-            // Diğer kullanıcılar için filtreleme
+            // Diğer kullanıcılar için gruplama
             foreach ($agents as $agent) {
-                $group = $agent['group'] ?? $agent['group_name'] ?? '';
-
-                if (!$isGroupMember && strtolower($group) === strtolower($userGroupName)) {
+                if ($isUser) {
+                    // User sadece kendi agent'ını görür
+                    $group = 'Kendi Agentınız';
                     if (!isset($agentsByGroup[$group])) {
                         $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
                     }
@@ -167,6 +193,15 @@ class AgentsController {
                         $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
                     }
                     $agentsByGroup[$group]['agents'][] = $agent;
+                } else {
+                    // Grup admini kendi grubu agentlerini görür
+                    $group = $agent['group'] ?? $agent['group_name'] ?? '';
+                    if (strtolower($group) === strtolower($userGroupName)) {
+                        if (!isset($agentsByGroup[$group])) {
+                            $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
+                        }
+                        $agentsByGroup[$group]['agents'][] = $agent;
+                    }
                 }
             }
         }

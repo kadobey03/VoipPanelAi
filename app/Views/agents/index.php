@@ -36,7 +36,7 @@
 
           <?php if ($isSuper): ?>
           <div class="flex gap-3">
-            <form method="post" action="/VoipPanelAi/agents/sync" style="display:inline;">
+            <form method="post" action="/agents/sync" style="display:inline;">
               <button type="submit" class="group relative inline-flex items-center gap-3 px-6 py-4 bg-white/20 backdrop-blur-sm rounded-2xl hover:bg-white/30 transition-all duration-300 transform hover:scale-105">
                 <div class="p-2 bg-white/30 rounded-lg group-hover:bg-white/40 transition-colors duration-300">
                   <i class="fa-solid fa-sync-alt text-lg"></i>
@@ -55,7 +55,8 @@
         $ringingAgents = 0;
 
         if ($isSuper) {
-          foreach (($agentsByGroup ?? []) as $groupName => $agents) {
+          foreach (($agentsByGroup ?? []) as $groupName => $groupData) {
+            $agents = $groupData['agents'] ?? [];
             $totalAgents += count($agents);
             foreach ($agents as $agent) {
               $status = strtolower($agent['status'] ?? '');
@@ -65,7 +66,8 @@
             }
           }
         } else {
-          $agents = $agentsByGroup[key($agentsByGroup ?? [])] ?? [];
+          $groupKey = key($agentsByGroup ?? []);
+          $agents = ($agentsByGroup[$groupKey]['agents'] ?? []) ?: [];
           $totalAgents = count($agents);
           foreach ($agents as $agent) {
             $status = strtolower($agent['status'] ?? '');
@@ -192,7 +194,7 @@
             <?= htmlspecialchars($groupData['groupName'] ?? 'Grup') ?>
           </h3>
           <p class="text-slate-500 dark:text-slate-400 text-sm">
-            <?= count($groupData['agents'] ?? []) ?> Agent • <?= htmlspecialchars($groupData['groupName'] ?? '') ?>
+            <?= count($groupData['agents'] ?? []) ?> Agent • <?= htmlspecialchars($groupData['groupName'] ?? $groupIndex) ?>
           </p>
         </div>
       </div>
@@ -315,7 +317,7 @@
               </button>
 
               <?php if ($isSuper): ?>
-              <form method="post" action="/VoipPanelAi/agents/toggleHidden" style="display:inline;">
+              <form method="post" action="/agents/toggle-hidden" style="display:inline;">
                 <input type="hidden" name="exten" value="<?= htmlspecialchars($a['exten']) ?>">
                 <button type="submit" class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium
                   <?= ($a['active'] ?? 1) ? 'bg-slate-600 text-white hover:bg-slate-700' : 'bg-emerald-600 text-white hover:bg-emerald-700' ?>
