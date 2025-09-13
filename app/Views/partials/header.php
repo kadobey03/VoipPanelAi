@@ -32,7 +32,19 @@ use App\Helpers\Url;
           <a class="hover:text-white transition" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
           <a class="hover:text-white transition" href="<?= Url::to('/numbers') ?>"><i class="fa-solid fa-address-book"></i> Numaralar</a>
-          <a class="hover:text-white transition" href="<?= Url::to('/balance') ?>"><i class="fa-solid fa-wallet"></i> Bakiye</a>
+          <div class="relative group">
+            <a class="hover:text-white transition inline-flex items-center gap-1" href="#"><i class="fa-solid fa-wallet"></i> Bakiye <i class="fa-solid fa-caret-down text-xs"></i></a>
+            <div class="absolute hidden group-hover:block right-0 mt-2 w-60 bg-white text-slate-800 rounded shadow-lg py-2">
+              <a class="block px-3 py-2 hover:bg-slate-50" href="<?= Url::to('/topups') ?>"><i class="fa-solid fa-inbox"></i> Bakiye Yükleme Talepleri</a>
+              <a class="block px-3 py-2 hover:bg-slate-50" href="<?= Url::to('/balance/topup') ?>"><i class="fa-solid fa-circle-plus"></i> Bakiye Yükle</a>
+              <a class="block px-3 py-2 hover:bg-slate-50" href="<?= Url::to('/transactions') ?>"><i class="fa-solid fa-clock-rotate-left"></i> Bakiye Geçmişi</a>
+              <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
+              <div class="border-t my-2"></div>
+              <a class="block px-3 py-2 hover:bg-slate-50" href="<?= Url::to('/payment-methods') ?>"><i class="fa-solid fa-money-bill-transfer"></i> Ödeme Yöntemleri</a>
+              <?php endif; ?>
+            </div>
+          </div>
+          <a class="hover:text-white transition" href="<?= Url::to('/profile') ?>"><i class="fa-solid fa-user-gear"></i> Profil</a>
           <a class="hover:text-white transition" href="<?= Url::to('/logout') ?>"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</a>
           <button id="toggle-theme" class="ml-2 px-3 py-1 rounded bg-white/20 hover:bg-white/30 text-white"><i class="fa-solid fa-moon"></i></button>
         </nav>
@@ -46,6 +58,12 @@ use App\Helpers\Url;
           <a class="hover:text-white" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
           <a class="hover:text-white" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
           <a class="hover:text-white" href="<?= Url::to('/numbers') ?>"><i class="fa-solid fa-address-book"></i> Numaralar</a>
+          <a class="hover:text-white" href="<?= Url::to('/topups') ?>"><i class="fa-solid fa-inbox"></i> Yükleme Talepleri</a>
+          <a class="hover:text-white" href="<?= Url::to('/balance/topup') ?>"><i class="fa-solid fa-circle-plus"></i> Bakiye Yükle</a>
+          <a class="hover:text-white" href="<?= Url::to('/transactions') ?>"><i class="fa-solid fa-clock-rotate-left"></i> Bakiye Geçmişi</a>
+          <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
+          <a class="hover:text-white" href="<?= Url::to('/payment-methods') ?>"><i class="fa-solid fa-money-bill-transfer"></i> Ödeme Yöntemleri</a>
+          <?php endif; ?>
           <a class="hover:text-white" href="<?= Url::to('/balance') ?>"><i class="fa-solid fa-wallet"></i> Bakiye</a>
           <a class="hover:text-white" href="<?= Url::to('/logout') ?>"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</a>
           <button id="toggle-theme-m" class="mt-2 px-3 py-1 rounded bg-white/20 hover:bg-white/30 text-white col-span-2"><i class="fa-solid fa-moon"></i> Tema</button>
@@ -64,4 +82,3 @@ use App\Helpers\Url;
   </script>
 <?php endif; ?>
   <main class="max-w-7xl mx-auto px-4 py-6">
-

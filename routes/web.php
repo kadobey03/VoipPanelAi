@@ -60,3 +60,17 @@ $router->add('POST', '/profile', 'ProfileController@index');
 // Admin impersonation
 $router->add('GET', '/admin/impersonate', 'AdminController@impersonate'); // ?id=
 $router->add('GET', '/admin/impersonate/stop', 'AdminController@stopImpersonate');
+
+// Payment methods (super admin)
+$router->add('GET', '/payment-methods', 'PaymentMethodsController@index');
+$router->add('GET', '/payment-methods/create', 'PaymentMethodsController@create');
+$router->add('POST', '/payment-methods/create', 'PaymentMethodsController@create');
+$router->add('GET', '/payment-methods/edit', 'PaymentMethodsController@edit');
+$router->add('POST', '/payment-methods/edit', 'PaymentMethodsController@edit');
+$router->add('POST', '/payment-methods/delete', 'PaymentMethodsController@delete');
+
+// Transactions (balance history)
+$router->add('GET', '/transactions', 'TransactionsController@index');
+
+// Balance helper (topup select)
+$router->add('GET', '/balance/topup', 'BalanceMenuController@topupSelect');

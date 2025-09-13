@@ -85,10 +85,17 @@ class DB {
                 `name` VARCHAR(100) NOT NULL,
                 `method_type` VARCHAR(50) NOT NULL,
                 `details` TEXT NULL,
+                `fee_percent` DECIMAL(5,2) DEFAULT 0.00,
+                `fee_fixed` DECIMAL(12,4) DEFAULT 0.0000,
                 `active` TINYINT(1) DEFAULT 1,
                 `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-        } else { $res->free(); }
+        } else { if($res) $res->free();
+            // add fee columns if missing
+            $hasCol = function(string $table, string $col) use ($db): bool { $r=$db->query("SHOW COLUMNS FROM `$table` LIKE '".$db->real_escape_string($col)."'"); if(!$r) return false; $e=$r->num_rows>0; $r->free(); return $e; };
+            if(!$hasCol('payment_methods','fee_percent')){ $db->query('ALTER TABLE `payment_methods` ADD COLUMN `fee_percent` DECIMAL(5,2) DEFAULT 0.00 AFTER `details`'); }
+            if(!$hasCol('payment_methods','fee_fixed')){ $db->query('ALTER TABLE `payment_methods` ADD COLUMN `fee_fixed` DECIMAL(12,4) DEFAULT 0.0000 AFTER `fee_percent`'); }
+        }
 
         // topup_requests table
         $res = $db->query("SHOW TABLES LIKE 'topup_requests'");
