@@ -43,6 +43,7 @@
             <th class="p-2">Cost(API)</th>
             <th class="p-2">Margin%</th>
             <th class="p-2">Tahsil</th>
+            <th class="p-2">Kayıt</th>
           </tr>
         </thead>
         <tbody>
@@ -58,6 +59,11 @@
             <td class="p-2"><?= number_format((float)$c['cost_api'],6) ?></td>
             <td class="p-2"><?= number_format((float)$c['margin_percent'],2) ?></td>
             <td class="p-2"><?= number_format((float)$c['amount_charged'],6) ?></td>
+            <td class="p-2">
+              <?php if (!empty($c['call_id'])): ?>
+                <a class="text-blue-600" href="/calls/record?call_id=<?= urlencode($c['call_id']) ?>" target="_blank">Dinle</a>
+              <?php endif; ?>
+            </td>
           </tr>
           <?php endforeach; ?>
         </tbody>

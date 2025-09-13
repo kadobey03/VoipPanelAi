@@ -61,6 +61,12 @@ class UserController {
                 $error = 'Zorunlu alanlar eksik';
             }
         }
+        // fetch groups for superadmin selection
+        $groups = [];
+        if ($this->isSuperAdmin()) {
+            $res = $mysqli->query('SELECT id, name FROM groups ORDER BY name');
+            while ($row = $res->fetch_assoc()) { $groups[] = $row; }
+        }
         require __DIR__.'/../Views/users/create.php';
     }
 
@@ -98,6 +104,12 @@ class UserController {
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+        // fetch groups for superadmin selection
+        $groups = [];
+        if ($this->isSuperAdmin()) {
+            $res = $mysqli->query('SELECT id, name FROM groups ORDER BY name');
+            while ($row = $res->fetch_assoc()) { $groups[] = $row; }
+        }
         require __DIR__.'/../Views/users/edit.php';
     }
 

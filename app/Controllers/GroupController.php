@@ -35,7 +35,6 @@ class GroupController {
         $db = DB::conn();
         $id = (int)($_GET['id'] ?? 0);
         if (!$id) { header('Location: /groups'); exit; }
-        // Only super can edit any; group admin only their own
         if (!$this->isSuper() && $this->currentGroupId() !== $id) { http_response_code(403); echo 'Yetkisiz'; return; }
         $error = null; $ok = null;
         if ($_SERVER['REQUEST_METHOD']==='POST') {
@@ -84,8 +83,8 @@ class GroupController {
         $error=null; $ok=null;
         if ($_SERVER['REQUEST_METHOD']==='POST') {
             $amount = (float)($_POST['amount'] ?? 0);
+            $method = $_POST['method'] ?? ($this->isSuper() ? 'manual' : 'unknown');
             if ($amount>0) {
-                // add transaction and update balance
                 $db->begin_transaction();
                 try {
                     $stmt = $db->prepare('UPDATE groups SET balance = balance + ? WHERE id=?');
@@ -93,7 +92,7 @@ class GroupController {
                     $stmt->execute();
                     $stmt->close();
 
-                    $type = 'topup'; $desc = 'Manuel bakiye yükleme'; $ref = null;
+                    $type = 'topup'; $desc = 'Topup method: '.$method; $ref = null;
                     $stmt = $db->prepare('INSERT INTO transactions (group_id, type, amount, reference, description) VALUES (?,?,?,?,?)');
                     $stmt->bind_param('isdss', $id, $type, $amount, $ref, $desc);
                     $stmt->execute();
@@ -135,3 +134,4 @@ class GroupController {
         require __DIR__.'/../Views/groups/show.php';
     }
 }
+

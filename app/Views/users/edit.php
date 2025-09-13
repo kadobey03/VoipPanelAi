@@ -40,8 +40,13 @@
         </select>
       </div>
       <div>
-        <label class="block text-sm mb-1">Grup ID</label>
-        <input type="number" name="group_id" class="w-full border rounded p-2 bg-white dark:bg-gray-800" value="<?= htmlspecialchars((string)$user['group_id']) ?>">
+        <label class="block text-sm mb-1">Grup</label>
+        <select name="group_id" class="w-full border rounded p-2 bg-white dark:bg-gray-800">
+          <option value="">(seçiniz)</option>
+          <?php foreach (($groups ?? []) as $g): $gid=(int)$g['id']; ?>
+            <option value="<?= $gid ?>" <?= $gid===(int)$user['group_id']?'selected':'' ?>><?= htmlspecialchars($g['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
       </div>
       <?php endif; ?>
       <button class="w-full bg-blue-600 text-white rounded p-2">Güncelle</button>

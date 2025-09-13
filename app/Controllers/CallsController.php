@@ -139,4 +139,35 @@ class CallsController {
         header('Content-Type: application/json');
         echo json_encode(['imported'=>$imported,'errors'=>$errors], JSON_UNESCAPED_UNICODE);
     }
+
+    public function record(){
+        $this->requireAuth();
+        $callId = $_GET['call_id'] ?? '';
+        if ($callId === '') { http_response_code(400); echo 'call_id required'; return; }
+        // Check permission: group admin only their group's calls
+        $db = DB::conn();
+        $stmt = $db->prepare('SELECT group_id FROM calls WHERE call_id=?');
+        $stmt->bind_param('s', $callId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $row = $res->fetch_assoc();
+        $stmt->close();
+        if ($row) {
+            $gid = (int)$row['group_id'];
+            if (!$this->isSuper() && $gid !== (int)$this->currentGroupId()) { http_response_code(403); echo 'Yetkisiz'; return; }
+        } else {
+            // No local record; superadmin can try fetch, group admin denied
+            if (!$this->isSuper()) { http_response_code(404); echo 'Bulunamadı'; return; }
+        }
+        $api = new ApiClient();
+        try {
+            $wav = $api->getAudioRecord($callId);
+            header('Content-Type: audio/x-wav');
+            header('Content-Disposition: inline; filename="'.$callId.'.wav"');
+            echo $wav;
+        } catch (\Throwable $e) {
+            http_response_code(502);
+            echo 'Kayıt alınamadı: '.$e->getMessage();
+        }
+    }
 }

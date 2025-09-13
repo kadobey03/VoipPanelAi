@@ -20,6 +20,19 @@
     <?php endif; ?>
     <div class="mb-3">Mevcut Bakiye: <strong><?= number_format((float)$group['balance'],2) ?></strong></div>
     <form method="post" class="space-y-3 bg-white dark:bg-gray-800 p-4 rounded shadow">
+      <?php if (!isset($_SESSION['user']) || $_SESSION['user']['role']!=='superadmin'): ?>
+      <div>
+        <label class="block text-sm mb-1">Ödeme Yöntemi</label>
+        <select name="method" class="w-full border rounded p-2 bg-white dark:bg-gray-800" required>
+          <option value="bank">Havale/EFT</option>
+          <option value="card">Kredi Kartı</option>
+          <option value="paypal">PayPal</option>
+          <option value="crypto">Kripto</option>
+        </select>
+      </div>
+      <?php else: ?>
+      <input type="hidden" name="method" value="manual">
+      <?php endif; ?>
       <div>
         <label class="block text-sm mb-1">Tutar</label>
         <input type="number" step="0.01" min="0.01" name="amount" class="w-full border rounded p-2 bg-white dark:bg-gray-800" required>
@@ -29,4 +42,3 @@
   </div>
 </body>
 </html>
-

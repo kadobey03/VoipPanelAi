@@ -1,14 +1,25 @@
-Options -Indexes
-RewriteEngine On
+<IfModule mod_rewrite.c>
+  Options -MultiViews
+  RewriteEngine On
 
-# Eğer .env yoksa install klasörüne yönlendir
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{DOCUMENT_ROOT}/../.env !-f
-RewriteRule ^(.*)$ install/ [L]
+  # Serve assets from public directory
+  RewriteRule ^assets/(.*)$ public/assets/$1 [L,NC]
 
-# Tüm istekleri public klasörüne yönlendir
-RewriteCond %{REQUEST_URI} !^/public/
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ public/$1 [L]
+  # Installer shortcut
+  RewriteRule ^install/?$ install/index.php [L,NC]
+
+  # If file or directory exists, serve it
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Otherwise, route everything to the front controller
+  RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf)$">
+    Header set Cache-Control "max-age=31536000, public"
+  </FilesMatch>
+</IfModule>
+
