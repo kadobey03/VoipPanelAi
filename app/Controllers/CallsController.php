@@ -77,7 +77,8 @@ class CallsController {
         // Reuse sync logic by inline call (duplicate of sync but without auth/session)
         $api = new ApiClient();
         $db = DB::conn();
-        $imported=0; $errors=[];
+        $imported=0; $skipped=0; $errors=[]; $trace=[]; $pages=0;
+        $debug = isset($_GET['debug']) ? (($_GET['debug']==='1') || (strtolower((string)$_GET['debug'])==='true')) : false;
         try {
             // Build exten -> group_id map from API users
             $userMap = [];
@@ -172,6 +173,8 @@ class CallsController {
             $page = 1;
             while (true) {
                 $cdrs = $api->getCallHistoryFilter($from, $to, null, null, $page);
+                $pages++;
+                if ($debug) { $trace[] = ['request'=>['from'=>$from,'to'=>$to,'page'=>$page], 'response'=>$cdrs]; }
                 if (!is_array($cdrs) || count($cdrs)===0) break;
                 foreach ($cdrs as $cdr) {
                     $callId = $cdr['call_id'] ?? $cdr['uniqueid'] ?? null;
@@ -181,7 +184,7 @@ class CallsController {
                     $stmt->bind_param('s',$callId);
                     $stmt->execute();
                     $stmt->store_result();
-                    if ($stmt->num_rows>0) { $stmt->close(); continue; }
+                    if ($stmt->num_rows>0) { $stmt->close(); $skipped++; continue; }
                     $stmt->close();
 
                     $src = $cdr['src'] ?? '';
@@ -254,9 +257,17 @@ class CallsController {
             $errors[] = $e->getMessage();
         }
 
-        // simple response
+        // verbose response
         header('Content-Type: application/json');
-        echo json_encode(['imported'=>$imported,'errors'=>$errors], JSON_UNESCAPED_UNICODE);
+        echo json_encode([
+            'from'=>$from,
+            'to'=>$to,
+            'pages'=>$pages,
+            'imported'=>$imported,
+            'skipped_existing'=>$skipped,
+            'errors'=>$errors,
+            'trace'=>$debug ? $trace : null
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     public function record(){
