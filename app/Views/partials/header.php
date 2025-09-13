@@ -64,10 +64,12 @@ function __($key) {
           <a class="hover:text-white transition" href="<?= Url::to('/settings') ?>"><i class="fa-solid fa-cogs"></i> Ayarlar</a>
           <?php endif; ?>
           <a class="hover:text-white transition" href="<?= Url::to('/logout') ?>"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</a>
-          <select id="lang-select" class="ml-2 px-2 py-1 rounded bg-white/20 hover:bg-white/30 text-white border-none">
-            <option value="tr" <?= Lang::current() === 'tr' ? 'selected' : '' ?>>TR</option>
-            <option value="en" <?= Lang::current() === 'en' ? 'selected' : '' ?>>EN</option>
-          </select>
+          <form method="post" action="/change-lang" style="display:inline;">
+            <select name="lang" id="lang-select" class="ml-2 px-2 py-1 rounded bg-white/20 hover:bg-white/30 text-white border-none">
+              <option value="tr" <?= Lang::current() === 'tr' ? 'selected' : '' ?>>TR</option>
+              <option value="en" <?= Lang::current() === 'en' ? 'selected' : '' ?>>EN</option>
+            </select>
+          </form>
           <button id="toggle-theme" class="ml-2 px-3 py-1 rounded bg-white/20 hover:bg-white/30 text-white"><i class="fa-solid fa-moon"></i></button>
         </nav>
         <button id="menu-btn" class="md:hidden text-white text-2xl"><i class="fa-solid fa-bars"></i></button>
@@ -111,11 +113,6 @@ function __($key) {
       }
     });
 
-    // Language selector
-    document.getElementById('lang-select').addEventListener('change', function() {
-      const lang = this.value;
-      window.location.href = '?lang=' + lang;
-    });
   </script>
   <script>
     if ('serviceWorker' in navigator) {

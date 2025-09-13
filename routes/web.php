@@ -90,5 +90,15 @@ $router->add('GET', '/transactions', 'TransactionsController@index');
 $router->add('GET', '/settings', 'SettingsController@index');
 $router->add('POST', '/settings', 'SettingsController@index');
 
+// Change language
+$router->add('POST', '/change-lang', function() {
+    $lang = $_POST['lang'] ?? 'tr';
+    if (in_array($lang, ['tr', 'en'])) {
+        \App\Helpers\Lang::set($lang);
+    }
+    header('Location: ' . (\App\Helpers\Url::to('/')));
+    exit;
+});
+
 // Balance helper (topup select)
 $router->add('GET', '/balance/topup', 'BalanceMenuController@topupSelect');
