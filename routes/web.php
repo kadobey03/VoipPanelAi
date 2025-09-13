@@ -92,12 +92,25 @@ $router->add('POST', '/settings', 'SettingsController@index');
 
 // Change language
 $router->add('POST', '/change-lang', function() {
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    $lang = $_POST['lang'] ?? 'tr';
-    if (in_array($lang, ['tr', 'en'])) {
-        \App\Helpers\Lang::set($lang);
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
     }
-    header('Location: ' . (\App\Helpers\Url::to('/')));
+
+    $lang = $_POST['lang'] ?? 'tr';
+
+    // Validate language
+    if (in_array($lang, ['tr', 'en'])) {
+        try {
+            \App\Helpers\Lang::set($lang);
+        } catch (Exception $e) {
+            // Log error if needed
+            error_log('Language change error: ' . $e->getMessage());
+        }
+    }
+
+    // Redirect back to current page or home
+    $referer = $_SERVER['HTTP_REFERER'] ?? '/';
+    header('Location: ' . $referer);
     exit;
 });
 

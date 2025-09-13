@@ -202,7 +202,7 @@ function __($key) {
 
               <!-- Language Dropdown -->
               <div id="lang-menu" class="absolute hidden right-0 mt-2 w-32 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/20 py-2 z-50">
-                <form method="post" action="/change-lang">
+                <form method="post" action="<?= Url::to('/change-lang') ?>">
                   <button type="submit" name="lang" value="tr" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
                     <span class="text-lg">🇹🇷</span>
                     <span class="text-sm font-medium text-slate-800 dark:text-white"><?= __('turkish') ?: 'Türkçe' ?></span>
