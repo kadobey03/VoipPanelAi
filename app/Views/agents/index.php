@@ -297,6 +297,7 @@
           <!-- Hover Effect Overlay -->
           <div class="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
         </div>
+        */ ?>
         <?php endforeach; ?>
       </div>
     </div>
@@ -319,6 +320,12 @@
     foreach ($agents as $agentIndex => $a):
     echo "Rendering agent: " . htmlspecialchars($a['exten'] ?? 'no exten') . "<br>";
     ?>
+    <div class="agent-card bg-white p-4 m-2 border">
+      <h3>Agent: <?= htmlspecialchars($a['exten'] ?? 'no exten') ?></h3>
+      <p>Login: <?= htmlspecialchars($a['user_login'] ?? 'no login') ?></p>
+      <p>Status: <?= htmlspecialchars($a['status'] ?? 'no status') ?></p>
+    </div>
+    <?php /*
     <div class="agent-card group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:-translate-y-2 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden animate-in slide-in-from-bottom-4 duration-500" style="animation-delay: <?= $agentIndex * 50 ?>ms">
       <!-- Status Indicator -->
       <div class="absolute top-4 right-4 z-10">
