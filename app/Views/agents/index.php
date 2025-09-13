@@ -135,42 +135,6 @@
     <div class="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
   </section>
 </div>
-  <!-- Advanced Filters and Search -->
-  <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 dark:border-slate-700/50 p-6 mb-8">
-    <div class="flex items-center gap-2 mb-4">
-      <i class="fa-solid fa-filter text-rose-600"></i>
-      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Filtreler ve Arama</h3>
-    </div>
-  
-    <div class="flex flex-col lg:flex-row gap-4">
-      <!-- Search Input -->
-      <div class="flex-1">
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
-          </div>
-          <input type="text" id="agentSearch" placeholder="Agent ara (login, exten, lead)..."
-                 class="w-full pl-12 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200">
-        </div>
-      </div>
-  
-      <!-- Status Filter -->
-      <div class="flex gap-2 flex-wrap">
-        <button onclick="filterByStatus('all')" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-          <i class="fa-solid fa-list mr-2"></i>Tümü
-        </button>
-        <button onclick="filterByStatus('online')" class="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors">
-          <i class="fa-solid fa-circle mr-2"></i>Çevrimiçi
-        </button>
-        <button onclick="filterByStatus('ringing')" class="px-4 py-2 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 rounded-xl hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors">
-          <i class="fa-solid fa-phone mr-2"></i>Çalıyor
-        </button>
-        <button onclick="filterByStatus('offline')" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-          <i class="fa-solid fa-circle-xmark mr-2"></i>Çevrimdışı
-        </button>
-      </div>
-    </div>
-  </div>
   
   <?php if (!empty($error)): ?>
   <div class="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -602,86 +566,6 @@ function closeAgentModal() {
   document.getElementById('agentModal').classList.add('hidden');
 }
 
-// Filter functions
-function filterByStatus(status) {
-  const cards = document.querySelectorAll('.agent-card');
-  const buttons = document.querySelectorAll('[onclick*="filterByStatus"]');
-
-  // Update button states
-  buttons.forEach(btn => {
-    btn.classList.remove('ring-2', 'ring-rose-500', 'bg-rose-100', 'text-rose-800', 'dark:bg-rose-900/50', 'dark:text-rose-300');
-    btn.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-300');
-  });
-
-  if (status !== 'all') {
-    event.target.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-300');
-    event.target.classList.add('ring-2', 'ring-rose-500', 'bg-rose-100', 'text-rose-800', 'dark:bg-rose-900/50', 'dark:text-rose-300');
-  }
-
-  // Filter cards
-  cards.forEach(card => {
-    if (status === 'all') {
-      card.style.display = 'block';
-      card.classList.remove('animate-out', 'slide-out-to-bottom-4');
-      setTimeout(() => {
-        card.classList.add('animate-in', 'slide-in-from-bottom-4');
-      }, 100);
-    } else {
-      const statusIndicator = card.querySelector('.absolute.top-4.right-4 div');
-      let currentStatus = 'offline';
-
-      if (statusIndicator && statusIndicator.classList.contains('bg-emerald-500')) {
-        currentStatus = 'online';
-      } else if (statusIndicator && statusIndicator.classList.contains('bg-amber-500')) {
-        currentStatus = 'ringing';
-      } else if (statusIndicator && statusIndicator.classList.contains('bg-red-500')) {
-        currentStatus = 'busy';
-      }
-
-      if (currentStatus === status) {
-        card.style.display = 'block';
-        card.classList.remove('animate-out', 'slide-out-to-bottom-4');
-        setTimeout(() => {
-          card.classList.add('animate-in', 'slide-in-from-bottom-4');
-        }, 100);
-      } else {
-        card.classList.add('animate-out', 'slide-out-to-bottom-4');
-        setTimeout(() => {
-          card.style.display = 'none';
-        }, 300);
-      }
-    }
-  });
-}
-
-// Search functionality
-document.getElementById('agentSearch').addEventListener('input', function(e) {
-  const searchTerm = e.target.value.toLowerCase();
-  const cards = document.querySelectorAll('.agent-card');
-
-  cards.forEach(card => {
-    const loginElement = card.querySelector('.text-lg.font-bold');
-    const extenElement = card.querySelector('.fa-hashtag');
-    const leadElement = card.querySelector('.fa-user-tie');
-
-    const login = loginElement ? loginElement.textContent.toLowerCase() : '';
-    const exten = extenElement ? extenElement.parentNode.textContent.toLowerCase() : '';
-    const lead = leadElement ? leadElement.parentNode.textContent.toLowerCase() : '';
-
-    if (login.includes(searchTerm) || exten.includes(searchTerm) || lead.includes(searchTerm)) {
-      card.style.display = 'block';
-      card.classList.remove('animate-out', 'slide-out-to-bottom-4');
-      setTimeout(() => {
-        card.classList.add('animate-in', 'slide-in-from-bottom-4');
-      }, 100);
-    } else {
-      card.classList.add('animate-out', 'slide-out-to-bottom-4');
-      setTimeout(() => {
-        card.style.display = 'none';
-      }, 300);
-    }
-  });
-});
 
 // Close modals when clicking outside or pressing Escape
 document.addEventListener('click', function(event) {

@@ -106,6 +106,10 @@ class AgentsController {
                     $r = $stmt->get_result()->fetch_assoc();
                     if ($r) $localGroup = $r['name'];
                     $stmt->close();
+                    // Eğer local eşleşme yoksa, API'deki adı kullan
+                    if (!$localGroup) {
+                        $localGroup = $apiGroup;
+                    }
                 }
                 $stmt = $db->prepare('INSERT INTO agents (exten, user_login, group_name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE user_login=VALUES(user_login), group_name=VALUES(group_name), updated_at=NOW()');
                 $stmt->bind_param('sss', $exten, $login, $localGroup);
@@ -258,6 +262,10 @@ class AgentsController {
                 $r = $stmt->get_result()->fetch_assoc();
                 if ($r) $localGroup = $r['name'];
                 $stmt->close();
+                // Eğer local eşleşme yoksa, API'deki adı kullan
+                if (!$localGroup) {
+                    $localGroup = $apiGroup;
+                }
             }
             $stmt = $db->prepare('INSERT INTO agents (exten, user_login, group_name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE user_login=VALUES(user_login), group_name=VALUES(group_name), updated_at=NOW()');
             $stmt->bind_param('sss', $exten, $login, $localGroup);
