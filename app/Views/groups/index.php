@@ -167,10 +167,10 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
         </div>
 
         <?php if ($isSuper): ?>
-        <button onclick="openTopupModal(<?= (int)$g['id'] ?>, '<?= htmlspecialchars($g['name']) ?>', <?= (float)$g['balance'] ?>)"
-                class="inline-flex items-center px-4 py-2 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-200">
+        <a href="<?= \App\Helpers\Url::to('/groups/topup') ?>?id=<?= (int)$g['id'] ?>"
+           class="inline-flex items-center px-4 py-2 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-200">
           <i class="fa-solid fa-plus mr-1"></i>Yükle
-        </button>
+        </a>
         <?php endif; ?>
       </div>
     </div>
@@ -201,71 +201,6 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
   </div>
 </div>
 
-<!-- Topup Modal -->
-<?php if ($isSuper): ?>
-<div id="topupModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-<?php endif; ?>
-  <div class="flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full">
-      <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-        <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-          <?php if ($isSuper): ?>
-          <i class="fa-solid fa-plus mr-2 text-emerald-500"></i>Bakiye Yükle
-          <?php endif; ?>
-        </h3>
-        <button onclick="closeTopupModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-          <i class="fa-solid fa-times text-xl"></i>
-        </button>
-      </div>
-
-      <form id="topupForm" method="POST" action="" class="p-6">
-        <div class="space-y-4">
-          <div class="text-center mb-6">
-            <h4 id="topupGroupName" class="text-lg font-semibold text-slate-800 dark:text-white"></h4>
-            <p class="text-sm text-slate-600 dark:text-slate-400">
-              Mevcut Bakiye: $<span id="currentBalance"></span>
-            </p>
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-              <i class="fa-solid fa-dollar-sign mr-2 text-emerald-500"></i>Yüklenecek Tutar
-            </label>
-            <input type="number" name="amount" step="0.01" min="0.01" required
-                   class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
-                   placeholder="0.00">
-          </div>
-
-          <?php if ($isSuper): ?>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-              <i class="fa-solid fa-credit-card mr-2 text-blue-500"></i>Yükleme Yöntemi
-            </label>
-            <select name="method" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-              <option value="manual">Manuel Yükleme</option>
-              <option value="bank">Banka Transferi</option>
-              <option value="credit">Kredi Kartı</option>
-              <option value="crypto">Kripto Para</option>
-            </select>
-          </div>
-          <?php endif; ?>
-          <input type="hidden" name="method" value="manual">
-        </div>
-
-        <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-          <button type="button" onclick="closeTopupModal()" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 transition-colors duration-200">
-            İptal
-          </button>
-          <button type="submit" class="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors duration-200">
-            <?php if ($isSuper): ?>
-            <i class="fa-solid fa-plus mr-1"></i>Yükle
-            <?php endif; ?>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 
 <script>
 // Store groups data for modal
@@ -360,39 +295,17 @@ function closeModal() {
   document.getElementById('groupModal').classList.add('hidden');
 }
 
-function openTopupModal(groupId, groupName, currentBalance) {
-  <?php if ($isSuper): ?>
-  document.getElementById('topupGroupName').textContent = groupName;
-  document.getElementById('currentBalance').textContent = currentBalance.toFixed(2);
-  document.getElementById('topupForm').action = `<?= \App\Helpers\Url::to('/groups/topup') ?>?id=${groupId}`;
-  document.getElementById('topupModal').classList.remove('hidden');
-  <?php endif; ?>
-}
-
-function closeTopupModal() {
-  <?php if ($isSuper): ?>
-  document.getElementById('topupModal').classList.add('hidden');
-  <?php endif; ?>
-}
 
 // Close modals when clicking outside or pressing Escape
 document.addEventListener('click', function(event) {
   if (event.target.id === 'groupModal') {
     closeModal();
   }
-  <?php if ($isSuper): ?>
-  if (event.target.id === 'topupModal') {
-    closeTopupModal();
-  }
-  <?php endif; ?>
 });
 
 document.addEventListener('keydown', function(event) {
   if (event.key === 'Escape') {
     closeModal();
-    <?php if ($isSuper): ?>
-    closeTopupModal();
-    <?php endif; ?>
   }
 });
 </script>
