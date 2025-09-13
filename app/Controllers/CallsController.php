@@ -69,14 +69,10 @@ class CallsController {
         if ($isGroupMember) {
             // Groupmember için doğrudan exten üzerinden filtrele
             $userExten = $user['exten'] ?? '';
-            error_log("Groupmember user_id: " . ($user['id'] ?? 'unknown') . ", exten: " . $userExten . ", role: " . ($user['role'] ?? 'unknown'));
             if (!empty($userExten)) {
                 $where .= ' AND src=?';
                 $types.='s';
                 $params[] = $userExten;
-                error_log("Applied groupmember filter: src=" . $userExten);
-            } else {
-                error_log("Groupmember has no exten!");
             }
         }
         if ($isSuper && $selectedGroup) { $where .= ' AND group_id=?'; $types.='i'; $params[] = $selectedGroup; }

@@ -102,10 +102,11 @@ class ReportsController {
                    LEFT JOIN users u ON u.exten=c.src
                    LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
                    WHERE $where";
-        if ($groupFilter && !$this->isGroupMember()) { $sql3 .= ' AND cg.id=?'; $types .= 'i'; $params[] = $groupFilter; }
+        $types3 = $types; $params3 = $params;
+        if ($groupFilter && !$this->isGroupMember()) { $sql3 .= ' AND cg.id=?'; $types3 .= 'i'; $params3[] = $groupFilter; }
         $sql3 .= ' GROUP BY u.login, cg.name, u.exten ORDER BY cost DESC';
         $stmt = $db->prepare($sql3);
-        $stmt->bind_param($types, ...$params);
+        $stmt->bind_param($types3, ...$params3);
         $stmt->execute();
         $agentStats = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
@@ -136,10 +137,11 @@ class ReportsController {
                    FROM calls c
                    LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
                    WHERE $where";
-        if ($groupFilter && !$this->isGroupMember()) { $sql4 .= ' AND cg.id=?'; $types .= 'i'; $params[] = $groupFilter; }
+        $types4 = $types; $params4 = $params;
+        if ($groupFilter && !$this->isGroupMember()) { $sql4 .= ' AND cg.id=?'; $types4 .= 'i'; $params4[] = $groupFilter; }
         $sql4 .= ' GROUP BY UPPER(c.disposition)';
         $stmt = $db->prepare($sql4);
-        $stmt->bind_param($types, ...$params);
+        $stmt->bind_param($types4, ...$params4);
         $stmt->execute();
         $dispRows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
