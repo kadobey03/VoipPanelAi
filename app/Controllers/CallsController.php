@@ -14,6 +14,9 @@ class CallsController {
         $this->requireAuth();
         $db=DB::conn();
         $gid = isset($_GET['group_id']) ? (int)$_GET['group_id'] : ($this->isSuper()? null : (int)$this->currentGroupId());
+        // groups map for display
+        $groupNames = [];
+        if ($res=$db->query('SELECT id,name FROM groups')){ while($r=$res->fetch_assoc()){ $groupNames[(int)$r['id']]=$r['name']; } }
         if ($gid) {
             $stmt=$db->prepare('SELECT call_id, src, dst, start, duration, billsec, disposition, group_id, user_id, cost_api, margin_percent, amount_charged FROM calls WHERE group_id=? ORDER BY start DESC LIMIT 200');
             $stmt->bind_param('i',$gid);
@@ -61,8 +64,9 @@ class CallsController {
         $stmt->execute(); $res = $stmt->get_result();
         $calls=[]; while($row=$res->fetch_assoc()){$calls[]=$row;} $stmt->close();
 
-        // group options for super admin
-        $groups=[]; if ($isSuper) { if($r=$db->query('SELECT id,name FROM groups ORDER BY name')){ while($rw=$r->fetch_assoc()){$groups[]=$rw;} } }
+        // groups map for display (and options for super admin)
+        $groupNames=[]; $groups=[];
+        if($r=$db->query('SELECT id,name FROM groups ORDER BY name')){ while($rw=$r->fetch_assoc()){ $groupNames[(int)$rw['id']]=$rw['name']; $groups[]=$rw; } }
 
         require __DIR__.'/../Views/calls/history.php';
     }
@@ -116,7 +120,12 @@ class CallsController {
                     $duration = (int)($cdr['duration'] ?? 0);
                     $billsec = (int)($cdr['billsec'] ?? 0);
                     $disp = $cdr['disposition'] ?? '';
-                    $costApi = isset($cdr['cost']) ? (float)$cdr['cost'] : 0.0;
+                    // Try multiple possible cost keys
+                    $costApi = 0.0;
+                    if (isset($cdr['cost'])) { $costApi = (float)$cdr['cost']; }
+                    elseif (isset($cdr['price'])) { $costApi = (float)$cdr['price']; }
+                    elseif (isset($cdr['call_cost'])) { $costApi = (float)$cdr['call_cost']; }
+                    elseif (isset($cdr['charge'])) { $costApi = (float)$cdr['charge']; }
                     $groupId = 0; $userId = 0;
                     if ($src) {
                         if (isset($userMap[$src])) { $groupId = (int)$userMap[$src]; }
@@ -205,7 +214,11 @@ class CallsController {
                     $duration = (int)($cdr['duration'] ?? 0);
                     $billsec = (int)($cdr['billsec'] ?? 0);
                     $disp = $cdr['disposition'] ?? '';
-                    $costApi = isset($cdr['cost']) ? (float)$cdr['cost'] : 0.0; // may be absent
+                    $costApi = 0.0; // may be absent
+                    if (isset($cdr['cost'])) { $costApi = (float)$cdr['cost']; }
+                    elseif (isset($cdr['price'])) { $costApi = (float)$cdr['price']; }
+                    elseif (isset($cdr['call_cost'])) { $costApi = (float)$cdr['call_cost']; }
+                    elseif (isset($cdr['charge'])) { $costApi = (float)$cdr['charge']; }
                     // map to user/group by extension
                     $groupId = 0; $userId = 0;
                     if ($src) {

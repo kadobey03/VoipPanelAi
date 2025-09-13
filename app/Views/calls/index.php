@@ -42,7 +42,8 @@
           <td class="p-2"><?= (int)$c['duration'] ?></td>
           <td class="p-2"><?= (int)$c['billsec'] ?></td>
           <td class="p-2"><span class="px-2 py-0.5 rounded text-xs <?= strtoupper($c['disposition'])==='ANSWERED'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200':'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' ?>"><?= htmlspecialchars($c['disposition']) ?></span></td>
-          <td class="p-2"><?= (int)$c['group_id'] ?></td>
+          <?php $gn = isset($groupNames) && isset($groupNames[(int)$c['group_id']]) ? $groupNames[(int)$c['group_id']] : ('#'.(int)$c['group_id']); ?>
+          <td class="p-2"><?= htmlspecialchars($gn) ?></td>
           <td class="p-2"><?= number_format((float)$c['cost_api'],6) ?></td>
           <td class="p-2"><?= number_format((float)$c['margin_percent'],2) ?></td>
           <td class="p-2"><?= number_format((float)$c['amount_charged'],6) ?></td>

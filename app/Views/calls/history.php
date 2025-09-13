@@ -68,7 +68,7 @@
           <tr class="border-b border-slate-100 dark:border-slate-700/60 hover:bg-slate-50/60 dark:hover:bg-slate-900/20 transition">
             <td class="p-2 whitespace-nowrap"><?= htmlspecialchars($c['start']) ?></td>
             <td class="p-2"><?= htmlspecialchars($c['src']) ?></td>
-            <?php if ($isSuper): ?><td class="p-2"><?= (int)$c['group_id'] ?></td><?php endif; ?>
+            <?php if ($isSuper): ?><td class="p-2"><?= htmlspecialchars(($groupNames[(int)$c['group_id']] ?? ('#'.$c['group_id']))) ?></td><?php endif; ?>
             <td class="p-2"><?= htmlspecialchars($c['dst']) ?></td>
             <td class="p-2"><span class="px-2 py-0.5 rounded text-xs <?= strtoupper($c['disposition'])==='ANSWERED'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200':'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' ?>"><?= htmlspecialchars($c['disposition']) ?></span></td>
             <td class="p-2"><?= (int)$c['duration'] ?></td>
@@ -96,4 +96,3 @@
     <?php endif; ?>
   </div>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
-
