@@ -44,7 +44,7 @@ class UserController {
             $exten = trim($_POST['exten'] ?? '');
             $role = $this->isSuperAdmin() ? ($_POST['role'] ?? 'groupadmin') : 'groupadmin';
             $group_id = $this->isSuperAdmin() ? (int)($_POST['group_id'] ?? 0) : (int)($_SESSION['user']['group_id'] ?? 0);
-            $agent_id = $this->isSuperAdmin() && $role === 'groupmember' ? (int)($_POST['agent_id'] ?? 0) : null;
+            $agent_id = $this->isSuperAdmin() && ($role === 'groupmember' || $role === 'user') ? (int)($_POST['agent_id'] ?? 0) : null;
             if ($login && $password) {
                 $hash = Security::hash($password);
                 if ($agent_id !== null) {
@@ -88,6 +88,7 @@ class UserController {
             $exten = isset($_POST['exten']) ? trim($_POST['exten']) : null;
             $role = $this->isSuperAdmin() ? ($_POST['role'] ?? 'groupadmin') : null;
             $group_id = $this->isSuperAdmin() ? (int)($_POST['group_id'] ?? 0) : null;
+            $agent_id = $this->isSuperAdmin() && ($role === 'groupmember' || $role === 'user') ? (int)($_POST['agent_id'] ?? 0) : null;
 
             $sql = 'UPDATE users SET login=?';
             $types = 's';
@@ -96,6 +97,7 @@ class UserController {
             if ($exten !== null) { $sql .= ', exten=?'; $types.='s'; $params[] = $exten; }
             if ($role !== null) { $sql .= ', role=?'; $types.='s'; $params[] = $role; }
             if ($group_id !== null) { $sql .= ', group_id=?'; $types.='i'; $params[] = $group_id; }
+            if ($agent_id !== null) { $sql .= ', agent_id=?'; $types.='i'; $params[] = $agent_id; }
             $sql .= ' WHERE id=?'; $types.='i'; $params[] = $id;
             $stmt = $mysqli->prepare($sql);
             $stmt->bind_param($types, ...$params);
