@@ -105,14 +105,27 @@ class DB {
                 `group_id` INT NOT NULL,
                 `user_id` INT NOT NULL,
                 `amount` DECIMAL(12,4) NOT NULL,
-                `method` VARCHAR(50) NOT NULL,
+                `method` VARCHAR(100) NOT NULL,
+                `method_id` INT NULL,
+                `fee_percent` DECIMAL(5,2) DEFAULT 0.00,
+                `fee_fixed` DECIMAL(12,4) DEFAULT 0.0000,
+                `charge_total` DECIMAL(12,4) DEFAULT 0.0000,
                 `status` ENUM('pending','approved','rejected') DEFAULT 'pending',
                 `note` VARCHAR(255) NULL,
                 `reference` VARCHAR(64) NULL,
+                `receipt_path` VARCHAR(255) NULL,
                 `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 `approved_at` DATETIME NULL,
                 `approved_by` INT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-        } else { $res->free(); }
+        } else { if ($res) $res->free();
+            // add missing columns
+            $hasCol = function(string $table, string $col) use ($db): bool { $r=$db->query("SHOW COLUMNS FROM `$table` LIKE '".$db->real_escape_string($col)."'"); if(!$r) return false; $e=$r->num_rows>0; $r->free(); return $e; };
+            if (!$hasCol('topup_requests','method_id')) { $db->query('ALTER TABLE `topup_requests` ADD COLUMN `method_id` INT NULL AFTER `method`'); }
+            if (!$hasCol('topup_requests','fee_percent')) { $db->query('ALTER TABLE `topup_requests` ADD COLUMN `fee_percent` DECIMAL(5,2) DEFAULT 0.00 AFTER `method_id`'); }
+            if (!$hasCol('topup_requests','fee_fixed')) { $db->query('ALTER TABLE `topup_requests` ADD COLUMN `fee_fixed` DECIMAL(12,4) DEFAULT 0.0000 AFTER `fee_percent`'); }
+            if (!$hasCol('topup_requests','charge_total')) { $db->query('ALTER TABLE `topup_requests` ADD COLUMN `charge_total` DECIMAL(12,4) DEFAULT 0.0000 AFTER `fee_fixed`'); }
+            if (!$hasCol('topup_requests','receipt_path')) { $db->query('ALTER TABLE `topup_requests` ADD COLUMN `receipt_path` VARCHAR(255) NULL AFTER `reference`'); }
+        }
     }
 }

@@ -27,6 +27,9 @@
           <td class="p-2"><?= htmlspecialchars((string)$u['group_id']) ?></td>
           <td class="p-2 space-x-2">
             <a class="inline-flex items-center gap-1 text-blue-600 hover:underline" href="<?= \App\Helpers\Url::to('/users/edit') ?>?id=<?= (int)$u['id'] ?>"><i class="fa-regular fa-pen-to-square"></i> Düzenle</a>
+            <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']==='superadmin'): ?>
+            <a class="inline-flex items-center gap-1 text-amber-600 hover:underline" href="<?= \App\Helpers\Url::to('/admin/impersonate') ?>?id=<?= (int)$u['id'] ?>" title="Login as"><i class="fa-solid fa-right-to-bracket"></i> Login as</a>
+            <?php endif; ?>
             <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']==='superadmin' && (int)$u['id']>1): ?>
             <form method="post" action="<?= \App\Helpers\Url::to('/users/delete') ?>" style="display:inline" onsubmit="return confirm('Silinsin mi?')">
               <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">

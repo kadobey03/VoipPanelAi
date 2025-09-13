@@ -52,6 +52,7 @@ $router->add('POST', '/webhook/momvoip', 'WebhookController@momvoip');
 $router->add('GET', '/topups', 'TopupController@index');
 $router->add('POST', '/topups/approve', 'TopupController@approve');
 $router->add('POST', '/topups/reject', 'TopupController@reject');
+$router->add('GET', '/topups/receipt', 'TopupController@receipt');
 
 // Profile
 $router->add('GET', '/profile', 'ProfileController@index');

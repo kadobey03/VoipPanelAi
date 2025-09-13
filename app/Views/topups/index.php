@@ -13,6 +13,8 @@
           <th class="p-2">Tutar</th>
           <th class="p-2">Yöntem</th>
           <th class="p-2">Durum</th>
+          <th class="p-2">Not</th>
+          <th class="p-2">Dekont</th>
           <th class="p-2">Tarih</th>
           <?php if ($isSuper): ?><th class="p-2">İşlem</th><?php endif; ?>
         </tr>
@@ -30,6 +32,12 @@
             <span class="px-2 py-0.5 rounded text-xs <?= $cls ?>"><?= htmlspecialchars($st) ?></span>
           </td>
           <td class="p-2"><?= htmlspecialchars($it['created_at']) ?></td>
+          <td class="p-2"><?= htmlspecialchars((string)$it['note']) ?></td>
+          <td class="p-2">
+            <?php if (!empty($it['receipt_path'])): ?>
+              <a class="text-blue-600 hover:underline" href="<?= \App\Helpers\Url::to('/topups/receipt') ?>?id=<?= (int)$it['id'] ?>" target="_blank">Görüntüle</a>
+            <?php endif; ?>
+          </td>
           <?php if ($isSuper): ?>
           <td class="p-2 space-x-2">
             <?php if ($it['status']==='pending'): ?>
@@ -50,4 +58,3 @@
     </table>
   </div>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
-

@@ -55,5 +55,21 @@ class TopupController {
         $stmt->bind_param('sii', $now, $adminId, $id); $stmt->execute(); $stmt->close();
         \App\Helpers\Url::redirect('/topups');
     }
-}
 
+    public function receipt(){
+        $this->start();
+        $id = (int)($_GET['id'] ?? 0);
+        $db = DB::conn();
+        $stmt=$db->prepare('SELECT tr.receipt_path, tr.group_id FROM topup_requests tr WHERE tr.id=?');
+        $stmt->bind_param('i',$id); $stmt->execute(); $row=$stmt->get_result()->fetch_assoc(); $stmt->close();
+        if(!$row || empty($row['receipt_path'])){ http_response_code(404); echo 'Bulunamadı'; return; }
+        // Permission: super admin or same group
+        if (!($this->isSuper() || ((int)($_SESSION['user']['group_id'] ?? 0) === (int)$row['group_id']))) { http_response_code(403); echo 'Yetkisiz'; return; }
+        $path = __DIR__.'/../../'.ltrim($row['receipt_path'],'/');
+        if (!is_file($path)) { http_response_code(404); echo 'Dosya yok'; return; }
+        $mime = mime_content_type($path) ?: 'application/octet-stream';
+        header('Content-Type: '.$mime);
+        header('Content-Length: '.filesize($path));
+        readfile($path);
+    }
+}
