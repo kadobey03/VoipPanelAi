@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize loading state
     initLoadingState();
+
+    // Initialize color rotation
+    initColorRotation();
 });
 
 // Particle Animation Function
@@ -135,31 +138,97 @@ function initLoadingState() {
         submitBtn.classList.add('loading');
         submitBtn.disabled = true;
 
-        // Update button text
+        // Update button text with enhanced animation
         const btnText = submitBtn.querySelector('span');
         if (btnText) {
-            btnText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Giriş yapılıyor...';
+            btnText.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> <span class="animate-pulse">Giriş yapılıyor...</span>';
         }
 
-        // Add subtle animation to card
+        // Enhanced card animation with shake effect
         const card = document.querySelector('.login-card');
         if (card) {
             card.style.transform = 'scale(0.98)';
+            card.classList.add('animate-pulse');
             setTimeout(() => {
                 card.style.transform = '';
+                card.classList.remove('animate-pulse');
             }, 2000);
         }
+
+        // Add loading particles around the button
+        createLoadingParticles(submitBtn);
+
+        // Disable all inputs during loading
+        const inputs = form.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.disabled = true;
+            input.style.opacity = '0.7';
+        });
     });
 }
 
-// Mouse movement parallax effect
+// Create loading particles effect
+function createLoadingParticles(button) {
+    const rect = button.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    for (let i = 0; i < 8; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'loading-particle';
+        particle.style.cssText = `
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            left: ${centerX}px;
+            top: ${centerY}px;
+            animation: loadingParticle 1.5s ease-out ${i * 0.1}s;
+        `;
+
+        document.body.appendChild(particle);
+
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+            }
+        }, 2000);
+    }
+
+    // Add CSS for loading particle animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes loadingParticle {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0) rotate(360deg) translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Enhanced mouse movement parallax effect
 document.addEventListener('mousemove', function(e) {
     if (!document.querySelector('.login-background')) return;
 
     const particles = document.querySelectorAll('.particle');
+    const decorativeElements = document.querySelectorAll('.absolute');
     const mouseX = e.clientX / window.innerWidth;
     const mouseY = e.clientY / window.innerHeight;
 
+    // Particle movement
     particles.forEach((particle, index) => {
         const speed = (index % 3 + 1) * 0.5;
         const x = (mouseX - 0.5) * speed;
@@ -167,6 +236,22 @@ document.addEventListener('mousemove', function(e) {
 
         particle.style.transform += ` translate(${x}px, ${y}px)`;
     });
+
+    // Decorative elements parallax
+    decorativeElements.forEach((element, index) => {
+        if (element.classList.contains('blur-xl') || element.classList.contains('blur-lg')) {
+            const speed = 0.3;
+            const x = (mouseX - 0.5) * speed;
+            const y = (mouseY - 0.5) * speed;
+            element.style.transform = `translate(${x}px, ${y}px)`;
+        }
+    });
+
+    // Dynamic background color shift based on mouse position
+    const body = document.body;
+    const intensity = Math.abs(mouseX - 0.5) + Math.abs(mouseY - 0.5);
+    const hue = (mouseX * 360) % 360;
+    body.style.filter = `hue-rotate(${hue}deg) brightness(${1 + intensity * 0.2})`;
 });
 
 // Intersection Observer for scroll animations
@@ -267,9 +352,73 @@ function showSuccessAnimation() {
     }, 1000);
 }
 
+// Color Rotation Function
+function initColorRotation() {
+    const colors = [
+        'from-indigo-600 via-purple-600 to-blue-600',
+        'from-cyan-500 via-purple-500 to-pink-500',
+        'from-green-500 via-blue-500 to-purple-500',
+        'from-yellow-500 via-pink-500 to-red-500',
+        'from-teal-500 via-cyan-500 to-blue-500'
+    ];
+
+    let colorIndex = 0;
+
+    setInterval(() => {
+        const logoContainer = document.querySelector('.logo-container .relative.p-4');
+        if (logoContainer) {
+            logoContainer.className = `relative p-4 bg-gradient-to-r ${colors[colorIndex]} rounded-full floating animate-spin-slow`;
+        }
+
+        // Rotate button colors too
+        const button = document.querySelector('.login-btn');
+        if (button) {
+            const buttonColors = [
+                'from-indigo-600 via-purple-600 to-pink-600',
+                'from-cyan-600 via-purple-600 to-blue-600',
+                'from-green-600 via-blue-600 to-purple-600',
+                'from-yellow-600 via-pink-600 to-red-600',
+                'from-teal-600 via-cyan-600 to-blue-600'
+            ];
+            button.className = `login-btn w-full bg-gradient-to-r ${buttonColors[colorIndex]} text-white font-semibold rounded-xl p-4 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-purple-500/50 relative overflow-hidden group`;
+        }
+
+        colorIndex = (colorIndex + 1) % colors.length;
+    }, 3000);
+
+    // Add sparkle effect to random elements
+    setInterval(() => {
+        const sparkles = document.querySelectorAll('.fa-star, .fa-sparkles, .fa-circle');
+        if (sparkles.length > 0) {
+            const randomSparkle = sparkles[Math.floor(Math.random() * sparkles.length)];
+            randomSparkle.style.animation = 'none';
+            setTimeout(() => {
+                randomSparkle.style.animation = '';
+            }, 10);
+        }
+    }, 2000);
+}
+
+// Add sparkle animation
+const sparkleStyle = document.createElement('style');
+sparkleStyle.textContent = `
+    .sparkle-bounce {
+        animation: sparkleBounce 0.8s ease-in-out;
+    }
+
+    @keyframes sparkleBounce {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        25% { transform: scale(1.2) rotate(90deg); }
+        50% { transform: scale(0.8) rotate(180deg); }
+        75% { transform: scale(1.1) rotate(270deg); }
+    }
+`;
+document.head.appendChild(sparkleStyle);
+
 // Export functions for potential use
 window.LoginAnimations = {
     showSuccessAnimation,
     createParticle,
-    initParticles
+    initParticles,
+    initColorRotation
 };
