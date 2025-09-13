@@ -266,7 +266,6 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
     </div>
   </div>
 </div>
-<?php endif; ?>
 
 <script>
 // Store groups data for modal
