@@ -42,13 +42,18 @@
           <td class="p-2"><?= (int)$c['duration'] ?></td>
           <td class="p-2"><?= (int)$c['billsec'] ?></td>
           <td class="p-2"><span class="px-2 py-0.5 rounded text-xs <?= strtoupper($c['disposition'])==='ANSWERED'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200':'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' ?>"><?= htmlspecialchars($c['disposition']) ?></span></td>
-          <?php $gn = isset($groupNames) && isset($groupNames[(int)$c['group_id']]) ? $groupNames[(int)$c['group_id']] : ('#'.(int)$c['group_id']); ?>
-          <td class="p-2"><?= htmlspecialchars($gn) ?></td>
+          <?php
+            $gid=(int)$c['group_id'];
+            $gn = $gid;
+            if (isset($groupNamesById) && isset($groupNamesById[$gid])) { $gn=$groupNamesById[$gid]; }
+            elseif (isset($groupNamesByApi) && isset($groupNamesByApi[$gid])) { $gn=$groupNamesByApi[$gid]; }
+          ?>
+          <td class="p-2"><?= htmlspecialchars(is_string($gn)?$gn:('#'.$gid)) ?></td>
           <td class="p-2"><?= number_format((float)$c['cost_api'],6) ?></td>
           <td class="p-2"><?= number_format((float)$c['margin_percent'],2) ?></td>
           <td class="p-2"><?= number_format((float)$c['amount_charged'],6) ?></td>
           <td class="p-2">
-            <?php if (!empty($c['call_id'])): ?>
+            <?php if (!empty($c['call_id']) && strtoupper($c['disposition'])==='ANSWERED'): ?>
               <a class="inline-flex items-center gap-1 text-blue-600 hover:underline" href="<?= \App\Helpers\Url::to('/calls/record') ?>?call_id=<?= urlencode($c['call_id']) ?>" target="_blank"><i class="fa-regular fa-circle-play"></i> Dinle</a>
             <?php endif; ?>
           </td>
