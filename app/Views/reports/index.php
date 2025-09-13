@@ -39,7 +39,7 @@
   </div>
 
   <div class="bg-white/80 dark:bg-slate-800 rounded-xl shadow p-4 mt-6">
-    <div class="text-lg font-semibold mb-2">API Call Plane (Kullanıcı Bazlı)</div>
+    <div class="text-lg font-semibold mb-2">Agent �zeti (DB)</div>
     <div class="overflow-x-auto">
       <table class="min-w-full text-xs md:text-sm">
         <thead class="bg-slate-50 dark:bg-slate-900/40">
@@ -54,7 +54,7 @@
           </tr>
         </thead>
         <tbody>
-          <?php foreach (($callStat ?? []) as $r): ?>
+          <?php foreach (($agentStats ?? []) as $r): ?>
           <tr class="border-b border-slate-100 dark:border-slate-700/60">
             <td class="p-2"><?= htmlspecialchars($r['user_login'] ?? '') ?></td>
             <td class="p-2"><?= htmlspecialchars($r['group_name'] ?? '') ?></td>
@@ -79,4 +79,5 @@
     new Chart(ctx, { type:'line', data:{ labels, datasets:[ {label:'Maliyet', data:cost, borderColor:'rgba(239,68,68,1)', backgroundColor:'rgba(239,68,68,0.2)', tension:.2}, {label:'Gelir', data:revenue, borderColor:'rgba(16,185,129,1)', backgroundColor:'rgba(16,185,129,0.2)', tension:.2} ] }, options:{responsive:true, scales:{y:{beginAtZero:true}}} });
   </script>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
+
 
