@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Helpers\ApiClient;
+use App\Helpers\DB;
 
 class AgentsController {
     private function startSession(){ if(session_status()===PHP_SESSION_NONE) session_start(); }
