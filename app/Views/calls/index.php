@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-phone text-rose-600"></i> Çağrılar</h1>
   </div>
   <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']==='superadmin'): ?>
-  <form method="post" action="<?= \App\Helpers\Url::to('/calls/sync') ?>" class="mb-4 bg-white/80 dark:bg-slate-800 p-3 rounded-xl shadow flex flex-wrap items-end gap-2">
+  <form method="post" action="<?= \App\Helpers\Url::to('/calls/sync-history') ?>" class="mb-4 bg-white/80 dark:bg-slate-800 p-3 rounded-xl shadow flex flex-wrap items-end gap-2">
     <div>
       <label class="block text-xs">Başlangıç</label>
       <input type="datetime-local" name="from" class="border rounded p-1 bg-white dark:bg-slate-900">
@@ -57,4 +57,3 @@
     </table>
   </div>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
-
