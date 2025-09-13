@@ -78,8 +78,7 @@ class ReportsController {
                  WHERE $where";
         $types3=$types; $params3=$params;
         if ($groupFilter) { $sql3 .= ' AND cg.id=?'; $types3.='i'; $params3[]=$groupFilter; }
-         .= ' GROUP BY u.login, cg.name, u.exten ORDER BY cost DESC';
-                 ORDER BY cost DESC";
+        $sql3 .= ' GROUP BY u.login, cg.name, u.exten ORDER BY cost DESC';
         $stmt = $db->prepare($sql3);
         $stmt->bind_param($types3, ...$params3);
         $stmt->execute();
