@@ -65,7 +65,8 @@ class AgentsController {
             $stmt->close();
             if ($r) $userGroupName = $r['name'];
             if ($isGroupMember) {
-                $userAgentId = isset($_SESSION['user']['agent_id']) ? (int)$_SESSION['user']['agent_id'] : 0;
+                // Groupmember için doğrudan exten üzerinden filtreleme yapılacak
+                $userExten = $_SESSION['user']['exten'] ?? '';
             }
         }
         $api = new ApiClient();
@@ -116,9 +117,9 @@ class AgentsController {
                     return ($a['active'] ?? 1) == 1 && $a['id'] == $userAgentId;
                 });
             } elseif ($isGroupMember) {
-                // Groupmember sadece kendi agent_id'sine ait agenti görür
-                $agentsDb = array_filter($agentsDb, function($a) use ($userAgentId) {
-                    return ($a['active'] ?? 1) == 1 && $a['id'] == $userAgentId;
+                // Groupmember sadece kendi exten'ine ait agenti görür
+                $agentsDb = array_filter($agentsDb, function($a) use ($userExten) {
+                    return ($a['active'] ?? 1) == 1 && $a['exten'] == $userExten;
                 });
             } else {
                 $agentsDb = array_filter($agentsDb, function($a) use ($userGroupName) {
