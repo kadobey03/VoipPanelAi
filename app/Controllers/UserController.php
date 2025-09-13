@@ -112,11 +112,14 @@ class UserController {
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
         $stmt->close();
-        // fetch groups for superadmin selection
+        // fetch groups and agents for superadmin selection
         $groups = [];
+        $agents = [];
         if ($this->isSuperAdmin()) {
             $res = $mysqli->query('SELECT id, name FROM groups ORDER BY name');
             while ($row = $res->fetch_assoc()) { $groups[] = $row; }
+            $res2 = $mysqli->query('SELECT id, user_login, exten FROM agents WHERE active=1 ORDER BY user_login');
+            while ($row = $res2->fetch_assoc()) { $agents[] = $row; }
         }
         require __DIR__.'/../Views/users/edit.php';
     }

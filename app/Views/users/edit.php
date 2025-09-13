@@ -41,6 +41,15 @@
           <?php endforeach; ?>
         </select>
       </div>
+      <div>
+        <label class="block text-sm mb-1">Ajan (user rolü için)</label>
+        <select name="agent_id" class="w-full border rounded p-2 bg-white dark:bg-slate-900">
+          <option value="">(seçiniz)</option>
+          <?php foreach (($agents ?? []) as $a): $aid=(int)$a['id']; ?>
+            <option value="<?= $aid ?>" <?= $aid===(int)$user['agent_id']?'selected':'' ?>><?= htmlspecialchars($a['user_login'] . ' (' . $a['exten'] . ')') ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
       <?php endif; ?>
       <button class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded p-2">Güncelle</button>
     </form>
