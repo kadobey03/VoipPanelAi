@@ -29,7 +29,6 @@
         <select name="role" class="w-full border rounded p-2 bg-white dark:bg-slate-900">
           <option value="groupadmin">groupadmin</option>
           <option value="user">user</option>
-          <option value="user">user</option>
           <option value="superadmin">superadmin</option>
         </select>
       </div>
@@ -39,6 +38,15 @@
           <option value="">(seçiniz)</option>
           <?php foreach (($groups ?? []) as $g): ?>
             <option value="<?= (int)$g['id'] ?>"><?= htmlspecialchars($g['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Ajan (user rolü için)</label>
+        <select name="agent_id" class="w-full border rounded p-2 bg-white dark:bg-slate-900">
+          <option value="">(seçiniz)</option>
+          <?php foreach (($agents ?? []) as $a): ?>
+            <option value="<?= (int)$a['id'] ?>"><?= htmlspecialchars($a['user_login'] . ' (' . $a['exten'] . ')') ?></option>
           <?php endforeach; ?>
         </select>
       </div>
