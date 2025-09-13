@@ -197,7 +197,7 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <?php foreach (($groupData['agents'] ?? []) as $agentIndex => $a): ?>
+        <?php foreach (($agentsByGroup[$groupIndex]['agents'] ?? []) as $agentIndex => $a): ?>
         <div class="agent-card group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:-translate-y-2 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden animate-in slide-in-from-bottom-4 duration-500" style="animation-delay: <?= ($groupIndex * 100) + ($agentIndex * 50) ?>ms">
           <!-- Status Indicator -->
           <div class="absolute top-4 right-4 z-10">
@@ -314,7 +314,7 @@
               </button>
 
               <?php if ($isSuper): ?>
-              <form method="post" action="/VoipPanelAi/agents/toggle-active" style="display:inline;">
+              <form method="post" action="/VoipPanelAi/agents/toggleHidden" style="display:inline;">
                 <input type="hidden" name="exten" value="<?= htmlspecialchars($a['exten']) ?>">
                 <button type="submit" class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium
                   <?= ($a['active'] ?? 1) ? 'bg-slate-600 text-white hover:bg-slate-700' : 'bg-emerald-600 text-white hover:bg-emerald-700' ?>
@@ -484,17 +484,20 @@ function showAgentDetails(groupIndex, agentIndex) {
   let agent;
   let groupName = '';
 
-  if (groupIndex >= 0 && agentsData.length > 0) {
+  if (groupIndex >= 0 && agentsData && typeof agentsData === 'object') {
     const groups = Object.values(agentsData);
-    if (groups[groupIndex]) {
-      agent = groups[groupIndex][agentIndex];
-      groupName = Object.keys(agentsData)[groupIndex];
+    if (groups[groupIndex] && groups[groupIndex]['agents']) {
+      agent = groups[groupIndex]['agents'][agentIndex];
+      groupName = groups[groupIndex]['groupName'] || Object.keys(agentsData)[groupIndex];
     }
   } else {
     // Single group view for non-super users
     const groupKey = Object.keys(agentsData)[0];
-    agent = agentsData[groupKey][agentIndex];
-    groupName = groupKey;
+    const groupData = agentsData[groupKey];
+    if (groupData && groupData['agents']) {
+      agent = groupData['agents'][agentIndex];
+      groupName = groupData['groupName'] || groupKey;
+    }
   }
 
   if (!agent) return;
@@ -624,11 +627,11 @@ function filterByStatus(status) {
       const statusIndicator = card.querySelector('.absolute.top-4.right-4 div');
       let currentStatus = 'offline';
 
-      if (statusIndicator.classList.contains('bg-emerald-500')) {
+      if (statusIndicator && statusIndicator.classList.contains('bg-emerald-500')) {
         currentStatus = 'online';
-      } else if (statusIndicator.classList.contains('bg-amber-500')) {
+      } else if (statusIndicator && statusIndicator.classList.contains('bg-amber-500')) {
         currentStatus = 'ringing';
-      } else if (statusIndicator.classList.contains('bg-red-500')) {
+      } else if (statusIndicator && statusIndicator.classList.contains('bg-red-500')) {
         currentStatus = 'busy';
       }
 
@@ -654,9 +657,13 @@ document.getElementById('agentSearch').addEventListener('input', function(e) {
   const cards = document.querySelectorAll('.agent-card');
 
   cards.forEach(card => {
-    const login = card.querySelector('.text-lg.font-bold').textContent.toLowerCase();
-    const exten = card.querySelector('.fa-hashtag').parentNode.textContent.toLowerCase();
-    const lead = card.textContent.toLowerCase();
+    const loginElement = card.querySelector('.text-lg.font-bold');
+    const extenElement = card.querySelector('.fa-hashtag');
+    const leadElement = card.querySelector('.fa-user-tie');
+
+    const login = loginElement ? loginElement.textContent.toLowerCase() : '';
+    const exten = extenElement ? extenElement.parentNode.textContent.toLowerCase() : '';
+    const lead = leadElement ? leadElement.parentNode.textContent.toLowerCase() : '';
 
     if (login.includes(searchTerm) || exten.includes(searchTerm) || lead.includes(searchTerm)) {
       card.style.display = 'block';

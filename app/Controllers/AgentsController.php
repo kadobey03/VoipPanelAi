@@ -141,21 +141,33 @@ class AgentsController {
 
         // Case-insensitive gruplama ve fallback
         $agentsByGroup = [];
-        foreach ($agents as $agent) {
-            $group = $agent['group'] ?? $agent['group_name'] ?? ''; // API yoksa DB'den fallback
-            // Case-insensitive karşılaştırma
-            if ($isSuper || (!$isGroupMember && strtolower($group) === strtolower($userGroupName))) {
+        if ($isSuper) {
+            // Süper admin tüm agent'ları görür
+            foreach ($agents as $agent) {
+                $group = $agent['group'] ?? $agent['group_name'] ?? 'Genel';
                 if (!isset($agentsByGroup[$group])) {
-                    $agentsByGroup[$group] = [];
+                    $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
                 }
-                $agentsByGroup[$group][] = $agent;
-            } elseif ($isGroupMember) {
-                // Groupmember sadece kendi agent'ını görür
-                $group = 'Kendi Agentınız';
-                if (!isset($agentsByGroup[$group])) {
-                    $agentsByGroup[$group] = [];
+                $agentsByGroup[$group]['agents'][] = $agent;
+            }
+        } else {
+            // Diğer kullanıcılar için filtreleme
+            foreach ($agents as $agent) {
+                $group = $agent['group'] ?? $agent['group_name'] ?? '';
+
+                if (!$isGroupMember && strtolower($group) === strtolower($userGroupName)) {
+                    if (!isset($agentsByGroup[$group])) {
+                        $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
+                    }
+                    $agentsByGroup[$group]['agents'][] = $agent;
+                } elseif ($isGroupMember) {
+                    // Groupmember sadece kendi agent'ını görür
+                    $group = 'Kendi Agentınız';
+                    if (!isset($agentsByGroup[$group])) {
+                        $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
+                    }
+                    $agentsByGroup[$group]['agents'][] = $agent;
                 }
-                $agentsByGroup[$group][] = $agent;
             }
         }
 
@@ -177,11 +189,16 @@ class AgentsController {
             die('Geçersiz');
         }
         $db = DB::conn();
-        $stmt = $db->prepare('UPDATE users SET hidden = 1 - hidden WHERE exten=?');
+        $stmt = $db->prepare('UPDATE agents SET active = 1 - active WHERE exten=?');
         $stmt->bind_param('s', $exten);
         $stmt->execute();
         $stmt->close();
-        header('Location: ' . \App\Helpers\Url::to('/agents'));
+        if (!headers_sent()) {
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+        } else {
+            echo '<script>window.location.href="' . \App\Helpers\Url::to('/agents') . '";</script>';
+        }
+        exit;
     }
 
     public function syncAgents() {
@@ -210,7 +227,12 @@ class AgentsController {
             $stmt->execute();
             $stmt->close();
         }
-        header('Location: ' . \App\Helpers\Url::to('/agents'));
+        if (!headers_sent()) {
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+        } else {
+            echo '<script>window.location.href="' . \App\Helpers\Url::to('/agents') . '";</script>';
+        }
+        exit;
     }
 
     public function toggleActive() {
@@ -227,6 +249,11 @@ class AgentsController {
         $stmt->bind_param('s', $exten);
         $stmt->execute();
         $stmt->close();
-        header('Location: ' . \App\Helpers\Url::to('/agents'));
+        if (!headers_sent()) {
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+        } else {
+            echo '<script>window.location.href="' . \App\Helpers\Url::to('/agents') . '";</script>';
+        }
+        exit;
     }
 }
