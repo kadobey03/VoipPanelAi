@@ -44,8 +44,9 @@ class AgentsController {
 
         // Groupmember için session'da agent_id yoksa veritabanından çek
         if ($isGroupMember && !isset($_SESSION['user']['agent_id'])) {
+            $userId = (int)$_SESSION['user']['id'];
             $stmt = $db->prepare('SELECT agent_id FROM users WHERE id=?');
-            $stmt->bind_param('i', (int)$_SESSION['user']['id']);
+            $stmt->bind_param('i', $userId);
             $stmt->execute();
             $r = $stmt->get_result()->fetch_assoc();
             if ($r && $r['agent_id']) {
