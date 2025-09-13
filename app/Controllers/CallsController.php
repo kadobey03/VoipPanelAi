@@ -72,8 +72,9 @@ class CallsController {
         $token = $_GET['token'] ?? ($_POST['token'] ?? '');
         $expected = getenv('CRON_TOKEN') ?: '';
         if (!$expected || $token !== $expected) { http_response_code(403); echo 'Forbidden'; return; }
-        $from = date('Y-m-d 00:00:00');
-        $to   = date('Y-m-d H:i:s');
+        // Default: last 24 hours (yesterday this time -> now)
+        $from = $_GET['from'] ?? $_POST['from'] ?? date('Y-m-d H:i:s', time()-86400);
+        $to   = $_GET['to']   ?? $_POST['to']   ?? date('Y-m-d H:i:s');
         // Reuse sync logic by inline call (duplicate of sync but without auth/session)
         $api = new ApiClient();
         $db = DB::conn();
@@ -160,7 +161,7 @@ class CallsController {
     public function sync(){
         $this->requireAuth();
         if (!$this->isSuper()) { http_response_code(403); echo 'Yetkisiz'; return; }
-        $from = $_POST['from'] ?? date('Y-m-d H:i:s', time()-3600);
+        $from = $_POST['from'] ?? date('Y-m-d H:i:s', time()-86400);
         $to   = $_POST['to']   ?? date('Y-m-d H:i:s');
         $api = new ApiClient();
         $db = DB::conn();
