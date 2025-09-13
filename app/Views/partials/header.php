@@ -6,6 +6,8 @@ use App\Helpers\Url;
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="/manifest.json">
   <title><?= isset($title) ? htmlspecialchars($title) : 'PapaM VoIP Panel' ?></title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -31,7 +33,6 @@ use App\Helpers\Url;
           <a class="hover:text-white transition" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
-          <a class="hover:text-white transition" href="<?= Url::to('/numbers') ?>"><i class="fa-solid fa-address-book"></i> Numaralar</a>
           <div class="relative">
             <button id="balance-menu-btn" class="hover:text-white transition inline-flex items-center gap-1"><i class="fa-solid fa-wallet"></i> Bakiye <i class="fa-solid fa-caret-down text-xs"></i></button>
             <div id="balance-menu" class="absolute hidden right-0 mt-2 w-60 bg-white text-slate-800 rounded shadow-lg py-2">
@@ -57,7 +58,6 @@ use App\Helpers\Url;
           <a class="hover:text-white" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
           <a class="hover:text-white" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
           <a class="hover:text-white" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
-          <a class="hover:text-white" href="<?= Url::to('/numbers') ?>"><i class="fa-solid fa-address-book"></i> Numaralar</a>
           <a class="hover:text-white" href="<?= Url::to('/topups') ?>"><i class="fa-solid fa-inbox"></i> Yükleme Talepleri</a>
           <a class="hover:text-white" href="<?= Url::to('/balance/topup') ?>"><i class="fa-solid fa-circle-plus"></i> Bakiye Yükle</a>
           <a class="hover:text-white" href="<?= Url::to('/transactions') ?>"><i class="fa-solid fa-clock-rotate-left"></i> Bakiye Geçmişi</a>
@@ -86,6 +86,13 @@ use App\Helpers\Url;
         document.addEventListener('click', function(e){ if(!bmenu.contains(e.target) && !bbtn.contains(e.target)){ bmenu.classList.add('hidden'); } });
       }
     });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => console.log('SW registered'))
+        .catch(error => console.log('SW registration failed'));
+    }
   </script>
 <?php endif; ?>
   <main class="max-w-7xl mx-auto px-4 py-6">
