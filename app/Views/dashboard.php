@@ -615,7 +615,7 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
     </div>
   </div>
 
-  <!-- Recent Activity -->
+  <!-- Coming Soon Activity -->
   <div class="lg:col-span-2">
     <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
       <i class="fa-solid fa-clock-rotate-left text-orange-500"></i>
@@ -623,72 +623,18 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
     </h2>
 
     <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="p-6">
-        <div class="space-y-4">
-          <!-- Activity Item -->
-          <div class="flex items-start space-x-4 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg">
-            <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
-              <i class="fa-solid fa-phone text-blue-600 dark:text-blue-400"></i>
-            </div>
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-1">
-                <span class="font-medium text-slate-800 dark:text-white">Yeni çağrı alındı</span>
-                <span class="text-sm text-slate-500 dark:text-slate-400">2 dk önce</span>
-              </div>
-              <p class="text-sm text-slate-600 dark:text-slate-400">+90 555 123 45 67 numaradan gelen çağrı yanıtlandı</p>
-            </div>
-          </div>
-
-          <!-- Activity Item -->
-          <div class="flex items-start space-x-4 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg">
-            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
-              <i class="fa-solid fa-user-plus text-green-600 dark:text-green-400"></i>
-            </div>
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-1">
-                <span class="font-medium text-slate-800 dark:text-white">Yeni kullanıcı eklendi</span>
-                <span class="text-sm text-slate-500 dark:text-slate-400">15 dk önce</span>
-              </div>
-              <p class="text-sm text-slate-600 dark:text-slate-400">Ahmet Yılmaz kullanıcısı sisteme eklendi</p>
-            </div>
-          </div>
-
-          <!-- Activity Item -->
-          <div class="flex items-start space-x-4 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg">
-            <div class="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
-              <i class="fa-solid fa-chart-line text-purple-600 dark:text-purple-400"></i>
-            </div>
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-1">
-                <span class="font-medium text-slate-800 dark:text-white">Rapor oluşturuldu</span>
-                <span class="text-sm text-slate-500 dark:text-slate-400">1 saat önce</span>
-              </div>
-              <p class="text-sm text-slate-600 dark:text-slate-400">Haftalık performans raporu hazırlandı</p>
-            </div>
-          </div>
-
-          <!-- Activity Item -->
-          <div class="flex items-start space-x-4 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg">
-            <div class="p-2 bg-orange-100 dark:bg-orange-900/50 rounded-lg">
-              <i class="fa-solid fa-wallet text-orange-600 dark:text-orange-400"></i>
-            </div>
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-1">
-                <span class="font-medium text-slate-800 dark:text-white">Bakiye güncellendi</span>
-                <span class="text-sm text-slate-500 dark:text-slate-400">2 saat önce</span>
-              </div>
-              <p class="text-sm text-slate-600 dark:text-slate-400">Grup bakiyesi otomatik olarak güncellendi</p>
-            </div>
-          </div>
+      <div class="p-12 text-center">
+        <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full mb-6">
+          <i class="fa-solid fa-clock text-3xl text-white"></i>
         </div>
-      </div>
-
-      <!-- View All Activities -->
-      <div class="px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-200/50 dark:border-slate-700/50">
-        <a href="#" class="inline-flex items-center space-x-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors duration-200">
-          <span>Tüm aktiviteleri görüntüle</span>
-          <i class="fa-solid fa-arrow-right"></i>
-        </a>
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Yakında Gelecek</h3>
+        <p class="text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
+          Son aktiviteler özelliği yakında aktif edilecektir. Bu bölümde sisteminizdeki tüm faaliyetleri gerçek zamanlı olarak takip edebileceksiniz.
+        </p>
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-300 rounded-lg">
+          <i class="fa-solid fa-tools text-sm"></i>
+          <span class="text-sm font-medium">Geliştirme aşamasında</span>
+        </div>
       </div>
     </div>
   </div>
