@@ -17,14 +17,26 @@ class GroupController {
         $this->requireSuperOrGroupAdmin();
         $db = DB::conn();
         if ($this->isSuper()) {
-            $res = $db->query('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups ORDER BY id DESC');
+            try {
+                $res = $db->query('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups ORDER BY id DESC');
+            } catch (\Throwable $e) {
+                $res = $db->query('SELECT id, name, margin, balance FROM groups ORDER BY id DESC');
+            }
         } else {
             $gid = (int)$this->currentGroupId();
-            $stmt = $db->prepare('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups WHERE id=?');
-            $stmt->bind_param('i', $gid);
-            $stmt->execute();
-            $res = $stmt->get_result();
-            $stmt->close();
+            try {
+                $stmt = $db->prepare('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups WHERE id=?');
+                $stmt->bind_param('i', $gid);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                $stmt->close();
+            } catch (\Throwable $e) {
+                $stmt = $db->prepare('SELECT id, name, margin, balance FROM groups WHERE id=?');
+                $stmt->bind_param('i', $gid);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                $stmt->close();
+            }
         }
         $groups = [];
         while ($row = $res->fetch_assoc()) { $groups[] = $row; }
@@ -59,11 +71,20 @@ class GroupController {
                 $stmt->close();
             } else { $error='İsim gerekli'; }
         }
-        $stmt = $db->prepare('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups WHERE id=?');
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $group = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+        try {
+            $stmt = $db->prepare('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups WHERE id=?');
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+            $group = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+        } catch (\Throwable $e) {
+            $stmt = $db->prepare('SELECT id, name, margin, balance FROM groups WHERE id=?');
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+            $group = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            $group['api_group_id'] = null; $group['api_group_name'] = null;
+        }
         require __DIR__.'/../Views/groups/edit.php';
     }
 

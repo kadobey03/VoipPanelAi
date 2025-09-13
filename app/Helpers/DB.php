@@ -32,23 +32,22 @@ class DB {
     // Run idempotent lightweight migrations for schema updates without reinstall
     public static function migrate(): void {
         $db = self::conn();
-        // Helper to check column existence
+        // Helper to check column existence (avoid prepared SHOW)
         $hasCol = function(string $table, string $col) use ($db): bool {
-            $stmt = $db->prepare("SHOW COLUMNS FROM `$table` LIKE ?");
-            $stmt->bind_param('s', $col);
-            $stmt->execute();
-            $stmt->store_result();
-            $exists = $stmt->num_rows > 0;
-            $stmt->close();
+            $sql = "SHOW COLUMNS FROM `$table` LIKE '".$db->real_escape_string($col)."'";
+            $res = $db->query($sql);
+            if ($res === false) { return false; }
+            $exists = $res->num_rows > 0;
+            $res->free();
             return $exists;
         };
 
         // groups.api_group_id, groups.api_group_name
         if (!$hasCol('groups', 'api_group_id')) {
-            @$db->query('ALTER TABLE `groups` ADD COLUMN `api_group_id` INT NULL AFTER `balance`');
+            $db->query('ALTER TABLE `groups` ADD COLUMN `api_group_id` INT NULL AFTER `balance`');
         }
         if (!$hasCol('groups', 'api_group_name')) {
-            @$db->query('ALTER TABLE `groups` ADD COLUMN `api_group_name` VARCHAR(100) NULL AFTER `api_group_id`');
+            $db->query('ALTER TABLE `groups` ADD COLUMN `api_group_name` VARCHAR(100) NULL AFTER `api_group_id`');
         }
     }
 }
