@@ -27,16 +27,23 @@ class ReportsController {
         $types = 'ss';
         $params = [$from, $to];
 
+        // Add groupmember src filter
+        if ($this->isGroupMember()) {
+            $where .= ' AND c.src=?';
+            $types .= 's';
+            $params[] = $_SESSION['user']['exten'] ?? '';
+        }
+
         // Summary per group (map to local group id)
         $sql = "SELECT cg.id AS group_id, COUNT(*) calls, SUM(c.duration) duration, SUM(c.billsec) billsec, SUM(c.cost_api) cost_api, SUM(c.amount_charged) revenue, (SUM(c.amount_charged)-SUM(c.cost_api)) profit
-                FROM calls c
-                LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
-                WHERE $where";
-        $types = 'ss'; $params = [$from, $to];
-        if ($groupFilter) { $sql .= ' AND cg.id=?'; $types .= 'i'; $params[] = $groupFilter; }
+                 FROM calls c
+                 LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
+                 WHERE $where";
+        $types2 = $types; $params2 = $params;
+        if ($groupFilter && !$this->isGroupMember()) { $sql .= ' AND cg.id=?'; $types2 .= 'i'; $params2[] = $groupFilter; }
         $sql .= ' GROUP BY cg.id ORDER BY profit DESC';
         $stmt = $db->prepare($sql);
-        $stmt->bind_param($types, ...$params);
+        $stmt->bind_param($types2, ...$params2);
         $stmt->execute();
         $summary = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
@@ -48,42 +55,41 @@ class ReportsController {
 
         // Daily trend (local aggregated)
         $sql2 = "SELECT DATE(c.start) d, SUM(c.cost_api) cost, SUM(c.amount_charged) revenue
-                  FROM calls c
-                  LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
-                  WHERE $where";
-        $types2 = 'ss'; $params2 = [$from, $to];
-        if ($groupFilter) { $sql2 .= ' AND cg.id=?'; $types2 .= 'i'; $params2[] = $groupFilter; }
+                   FROM calls c
+                   LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
+                   WHERE $where";
+        $types3 = $types; $params3 = $params;
+        if ($groupFilter && !$this->isGroupMember()) { $sql2 .= ' AND cg.id=?'; $types .= 'i'; $params[] = $groupFilter; }
         $sql2 .= ' GROUP BY DATE(c.start) ORDER BY d';
         $stmt = $db->prepare($sql2);
-        $stmt->bind_param($types2, ...$params2);
+        $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $trend = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
         // Agent stats (Call Plane-like) from DB: join users by exten=src
         $sql3 = "SELECT
-                    u.login AS user_login,
-                    cg.name AS group_name,
-                    u.exten AS voip_exten,
-                    COUNT(*) AS calls,
-                    SUM(CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') THEN 1 ELSE 0 END) AS answer,
-                    COUNT(DISTINCT c.dst) AS unique_numbers,
-                    SUM(c.duration) AS duration,
-                    SUM(c.billsec) AS billsec,
-                    (CASE WHEN SUM(c.duration)>0 THEN ROUND(SUM(c.billsec)/SUM(c.duration)*100,2) ELSE 0 END) AS talk_percent,
-                    SUM(CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') AND c.billsec>180 THEN 1 ELSE 0 END) AS jackpot,
-                    COUNT(DISTINCT CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') AND c.billsec>180 THEN c.dst END) AS unique_jackpot,
-                    0 AS spy_calls, 0 AS spy_duration, 0 AS promt_calls, 0 AS promt_duration, 0 AS echo_calls, 0 AS echo_duration,
-                    ROUND(SUM(c.cost_api),6) AS cost
-                  FROM calls c
-                  LEFT JOIN users u ON u.exten=c.src
-                  LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
-                  WHERE $where";
-        $types3 = 'ss'; $params3 = [$from, $to];
-        if ($groupFilter) { $sql3 .= ' AND cg.id=?'; $types3 .= 'i'; $params3[] = $groupFilter; }
+                     u.login AS user_login,
+                     cg.name AS group_name,
+                     u.exten AS voip_exten,
+                     COUNT(*) AS calls,
+                     SUM(CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') THEN 1 ELSE 0 END) AS answer,
+                     COUNT(DISTINCT c.dst) AS unique_numbers,
+                     SUM(c.duration) AS duration,
+                     SUM(c.billsec) AS billsec,
+                     (CASE WHEN SUM(c.duration)>0 THEN ROUND(SUM(c.billsec)/SUM(c.duration)*100,2) ELSE 0 END) AS talk_percent,
+                     SUM(CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') AND c.billsec>180 THEN 1 ELSE 0 END) AS jackpot,
+                     COUNT(DISTINCT CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') AND c.billsec>180 THEN c.dst END) AS unique_jackpot,
+                     0 AS spy_calls, 0 AS spy_duration, 0 AS promt_calls, 0 AS promt_duration, 0 AS echo_calls, 0 AS echo_duration,
+                     ROUND(SUM(c.cost_api),6) AS cost
+                   FROM calls c
+                   LEFT JOIN users u ON u.exten=c.src
+                   LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
+                   WHERE $where";
+        if ($groupFilter && !$this->isGroupMember()) { $sql3 .= ' AND cg.id=?'; $types .= 'i'; $params[] = $groupFilter; }
         $sql3 .= ' GROUP BY u.login, cg.name, u.exten ORDER BY cost DESC';
         $stmt = $db->prepare($sql3);
-        $stmt->bind_param($types3, ...$params3);
+        $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $agentStats = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
@@ -108,14 +114,13 @@ class ReportsController {
 
         // Disposition distribution for chart
         $sql4 = "SELECT UPPER(c.disposition) d, COUNT(*) n
-                  FROM calls c
-                  LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
-                  WHERE $where";
-        $types4 = 'ss'; $params4 = [$from, $to];
-        if ($groupFilter) { $sql4 .= ' AND cg.id=?'; $types4 .= 'i'; $params4[] = $groupFilter; }
+                   FROM calls c
+                   LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
+                   WHERE $where";
+        if ($groupFilter && !$this->isGroupMember()) { $sql4 .= ' AND cg.id=?'; $types .= 'i'; $params[] = $groupFilter; }
         $sql4 .= ' GROUP BY UPPER(c.disposition)';
         $stmt = $db->prepare($sql4);
-        $stmt->bind_param($types4, ...$params4);
+        $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $dispRows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
