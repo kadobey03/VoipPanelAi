@@ -201,17 +201,44 @@
 
 /* Text Glow Effect */
 .text-glow {
-  text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.3);
   animation: textGlow 3s ease-in-out infinite alternate;
 }
 
 @keyframes textGlow {
   0% {
-    text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.3);
   }
   100% {
-    text-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
+    text-shadow: 0 0 25px rgba(255, 255, 255, 1), 0 4px 8px rgba(0, 0, 0, 0.4);
   }
+}
+
+/* Enhanced Text Visibility */
+.label-text {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7), 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.input-text {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.placeholder-text::placeholder {
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Icon Visibility Enhancement */
+.input-icon {
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Button Text Enhancement */
+.button-text {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 /* Hover Effects */
@@ -261,8 +288,8 @@
 /* Glassmorphism Enhancement */
 .glass-card {
   backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
