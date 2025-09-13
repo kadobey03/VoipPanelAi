@@ -81,6 +81,18 @@ class ReportsController {
         $dispRows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
+        // Group admin KPIs: spent and remaining balance
+        $spent = 0.0; $callsCount = 0; $answerCount = 0; $noAnswerCount = 0; $balance = null;
+        if (!$this->isSuper() && $groupFilter) {
+            $stmt = $db->prepare("SELECT COALESCE(SUM(amount_charged),0) s, COUNT(*) c, SUM(CASE WHEN UPPER(disposition) IN ('ANSWERED','ANSWER') THEN 1 ELSE 0 END) a FROM calls c WHERE c.group_id=? AND c.start BETWEEN ? AND ?");
+            $stmt->bind_param('iss', $groupFilter, $from, $to);
+            $stmt->execute(); $r=$stmt->get_result()->fetch_assoc(); $stmt->close();
+            if ($r){ $spent=(float)$r['s']; $callsCount=(int)$r['c']; $answerCount=(int)$r['a']; $noAnswerCount=$callsCount-$answerCount; }
+            $stmt=$db->prepare('SELECT balance FROM groups WHERE id=?');
+            $stmt->bind_param('i',$groupFilter); $stmt->execute(); $r=$stmt->get_result()->fetch_assoc(); $stmt->close();
+            if ($r){ $balance=(float)$r['balance']; }
+        }
+
         require __DIR__.'/../Views/reports/index.php';
     }
 }
