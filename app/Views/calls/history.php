@@ -35,6 +35,16 @@
     </div>
     <?php if ($isSuper): ?>
     <div>
+      <label class="block text-xs">Call Stat Göster</label>
+      <select name="stat_limit" class="border rounded p-1 bg-white dark:bg-slate-900">
+        <option value="20" <?= (int)($_GET['stat_limit'] ?? 20) === 20 ? 'selected' : '' ?>>20</option>
+        <option value="50" <?= (int)($_GET['stat_limit'] ?? 20) === 50 ? 'selected' : '' ?>>50</option>
+        <option value="100" <?= (int)($_GET['stat_limit'] ?? 20) === 100 ? 'selected' : '' ?>>100</option>
+      </select>
+    </div>
+    <?php endif; ?>
+    <?php if ($isSuper): ?>
+    <div>
       <label class="block text-xs">Grup</label>
       <select name="group_id" class="border rounded p-1 bg-white dark:bg-slate-900">
         <option value="">Tümü</option>
@@ -95,6 +105,61 @@
       </tbody>
     </table>
   </div>
-<?php require dirname(__DIR__).'/partials/footer.php'; ?>
+
+  <?php if ($isSuper && isset($callStat) && is_array($callStat)): ?>
+  <h2 class="text-xl font-semibold mt-6 mb-4">Call Plane Statistics</h2>
+  <div class="bg-white/80 dark:bg-slate-800 rounded-xl shadow overflow-x-auto">
+    <table class="min-w-full text-xs md:text-sm">
+      <thead class="bg-slate-50 dark:bg-slate-900/40">
+        <tr class="border-b border-slate-200 dark:border-slate-700 text-left">
+          <th class="p-2">User Login</th>
+          <th class="p-2">Group Name</th>
+          <th class="p-2">Calls</th>
+          <th class="p-2">Answer</th>
+          <th class="p-2">Unique Numbers</th>
+          <th class="p-2">Duration</th>
+          <th class="p-2">Billsec</th>
+          <th class="p-2">Talk %</th>
+          <th class="p-2">Jackpot</th>
+          <th class="p-2">Unique Jackpot</th>
+          <th class="p-2">Spy Calls</th>
+          <th class="p-2">Spy Duration</th>
+          <th class="p-2">Prompt Calls</th>
+          <th class="p-2">Prompt Duration</th>
+          <th class="p-2">Echo Calls</th>
+          <th class="p-2">Echo Duration</th>
+          <th class="p-2">Cost</th>
+          <th class="p-2">VoIP Exten</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($callStat as $stat): ?>
+        <tr class="border-b border-slate-100 dark:border-slate-700/60 hover:bg-slate-50/60 dark:hover:bg-slate-900/20 transition">
+          <td class="p-2"><?= htmlspecialchars((string)($stat['user_login'] ?? '')) ?></td>
+          <td class="p-2"><?= htmlspecialchars((string)($stat['group_name'] ?? '')) ?></td>
+          <td class="p-2"><?= (int)($stat['calls'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['answer'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['unique_numbers'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['duration'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['billsec'] ?? 0) ?></td>
+          <td class="p-2"><?= number_format((float)($stat['talk_percent'] ?? 0), 2) ?>%</td>
+          <td class="p-2"><?= (int)($stat['jackpot'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['unique_jackpot'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['spy_calls'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['spy_duration'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['promt_calls'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['promt_duration'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['echo_calls'] ?? 0) ?></td>
+          <td class="p-2"><?= (int)($stat['echo_duration'] ?? 0) ?></td>
+          <td class="p-2"><?= is_numeric($stat['cost'] ?? null) ? number_format((float)$stat['cost'], 6) : htmlspecialchars((string)($stat['cost'] ?? '')) ?></td>
+          <td class="p-2"><?= htmlspecialchars((string)($stat['voip_exten'] ?? '')) ?></td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+  <?php endif; ?>
+
+ <?php require dirname(__DIR__).'/partials/footer.php'; ?>
 
 

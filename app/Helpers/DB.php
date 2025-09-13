@@ -69,11 +69,47 @@ class DB {
             $db->query("CREATE TABLE IF NOT EXISTS `transactions` (
                 `id` INT AUTO_INCREMENT PRIMARY KEY,
                 `group_id` INT NOT NULL,
-                `type` ENUM('topup','debit_call','adjust') NOT NULL,
+                `type` ENUM('topup','debit_call','debit_call_stat','adjust') NOT NULL,
                 `amount` DECIMAL(12,4) NOT NULL,
                 `reference` VARCHAR(64) NULL,
                 `description` VARCHAR(255) NULL,
                 `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        } else {
+            // Alter enum to include debit_call_stat
+            $db->query("ALTER TABLE `transactions` MODIFY COLUMN `type` ENUM('topup','debit_call','debit_call_stat','adjust') NOT NULL");
+        }
+
+        // call_stats table
+        $hasCallStats = false;
+        $res = $db->query("SHOW TABLES LIKE 'call_stats'");
+        if ($res) { $hasCallStats = $res->num_rows > 0; $res->free(); }
+        if (!$hasCallStats) {
+            $db->query("CREATE TABLE IF NOT EXISTS `call_stats` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `user_login` VARCHAR(50),
+                `group_name` VARCHAR(100),
+                `calls` INT DEFAULT 0,
+                `answer` INT DEFAULT 0,
+                `unique_numbers` INT DEFAULT 0,
+                `duration` INT DEFAULT 0,
+                `billsec` INT DEFAULT 0,
+                `talk_percent` DECIMAL(5,2) DEFAULT 0.00,
+                `jackpot` INT DEFAULT 0,
+                `unique_jackpot` INT DEFAULT 0,
+                `spy_calls` INT DEFAULT 0,
+                `spy_duration` INT DEFAULT 0,
+                `promt_calls` INT DEFAULT 0,
+                `promt_duration` INT DEFAULT 0,
+                `echo_calls` INT DEFAULT 0,
+                `echo_duration` INT DEFAULT 0,
+                `cost` DECIMAL(12,6) DEFAULT 0.000000,
+                `margin_cost` DECIMAL(12,6) DEFAULT 0.000000,
+                `voip_exten` VARCHAR(20),
+                `date_from` DATETIME,
+                `date_to` DATETIME,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY `unique_stat` (`user_login`, `date_from`, `date_to`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         }
 

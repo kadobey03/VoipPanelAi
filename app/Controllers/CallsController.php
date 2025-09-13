@@ -38,6 +38,7 @@ class CallsController {
         $src  = $_GET['src']  ?? '';
         $dst  = $_GET['dst']  ?? '';
         $maxPages = (int)($_GET['pages'] ?? 3); if ($maxPages<1) $maxPages=1; if ($maxPages>20) $maxPages=20;
+        $statLimit = (int)($_GET['stat_limit'] ?? 20); if ($statLimit<10) $statLimit=10; if ($statLimit>100) $statLimit=100;
         $selectedGroup = $isSuper ? (isset($_GET['group_id']) && $_GET['group_id']!=='' ? (int)$_GET['group_id'] : null) : (int)($user['group_id'] ?? 0);
         $results = [];
         $callStat = null;
@@ -67,6 +68,9 @@ class CallsController {
                 // Get Call Stat if super admin
                 if ($isSuper) {
                     $callStat = $api->getCallStat($from, $to);
+                    if (is_array($callStat)) {
+                        $callStat = array_slice($callStat, 0, $statLimit);
+                    }
                 }
             } catch (\Throwable $e) { $results = ['error'=>$e->getMessage()]; $callStat = ['error'=>$e->getMessage()]; }
         }
@@ -208,6 +212,84 @@ class CallsController {
         }
         $api = new ApiClient();
         try {
+    public function syncCallStats(){
+        // Only for cron or superadmin, but assume cron
+        $api = new ApiClient();
+        $db = DB::conn();
+        $from = date('Y-m-d 00:00:00'); // Today
+        $to = date('Y-m-d 23:59:59');
+        $last100 = \App\Models\CallStat::getLast100();
+        $existingKeys = [];
+        foreach ($last100 as $stat) {
+            $key = $stat['user_login'] . '|' . $stat['date_from'] . '|' . $stat['date_to'];
+            $existingKeys[$key] = $stat;
+        }
+        try {
+            $stats = $api->getCallStat($from, $to);
+            if (is_array($stats)) {
+                foreach ($stats as $stat) {
+                    $key = $stat['user_login'] . '|' . $from . '|' . $to;
+                    if (!isset($existingKeys[$key])) {
+                        // New stat, save
+                        $marginCost = 0.0;
+                        $groupId = null;
+                        $voipExten = (string)($stat['voip_exten'] ?? '');
+                        if ($voipExten !== '') {
+                            $stmt = $db->prepare('SELECT group_id FROM users WHERE exten=? LIMIT 1');
+                            $stmt->bind_param('s', $voipExten);
+                            $stmt->execute();
+                            $res = $stmt->get_result();
+                            if ($u = $res->fetch_assoc()) {
+                                $groupId = (int)$u['group_id'];
+                            }
+                            $stmt->close();
+                        }
+                        $cost = (float)($stat['cost'] ?? 0.0);
+                        if ($groupId && $cost > 0) {
+                            $stmt = $db->prepare('SELECT margin FROM groups WHERE id=?');
+                            $stmt->bind_param('i', $groupId);
+                            $stmt->execute();
+                            $res = $stmt->get_result();
+                            $margin = 0.0;
+                            if ($g = $res->fetch_assoc()) {
+                                $margin = (float)$g['margin'];
+                            }
+                            $stmt->close();
+                            $marginCost = round($cost * (1 + $margin / 100), 6);
+                            // Deduct from balance
+                            $db->begin_transaction();
+                            $stmt = $db->prepare('UPDATE groups SET balance = balance - ? WHERE id=?');
+                            $stmt->bind_param('di', $marginCost, $groupId);
+                            $stmt->execute();
+                            $stmt->close();
+                            // Transaction
+                            $type = 'debit_call_stat';
+                            $ref = $stat['user_login'] . '_' . $from;
+                            $desc = 'Call stat maliyeti';
+                            $neg = -$marginCost;
+                            $stmt = $db->prepare('INSERT INTO transactions (group_id, type, amount, reference, description) VALUES (?,?,?,?,?)');
+                            $stmt->bind_param('isdss', $groupId, $type, $neg, $ref, $desc);
+                            $stmt->execute();
+                            $stmt->close();
+                            $db->commit();
+                        }
+                        $data = $stat;
+                        $data['date_from'] = $from;
+                        $data['date_to'] = $to;
+                        $data['margin_cost'] = $marginCost;
+                        \App\Models\CallStat::save($data);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Log error
+            \App\Helpers\Logger::log('syncCallStats error: ' . $e->getMessage());
+        }
+        // Simple response
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'ok']);
+    }
+}
             $wav = $api->getAudioRecord($callId);
             header('Content-Type: audio/x-wav');
             header('Content-Disposition: inline; filename="'.$callId.'.wav"');
