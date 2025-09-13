@@ -235,6 +235,8 @@ class CallsController {
             $key = $stat['user_login'] . '|' . $stat['date_from'] . '|' . $stat['date_to'];
             $existingKeys[$key] = $stat;
         }
+        $added = 0;
+        $requestData = ['sdate' => $from, 'edate' => $to, 'apikey' => '***'];
         try {
             $stats = $api->getCallStat($from, $to);
             $statCount = is_array($stats) ? count($stats) : 0;
@@ -291,6 +293,7 @@ class CallsController {
                         $data['date_to'] = $to;
                         $data['margin_cost'] = $marginCost;
                         \App\Models\CallStat::save($data);
+                        $added++;
                     }
                 }
             }
@@ -299,10 +302,17 @@ class CallsController {
             \App\Helpers\Logger::log('syncCallStats error: ' . $e->getMessage());
             $statCount = 0;
             $error = $e->getMessage();
+            $stats = null;
         }
-        // Simple response
+        // Response
         header('Content-Type: application/json');
-        echo json_encode(['stat_count' => $statCount ?? 0, 'error' => $error ?? null]);
+        echo json_encode([
+            'request' => $requestData,
+            'response' => $stats,
+            'stat_count' => $statCount ?? 0,
+            'added' => $added,
+            'error' => $error ?? null
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     public function syncHistoricalCallStats(){
