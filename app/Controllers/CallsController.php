@@ -96,6 +96,8 @@ class CallsController {
             $page = 1;
             while (true) {
                 $cdrs = $api->getCallHistoryFilter($from, $to, null, null, $page);
+                $pages++;
+                if ($debug) { $trace[] = ['request'=>['from'=>$from,'to'=>$to,'page'=>$page], 'response'=>$cdrs]; }
                 if (!is_array($cdrs) || count($cdrs)===0) break;
                 foreach ($cdrs as $cdr) {
                     $callId = $cdr['call_id'] ?? $cdr['uniqueid'] ?? null;
@@ -104,7 +106,7 @@ class CallsController {
                     $stmt->bind_param('s',$callId);
                     $stmt->execute();
                     $stmt->store_result();
-                    if ($stmt->num_rows>0) { $stmt->close(); continue; }
+                    if ($stmt->num_rows>0) { $stmt->close(); $skipped++; continue; }
                     $stmt->close();
 
                     $src = $cdr['src'] ?? '';
@@ -145,7 +147,15 @@ class CallsController {
                 $page++;
             }
         } catch (\Throwable $e) { $errors[]=$e->getMessage(); }
-        header('Content-Type: application/json'); echo json_encode(['imported'=>$imported,'errors'=>$errors], JSON_UNESCAPED_UNICODE);
+        header('Content-Type: application/json'); echo json_encode([
+            'from'=>$from,
+            'to'=>$to,
+            'pages'=>$pages,
+            'imported'=>$imported,
+            'skipped_existing'=>$skipped,
+            'errors'=>$errors,
+            'trace'=>$debug ? $trace : null
+        ], JSON_UNESCAPED_UNICODE);
     }
     public function sync(){
         $this->requireAuth();
@@ -154,7 +164,8 @@ class CallsController {
         $to   = $_POST['to']   ?? date('Y-m-d H:i:s');
         $api = new ApiClient();
         $db = DB::conn();
-        $imported=0; $errors=[];
+        $imported=0; $skipped=0; $errors=[]; $trace=[]; $pages=0;
+        $debug = isset($_GET['debug']) ? (($_GET['debug']==='1') || (strtolower((string)$_GET['debug'])==='true')) : false;
         try {
             // Build exten -> group_id map from API users
             $userMap = [];
