@@ -21,7 +21,9 @@ class ErrorHandler {
             $msg = sprintf('%s: %s in %s:%d', get_class($e), $e->getMessage(), $e->getFile(), $e->getLine());
             $trace = $e->getTraceAsString();
             Logger::log($msg."\n".$trace);
-            http_response_code(500);
+            if (!headers_sent()) {
+                http_response_code(500);
+            }
             if ($debug) {
                 self::renderDebugError($e);
             } else {
