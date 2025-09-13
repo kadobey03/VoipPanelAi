@@ -92,6 +92,7 @@ $router->add('POST', '/settings', 'SettingsController@index');
 
 // Change language
 $router->add('POST', '/change-lang', function() {
+    if (session_status() === PHP_SESSION_NONE) session_start();
     $lang = $_POST['lang'] ?? 'tr';
     if (in_array($lang, ['tr', 'en'])) {
         \App\Helpers\Lang::set($lang);
