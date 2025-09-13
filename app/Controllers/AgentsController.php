@@ -19,6 +19,16 @@ class AgentsController {
         } catch (\Throwable $e) {
             $db->query('ALTER TABLE users ADD COLUMN hidden TINYINT(1) DEFAULT 0');
         }
+        // Auto-migrate: create agents table if not exists
+        $db->query('CREATE TABLE IF NOT EXISTS agents (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            exten VARCHAR(20) NOT NULL UNIQUE,
+            user_login VARCHAR(50),
+            group_name VARCHAR(100),
+            active TINYINT(1) DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )');
 
         $isSuper = $this->isSuper();
         $userGroupName = '';
@@ -33,8 +43,28 @@ class AgentsController {
         }
         $api = new ApiClient();
         $error = null;
+        // Get active agents from DB
+        $agentsDb = $db->query('SELECT exten, user_login, group_name FROM agents WHERE active=1')->fetch_all(MYSQLI_ASSOC);
+
+        // Get status from API
+        $agentsApi = [];
+        try { $agentsApi = $api->getAgentsStatus(); } catch (\Throwable $e) { $error = $e->getMessage(); }
+
+        // Merge status
+        $statusMap = [];
+        foreach ($agentsApi as $a) {
+            $statusMap[$a['exten']] = $a;
+        }
         $agents = [];
-        try { $agents = $api->getAgentsStatus(); } catch (\Throwable $e) { $error = $e->getMessage(); }
+        foreach ($agentsDb as $agent) {
+            $exten = $agent['exten'];
+            if (isset($statusMap[$exten])) {
+                $agents[] = array_merge($agent, $statusMap[$exten]);
+            } else {
+                // No status, but keep
+                $agents[] = $agent;
+            }
+        }
 
         // Get hidden status from DB
         $hiddenMap = [];
@@ -71,6 +101,43 @@ class AgentsController {
         }
         $db = DB::conn();
         $stmt = $db->prepare('UPDATE users SET hidden = 1 - hidden WHERE exten=?');
+        $stmt->bind_param('s', $exten);
+        $stmt->execute();
+        $stmt->close();
+        header('Location: ' . \App\Helpers\Url::to('/agents'));
+    }
+
+    public function syncAgents() {
+        $this->requireAuth();
+        if (!$this->isSuper()) {
+            die('Yetkisiz');
+        }
+        $api = new ApiClient();
+        $agentsApi = $api->getAgentsStatus();
+        $db = DB::conn();
+        foreach ($agentsApi as $agent) {
+            $exten = $agent['exten'];
+            $login = $agent['user_login'] ?? '';
+            $group = $agent['group'] ?? '';
+            $stmt = $db->prepare('INSERT INTO agents (exten, user_login, group_name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE user_login=VALUES(user_login), group_name=VALUES(group_name), updated_at=NOW()');
+            $stmt->bind_param('sss', $exten, $login, $group);
+            $stmt->execute();
+            $stmt->close();
+        }
+        header('Location: ' . \App\Helpers\Url::to('/agents'));
+    }
+
+    public function toggleActive() {
+        $this->requireAuth();
+        if (!$this->isSuper()) {
+            die('Yetkisiz');
+        }
+        $exten = $_POST['exten'] ?? '';
+        if (!$exten) {
+            die('Geçersiz');
+        }
+        $db = DB::conn();
+        $stmt = $db->prepare('UPDATE agents SET active = 1 - active WHERE exten=?');
         $stmt->bind_param('s', $exten);
         $stmt->execute();
         $stmt->close();

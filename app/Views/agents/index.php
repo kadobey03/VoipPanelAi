@@ -1,6 +1,11 @@
 <?php $title='Agent Durum - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-headset text-rose-600"></i> Agent Durumları</h1>
+    <?php if ($isSuper): ?>
+    <form method="post" action="/VoipPanelAi/agents/sync" style="display:inline;">
+        <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Agentleri Güncelle</button>
+    </form>
+    <?php endif; ?>
   </div>
   <?php if (!empty($error)): ?>
     <div class="mb-3 p-2 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-100 text-sm"><?= htmlspecialchars($error) ?></div>
@@ -33,10 +38,10 @@
                 <td class="p-2"><?= htmlspecialchars((string)($a['las_call_time'] ?? '')) ?></td>
                 <td class="p-2"><?= htmlspecialchars($a['lead'] ?? '') ?></td>
                 <td class="p-2">
-<form method="post" action="/VoipPanelAi/agents/toggle-hidden" style="display:inline;">
+<form method="post" action="/VoipPanelAi/agents/toggle-active" style="display:inline;">
 <input type="hidden" name="exten" value="<?= htmlspecialchars($a['exten']) ?>">
 <button type="submit" class="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
-<?= (($a['hidden'] ?? 0) ? 'Göster' : 'Gizle') ?>
+<?= (($a['active'] ?? 1) ? 'Deaktif' : 'Aktif') ?>
 </button>
 </form>
 </td>
@@ -72,10 +77,10 @@
             <td class="p-2"><?= htmlspecialchars((string)($a['las_call_time'] ?? '')) ?></td>
             <td class="p-2"><?= htmlspecialchars($a['lead'] ?? '') ?></td>
 <?php if ($isSuper): ?><td class="p-2">
-<form method="post" action="/VoipPanelAi/agents/toggle-hidden" style="display:inline;">
+<form method="post" action="/VoipPanelAi/agents/toggle-active" style="display:inline;">
 <input type="hidden" name="exten" value="<?= htmlspecialchars($a['exten']) ?>">
 <button type="submit" class="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
-<?= (($a['hidden'] ?? 0) ? 'Göster' : 'Gizle') ?>
+<?= (($a['active'] ?? 1) ? 'Deaktif' : 'Aktif') ?>
 </button>
 </form>
 </td><?php endif; ?>

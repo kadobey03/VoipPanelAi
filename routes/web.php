@@ -50,6 +50,8 @@ $router->add('GET', '/reports', 'ReportsController@index');
 // Agents
 $router->add('GET', '/agents', 'AgentsController@index');
 $router->add('POST', '/agents/toggle-hidden', 'AgentsController@toggleHidden');
+$router->add('POST', '/agents/sync', 'AgentsController@syncAgents');
+$router->add('POST', '/agents/toggle-active', 'AgentsController@toggleActive');
 
 // Numbers
 $router->add('GET', '/numbers', 'NumbersController@index');
