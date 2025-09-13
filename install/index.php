@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>PapaM VoIP Panel Kurulum</title>
-    <link href="/assets/css/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 text-gray-900 flex items-center justify-center min-h-screen">
 <div class="bg-white p-8 rounded shadow w-full max-w-lg">
