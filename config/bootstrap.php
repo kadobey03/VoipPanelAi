@@ -22,6 +22,11 @@ if (file_exists(__DIR__.'/../.env')) {
         }
     }
 }
+// Set PHP default timezone if provided
+$tz = getenv('APP_TZ');
+if ($tz) {
+    @date_default_timezone_set($tz);
+}
 // Error handling & logging
 require_once __DIR__.'/../app/Core/ErrorHandler.php';
 $debugEnv = getenv('APP_DEBUG');

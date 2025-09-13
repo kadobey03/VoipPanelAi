@@ -18,6 +18,11 @@ class DB {
             throw new \RuntimeException('DB connection failed: '.$mysqli->connect_error);
         }
         $mysqli->set_charset('utf8mb4');
+        // Optionally align MySQL session timezone (e.g., '+03:00')
+        $dbTz = getenv('DB_TIMEZONE') ?: '';
+        if ($dbTz !== '') {
+            @$mysqli->query("SET time_zone='".$mysqli->real_escape_string($dbTz)."'");
+        }
         self::$conn = $mysqli;
         return self::$conn;
     }
