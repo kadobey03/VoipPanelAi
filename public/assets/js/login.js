@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize color rotation
     initColorRotation();
+
+    // Initialize footer effects if footer exists
+    initFooterEffects();
 });
 
 // Particle Animation Function
@@ -415,10 +418,234 @@ sparkleStyle.textContent = `
 `;
 document.head.appendChild(sparkleStyle);
 
+// Footer Effects Initialization
+function initFooterEffects() {
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+
+    // Initialize footer particles
+    initFooterParticles();
+
+    // Initialize footer color rotation
+    initFooterColorRotation();
+
+    // Initialize footer interactions
+    initFooterInteractions();
+
+    // Initialize footer sparkle effects
+    initFooterSparkles();
+}
+
+// Footer Particle System
+function initFooterParticles() {
+    const footerParticles = document.querySelector('.footer-particles');
+    if (!footerParticles) return;
+
+    const particleCount = 30;
+
+    for (let i = 0; i < particleCount; i++) {
+        createFooterParticle(footerParticles);
+    }
+
+    // Create new particles periodically
+    setInterval(() => {
+        if (document.querySelector('.footer-particles')) {
+            createFooterParticle(footerParticles);
+        }
+    }, 3000);
+}
+
+function createFooterParticle(container) {
+    const particle = document.createElement('div');
+    particle.className = 'footer-particle';
+
+    // Random size and position
+    const size = Math.random() * 8 + 4;
+    particle.style.width = size + 'px';
+    particle.style.height = size + 'px';
+    particle.style.left = Math.random() * 100 + '%';
+
+    // Random animation delay and duration
+    particle.style.animationDelay = Math.random() * 15 + 's';
+    particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+
+    container.appendChild(particle);
+
+    // Remove particle after animation
+    setTimeout(() => {
+        if (particle.parentNode) {
+            particle.parentNode.removeChild(particle);
+        }
+    }, 25000);
+}
+
+// Footer Color Rotation
+function initFooterColorRotation() {
+    const colors = [
+        'from-indigo-600 via-purple-600 to-pink-600',
+        'from-cyan-500 via-purple-500 to-blue-600',
+        'from-green-500 via-blue-500 to-purple-600',
+        'from-yellow-500 via-pink-500 to-red-600',
+        'from-teal-500 via-cyan-500 to-indigo-600',
+        'from-orange-500 via-red-500 to-pink-600'
+    ];
+
+    let colorIndex = 0;
+
+    setInterval(() => {
+        const footerLogo = document.querySelector('.footer-logo');
+        if (footerLogo) {
+            footerLogo.className = `relative p-4 bg-gradient-to-r ${colors[colorIndex]} rounded-full footer-logo animate-spin-slow`;
+        }
+
+        // Rotate footer background colors
+        const footer = document.querySelector('footer');
+        if (footer) {
+            const bgColors = [
+                'from-indigo-600/20 via-purple-600/20 to-pink-600/20',
+                'from-cyan-500/20 via-purple-500/20 to-blue-600/20',
+                'from-green-500/20 via-blue-500/20 to-purple-600/20',
+                'from-yellow-500/20 via-pink-500/20 to-red-600/20',
+                'from-teal-500/20 via-cyan-500/20 to-indigo-600/20',
+                'from-orange-500/20 via-red-500/20 to-pink-600/20'
+            ];
+            footer.style.background = `linear-gradient(to right, ${bgColors[colorIndex].split('/')[0].replace('from-', '').replace('via-', '').replace('to-', '')})`;
+        }
+
+        colorIndex = (colorIndex + 1) % colors.length;
+    }, 4000);
+}
+
+// Footer Interactions
+function initFooterInteractions() {
+    // Contact link hover effects
+    const contactLinks = document.querySelectorAll('footer a[href*="t.me"]');
+    contactLinks.forEach((link, index) => {
+        link.addEventListener('mouseenter', function() {
+            // Add bounce effect to icon
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.style.animation = 'bounce 0.6s ease-in-out';
+            }
+
+            // Add particle burst effect
+            createContactParticleBurst(this);
+        });
+
+        link.addEventListener('mouseleave', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.style.animation = '';
+            }
+        });
+    });
+
+    // Install button effects
+    const installBtn = document.getElementById('install-btn');
+    if (installBtn) {
+        installBtn.addEventListener('click', function() {
+            createButtonParticleBurst(this);
+        });
+    }
+}
+
+// Contact particle burst effect
+function createContactParticleBurst(element) {
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    for (let i = 0; i < 6; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'footer-button-particle';
+        particle.style.left = centerX + 'px';
+        particle.style.top = centerY + 'px';
+        particle.style.setProperty('--tx', (Math.random() - 0.5) * 100 + 'px');
+        particle.style.setProperty('--ty', (Math.random() - 0.5) * 100 + 'px');
+        particle.style.animationDelay = (i * 0.1) + 's';
+
+        document.body.appendChild(particle);
+
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+            }
+        }, 1000);
+    }
+}
+
+// Button particle burst for install button
+function createButtonParticleBurst(button) {
+    const buttonParticles = document.createElement('div');
+    buttonParticles.className = 'footer-button-particles';
+
+    for (let i = 0; i < 12; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'footer-button-particle';
+        particle.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+        particle.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+        particle.style.animationDelay = (i * 0.05) + 's';
+
+        buttonParticles.appendChild(particle);
+    }
+
+    button.appendChild(buttonParticles);
+
+    setTimeout(() => {
+        if (buttonParticles.parentNode) {
+            buttonParticles.parentNode.removeChild(buttonParticles);
+        }
+    }, 1000);
+}
+
+// Footer sparkles
+function initFooterSparkles() {
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+
+    // Add random sparkle effects
+    setInterval(() => {
+        const sparkles = footer.querySelectorAll('.footer-sparkle');
+        if (sparkles.length > 0) {
+            const randomSparkle = sparkles[Math.floor(Math.random() * sparkles.length)];
+            randomSparkle.style.animation = 'none';
+            setTimeout(() => {
+                randomSparkle.style.animation = '';
+            }, 10);
+        }
+    }, 3000);
+
+    // Add mouse interaction for footer
+    footer.addEventListener('mousemove', function(e) {
+        const rect = footer.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Create temporary sparkle at mouse position
+        if (Math.random() > 0.95) { // 5% chance
+            const sparkle = document.createElement('div');
+            sparkle.className = 'footer-sparkle';
+            sparkle.innerHTML = '✨';
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            sparkle.style.fontSize = (Math.random() * 10 + 10) + 'px';
+
+            footer.appendChild(sparkle);
+
+            setTimeout(() => {
+                if (sparkle.parentNode) {
+                    sparkle.parentNode.removeChild(sparkle);
+                }
+            }, 2000);
+        }
+    });
+}
+
 // Export functions for potential use
 window.LoginAnimations = {
     showSuccessAnimation,
     createParticle,
     initParticles,
-    initColorRotation
+    initColorRotation,
+    initFooterEffects
 };
