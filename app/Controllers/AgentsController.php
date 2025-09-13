@@ -23,7 +23,13 @@ class AgentsController {
         $isSuper = $this->isSuper();
         $userGroupName = '';
         if (!$isSuper) {
-            $userGroupName = $_SESSION['user']['group_name'] ?? '';
+            $groupId = (int)($_SESSION['user']['group_id'] ?? 0);
+            $stmt = $db->prepare('SELECT name FROM groups WHERE id=?');
+            $stmt->bind_param('i', $groupId);
+            $stmt->execute();
+            $r = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if ($r) $userGroupName = $r['name'];
         }
         $api = new ApiClient();
         $error = null;
