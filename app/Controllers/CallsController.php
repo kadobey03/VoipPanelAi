@@ -40,6 +40,7 @@ class CallsController {
         $maxPages = (int)($_GET['pages'] ?? 3); if ($maxPages<1) $maxPages=1; if ($maxPages>20) $maxPages=20;
         $selectedGroup = $isSuper ? (isset($_GET['group_id']) && $_GET['group_id']!=='' ? (int)$_GET['group_id'] : null) : (int)($user['group_id'] ?? 0);
         $results = [];
+        $callStat = null;
         if (isset($_GET['search'])) {
             try {
                 for ($p=1; $p<=$maxPages; $p++) {
@@ -63,7 +64,11 @@ class CallsController {
                     }
                     if (count($rows) < 100) break;
                 }
-            } catch (\Throwable $e) { $results = ['error'=>$e->getMessage()]; }
+                // Get Call Stat if super admin
+                if ($isSuper) {
+                    $callStat = $api->getCallStat($from, $to);
+                }
+            } catch (\Throwable $e) { $results = ['error'=>$e->getMessage()]; $callStat = ['error'=>$e->getMessage()]; }
         }
         // group options for super admin
         $groups=[]; if ($isSuper) { if($res=$db->query('SELECT id,name FROM groups ORDER BY name')){ while($row=$res->fetch_assoc()){$groups[]=$row;} } }

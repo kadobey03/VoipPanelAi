@@ -4,6 +4,13 @@
     <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-table-list text-indigo-600"></i> CDR Geçmişi</h1>
   </div>
 
+  <?php if ($isSuper && isset($callStat)): ?>
+  <details class="mb-4 bg-white/80 dark:bg-slate-800 p-3 rounded-xl shadow">
+    <summary class="cursor-pointer font-semibold text-indigo-600 hover:text-indigo-800">API Yanıtı (Call Stat)</summary>
+    <pre class="mt-2 bg-slate-100 dark:bg-slate-900 p-2 rounded text-xs overflow-auto max-h-96 whitespace-pre-wrap"><?php echo htmlspecialchars(json_encode($callStat, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)); ?></pre>
+  </details>
+  <?php endif; ?>
+
   <form method="get" action="<?= \App\Helpers\Url::to('/calls/history') ?>" class="mb-4 bg-white/80 dark:bg-slate-800 p-3 rounded-xl shadow flex flex-wrap items-end gap-3">
     <input type="hidden" name="search" value="1">
     <div>
