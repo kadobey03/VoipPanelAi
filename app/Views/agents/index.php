@@ -18,6 +18,7 @@
                 <th class="p-2">Durum</th>
                 <th class="p-2">Son Çağrı</th>
                 <th class="p-2">Lead</th>
+                <th class="p-2">Aksiyon</th>
               </tr>
             </thead>
             <tbody>
@@ -31,6 +32,14 @@
                 </td>
                 <td class="p-2"><?= htmlspecialchars((string)($a['las_call_time'] ?? '')) ?></td>
                 <td class="p-2"><?= htmlspecialchars($a['lead'] ?? '') ?></td>
+                <td class="p-2">
+<form method="post" action="/agents/toggle-hidden" style="display:inline;">
+<input type="hidden" name="exten" value="<?= htmlspecialchars($a['exten']) ?>">
+<button type="submit" class="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
+<?= (($a['hidden'] ?? 0) ? 'Göster' : 'Gizle') ?>
+</button>
+</form>
+</td>
               </tr>
             <?php endforeach; ?>
             </tbody>
@@ -48,6 +57,7 @@
             <th class="p-2">Durum</th>
             <th class="p-2">Son Çağrı</th>
             <th class="p-2">Lead</th>
+<?php if ($isSuper): ?><th class="p-2">Aksiyon</th><?php endif; ?>
           </tr>
         </thead>
         <tbody>
@@ -61,6 +71,14 @@
             </td>
             <td class="p-2"><?= htmlspecialchars((string)($a['las_call_time'] ?? '')) ?></td>
             <td class="p-2"><?= htmlspecialchars($a['lead'] ?? '') ?></td>
+<?php if ($isSuper): ?><td class="p-2">
+<form method="post" action="/agents/toggle-hidden" style="display:inline;">
+<input type="hidden" name="exten" value="<?= htmlspecialchars($a['exten']) ?>">
+<button type="submit" class="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
+<?= (($a['hidden'] ?? 0) ? 'Göster' : 'Gizle') ?>
+</button>
+</form>
+</td><?php endif; ?>
           </tr>
         <?php endforeach; ?>
         </tbody>

@@ -49,6 +49,7 @@ $router->add('GET', '/reports', 'ReportsController@index');
 
 // Agents
 $router->add('GET', '/agents', 'AgentsController@index');
+$router->add('POST', '/agents/toggle-hidden', 'AgentsController@toggleHidden');
 
 // Numbers
 $router->add('GET', '/numbers', 'NumbersController@index');

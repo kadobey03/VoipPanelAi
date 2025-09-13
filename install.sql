@@ -6,6 +6,7 @@ CREATE TABLE users (
     exten VARCHAR(20),
     group_id INT,
     role ENUM('superadmin','groupadmin') DEFAULT 'groupadmin',
+    hidden TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

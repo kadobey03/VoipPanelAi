@@ -10,6 +10,15 @@ class AgentsController {
 
     public function index(){
         $this->requireAuth();
+
+        // Auto-migrate: add hidden column if not exists
+        $db = DB::conn();
+        try {
+            $db->query('SELECT hidden FROM users LIMIT 1');
+        } catch (\Throwable $e) {
+            $db->query('ALTER TABLE users ADD COLUMN hidden TINYINT(1) DEFAULT 0');
+        }
+
         $isSuper = $this->isSuper();
         $userGroupName = '';
         if (!$isSuper) {
@@ -19,6 +28,21 @@ class AgentsController {
         $error = null;
         $agents = [];
         try { $agents = $api->getAgentsStatus(); } catch (\Throwable $e) { $error = $e->getMessage(); }
+
+        // Get hidden status from DB
+        $hiddenMap = [];
+        $result = $db->query('SELECT exten, hidden FROM users');
+        while ($row = $result->fetch_assoc()) {
+            $hiddenMap[$row['exten']] = $row['hidden'];
+        }
+        foreach ($agents as &$agent) {
+            $agent['hidden'] = $hiddenMap[$agent['exten']] ?? 0;
+        }
+        // Filter out hidden agents
+        $agents = array_filter($agents, function($agent) {
+            return !$agent['hidden'];
+        });
+
         $agentsByGroup = [];
         foreach ($agents as $agent) {
             $group = $agent['group'] ?? '';
@@ -27,5 +51,22 @@ class AgentsController {
             }
         }
         require __DIR__.'/../Views/agents/index.php';
+    }
+
+    public function toggleHidden() {
+        $this->requireAuth();
+        if (!$this->isSuper()) {
+            die('Yetkisiz');
+        }
+        $exten = $_POST['exten'] ?? '';
+        if (!$exten) {
+            die('Geçersiz');
+        }
+        $db = DB::conn();
+        $stmt = $db->prepare('UPDATE users SET hidden = 1 - hidden WHERE exten=?');
+        $stmt->bind_param('s', $exten);
+        $stmt->execute();
+        $stmt->close();
+        header('Location: /agents');
     }
 }
