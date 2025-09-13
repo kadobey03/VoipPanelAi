@@ -103,9 +103,19 @@ class ReportsController {
                    LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
                    WHERE $where";
         $types3 = $types; $params3 = $params;
-        if ($groupFilter && !$this->isGroupMember()) { $sql3 .= ' AND cg.id=?'; $types3 .= 'i'; $params3[] = $groupFilter; }
+        if ($groupFilter && !$this->isGroupMember()) {
+            $sql3 .= ' AND cg.id=?';
+            $types3 .= 'i';
+            $params3[] = $groupFilter;
+        }
         $sql3 .= ' GROUP BY u.login, cg.name, u.exten ORDER BY cost DESC';
         $stmt = $db->prepare($sql3);
+
+        // Debug: Check parameter counts
+        error_log("Agent Stats - Types: '$types3' (" . strlen($types3) . " chars), Params: " . count($params3));
+        error_log("User role: " . ($_SESSION['user']['role'] ?? 'unknown'));
+        error_log("Is groupmember: " . ($this->isGroupMember() ? 'yes' : 'no'));
+
         $stmt->bind_param($types3, ...$params3);
         $stmt->execute();
         $agentStats = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
