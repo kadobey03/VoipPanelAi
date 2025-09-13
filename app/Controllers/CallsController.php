@@ -65,12 +65,9 @@ class CallsController {
                     }
                     if (count($rows) < 100) break;
                 }
-                // Get Call Stat if super admin
+                // Get Call Stat from DB if super admin
                 if ($isSuper) {
-                    $callStat = $api->getCallStat($from, $to);
-                    if (is_array($callStat)) {
-                        $callStat = array_slice($callStat, 0, $statLimit);
-                    }
+                    $callStat = \App\Models\CallStat::getByDateRange($from, $to, $statLimit);
                 }
             } catch (\Throwable $e) { $results = ['error'=>$e->getMessage()]; $callStat = ['error'=>$e->getMessage()]; }
         }
@@ -291,6 +288,75 @@ class CallsController {
                     }
                 }
             }
+    public function syncHistoricalCallStats(){
+        $this->requireAuth();
+        if (!$this->isSuper()) { http_response_code(403); echo 'Yetkisiz'; return; }
+        $from = $_POST['from'] ?? date('Y-m-d', strtotime('-30 days'));
+        $to = $_POST['to'] ?? date('Y-m-d');
+        $api = new ApiClient();
+        $db = DB::conn();
+        $currentFrom = $from;
+        $imported = 0;
+        while ($currentFrom <= $to) {
+            $currentTo = min($to, date('Y-m-d', strtotime($currentFrom . ' +1 day')));
+            try {
+                $stats = $api->getCallStat($currentFrom . ' 00:00:00', $currentTo . ' 23:59:59');
+                if (is_array($stats)) {
+                    foreach ($stats as $stat) {
+                        // Check if exists
+                        $stmt = $db->prepare('SELECT id FROM call_stats WHERE user_login=? AND date_from=? AND date_to=? LIMIT 1');
+                        $stmt->bind_param('sss', $stat['user_login'], $currentFrom . ' 00:00:00', $currentTo . ' 23:59:59');
+                        $stmt->execute();
+                        $stmt->store_result();
+                        if ($stmt->num_rows == 0) {
+                            $marginCost = 0.0;
+                            $groupId = null;
+                            $voipExten = (string)($stat['voip_exten'] ?? '');
+                            if ($voipExten !== '') {
+                                $stmt2 = $db->prepare('SELECT group_id FROM users WHERE exten=? LIMIT 1');
+                                $stmt2->bind_param('s', $voipExten);
+                                $stmt2->execute();
+                                $res = $stmt2->get_result();
+                                if ($u = $res->fetch_assoc()) {
+                                    $groupId = (int)$u['group_id'];
+                                }
+                                $stmt2->close();
+                            }
+                            $cost = (float)($stat['cost'] ?? 0.0);
+                            if ($groupId && $cost > 0) {
+                                $stmt2 = $db->prepare('SELECT margin FROM groups WHERE id=?');
+                                $stmt2->bind_param('i', $groupId);
+                                $stmt2->execute();
+                                $res = $stmt2->get_result();
+                                $margin = 0.0;
+                                if ($g = $res->fetch_assoc()) {
+                                    $margin = (float)$g['margin'];
+                                }
+                                $stmt2->close();
+                                $marginCost = round($cost * (1 + $margin / 100), 6);
+                            }
+                            $data = $stat;
+                            $data['date_from'] = $currentFrom . ' 00:00:00';
+                            $data['date_to'] = $currentTo . ' 23:59:59';
+                            $data['margin_cost'] = $marginCost;
+                            \App\Models\CallStat::save($data);
+                            $imported++;
+                        }
+                        $stmt->close();
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Log error but continue
+                \App\Helpers\Logger::log('syncHistoricalCallStats error for ' . $currentFrom . ': ' . $e->getMessage());
+            }
+            $currentFrom = date('Y-m-d', strtotime($currentFrom . ' +1 day'));
+            // Prevent infinite loop
+            if ($imported > 10000) break;
+        }
+        header('Content-Type: application/json');
+        echo json_encode(['imported' => $imported], JSON_UNESCAPED_UNICODE);
+    }
+}
         } catch (\Throwable $e) {
             // Log error
             \App\Helpers\Logger::log('syncCallStats error: ' . $e->getMessage());

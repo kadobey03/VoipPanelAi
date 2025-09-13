@@ -21,4 +21,20 @@ class CallStat {
         }
         return $stats;
     }
+
+    public static function getByDateRange($from, $to, $limit = null) {
+        $db = \App\Helpers\DB::conn();
+        $sql = 'SELECT * FROM call_stats WHERE date_from >= ? AND date_to <= ? ORDER BY id DESC';
+        if ($limit) $sql .= ' LIMIT ' . (int)$limit;
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param('ss', $from, $to);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $stats = [];
+        while ($row = $res->fetch_assoc()) {
+            $stats[] = $row;
+        }
+        $stmt->close();
+        return $stats;
+    }
 }
