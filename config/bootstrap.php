@@ -27,3 +27,13 @@ require_once __DIR__.'/../app/Core/ErrorHandler.php';
 $debugEnv = getenv('APP_DEBUG');
 $debug = is_string($debugEnv) ? in_array(strtolower($debugEnv), ['1','true','on','yes'], true) : false;
 \App\Core\ErrorHandler::register($debug);
+
+// Lightweight migrations (safe ALTERs)
+try {
+    if (class_exists('App\\Helpers\\DB')) {
+        \App\Helpers\DB::migrate();
+    }
+} catch (Throwable $e) {
+    // Log but do not break the app
+    if (class_exists('App\\Helpers\\Logger')) { \App\Helpers\Logger::log('Migration error: '.$e->getMessage()); }
+}

@@ -15,6 +15,7 @@
           <th class="p-3">Ad</th>
           <th class="p-3">Margin %</th>
           <th class="p-3">Bakiye</th>
+          <th class="p-3">API Grup</th>
           <th class="p-3">İşlem</th>
         </tr>
       </thead>
@@ -25,6 +26,13 @@
           <td class="p-3 font-medium"><?= htmlspecialchars($g['name']) ?></td>
           <td class="p-3"><?= number_format((float)$g['margin'],2) ?>%</td>
           <td class="p-3"><?= number_format((float)$g['balance'],2) ?></td>
+          <td class="p-3">
+            <?php if (!empty($g['api_group_name'])): ?>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200"><i class="fa-solid fa-link"></i> <?= htmlspecialchars($g['api_group_name']) ?><?php if(!empty($g['api_group_id'])): ?> (#<?= (int)$g['api_group_id'] ?>)<?php endif; ?></span>
+            <?php else: ?>
+              <span class="text-slate-400">Eşleşmedi</span>
+            <?php endif; ?>
+          </td>
           <td class="p-3 space-x-2">
             <a class="inline-flex items-center gap-1 text-blue-600 hover:underline" href="<?= \App\Helpers\Url::to('/groups/show') ?>?id=<?= (int)$g['id'] ?>"><i class="fa-regular fa-eye"></i> Detay</a>
             <a class="inline-flex items-center gap-1 text-indigo-600 hover:underline" href="<?= \App\Helpers\Url::to('/groups/edit') ?>?id=<?= (int)$g['id'] ?>"><i class="fa-regular fa-pen-to-square"></i> Düzenle</a>
@@ -36,4 +44,3 @@
     </table>
   </div>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
-

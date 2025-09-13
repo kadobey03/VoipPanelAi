@@ -14,6 +14,8 @@ CREATE TABLE groups (
     name VARCHAR(100) NOT NULL,
     margin DECIMAL(5,2) DEFAULT 0.00,
     balance DECIMAL(12,2) DEFAULT 0.00,
+    api_group_id INT NULL,
+    api_group_name VARCHAR(100) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

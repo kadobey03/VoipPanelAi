@@ -9,7 +9,7 @@
   <?php if (!empty($ok)): ?>
     <div class="mb-3 p-2 rounded bg-green-100 text-green-700"><?= htmlspecialchars($ok) ?></div>
   <?php endif; ?>
-  <form method="post" class="space-y-3 bg-white dark:bg-slate-800 p-4 rounded-xl shadow">
+  <form method="post" class="space-y-4 bg-white dark:bg-slate-800 p-4 rounded-xl shadow">
     <div>
       <label class="block text-sm mb-1">Ad</label>
       <input name="name" required class="w-full border rounded p-2 bg-white dark:bg-slate-900">
@@ -22,7 +22,17 @@
       <label class="block text-sm mb-1">Başlangıç Bakiye</label>
       <input type="number" step="0.01" name="balance" class="w-full border rounded p-2 bg-white dark:bg-slate-900" value="0">
     </div>
+    <div>
+      <label class="block text-sm mb-1">API Grubu Eşle (opsiyonel)</label>
+      <?php $apiGroups = $apiGroups ?? []; ?>
+      <select name="api_group_id" class="w-full border rounded p-2 bg-white dark:bg-slate-900">
+        <option value="">(Seçilmedi)</option>
+        <?php foreach ($apiGroups as $ag): $gid=(int)($ag['id']??0); $gname=(string)($ag['name']??''); ?>
+          <option value="<?= $gid ?>">#<?= $gid ?> - <?= htmlspecialchars($gname) ?></option>
+        <?php endforeach; ?>
+      </select>
+      <div class="text-xs text-slate-500 mt-1">Seçilmezse isim eşleşmesiyle otomatik bağlamaya çalışır.</div>
+    </div>
     <button class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded p-2">Oluştur</button>
   </form>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
-
