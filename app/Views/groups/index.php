@@ -175,10 +175,17 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
           <?php endif; ?>
         </div>
 
+        <?php if ($isSuper): ?>
         <button onclick="openTopupModal(<?= (int)$g['id'] ?>, '<?= htmlspecialchars($g['name']) ?>', <?= (float)$g['balance'] ?>)"
                 class="inline-flex items-center px-4 py-2 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-200">
           <i class="fa-solid fa-plus mr-1"></i>Yükle
         </button>
+        <?php else: ?>
+        <button onclick="openTopupModal(<?= (int)$g['id'] ?>, '<?= htmlspecialchars($g['name']) ?>', <?= (float)$g['balance'] ?>)"
+                class="inline-flex items-center px-4 py-2 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
+          <i class="fa-solid fa-paper-plane mr-1"></i>Talep Et
+        </button>
+        <?php endif; ?>
       </div>
     </div>
 
@@ -214,7 +221,11 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full">
       <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
         <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+          <?php if ($isSuper): ?>
           <i class="fa-solid fa-plus mr-2 text-emerald-500"></i>Bakiye Yükle
+          <?php else: ?>
+          <i class="fa-solid fa-paper-plane mr-2 text-blue-500"></i>Bakiye Yükleme Talebi
+          <?php endif; ?>
         </h3>
         <button onclick="closeTopupModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i class="fa-solid fa-times text-xl"></i>
@@ -228,6 +239,14 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
             <p class="text-sm text-slate-600 dark:text-slate-400">
               Mevcut Bakiye: $<span id="currentBalance"></span>
             </p>
+            <?php if (!$isSuper): ?>
+            <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p class="text-sm text-blue-800 dark:text-blue-300">
+                <i class="fa-solid fa-info-circle mr-1"></i>
+                Bu yükleme talebi admin onayı bekleyecektir.
+              </p>
+            </div>
+            <?php endif; ?>
           </div>
 
           <div>
@@ -251,17 +270,20 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
               <option value="crypto">Kripto Para</option>
             </select>
           </div>
-          <?php else: ?>
-          <input type="hidden" name="method" value="request">
           <?php endif; ?>
+          <input type="hidden" name="method" value="<?php echo $isSuper ? 'manual' : 'request'; ?>">
         </div>
 
         <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
           <button type="button" onclick="closeTopupModal()" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 transition-colors duration-200">
             İptal
           </button>
-          <button type="submit" class="px-6 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-200">
+          <button type="submit" class="px-6 py-2 rounded-lg <?php echo $isSuper ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'; ?> text-white transition-colors duration-200">
+            <?php if ($isSuper): ?>
             <i class="fa-solid fa-plus mr-1"></i>Yükle
+            <?php else: ?>
+            <i class="fa-solid fa-paper-plane mr-1"></i>Talep Et
+            <?php endif; ?>
           </button>
         </div>
       </form>
