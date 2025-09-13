@@ -23,8 +23,12 @@ function __($key) {
    <meta property="og:image" content="/assets/images/seo-image.png">
    <meta property="og:type" content="website">
    <title><?= isset($title) ? htmlspecialchars($title) : 'PapaM VoIP Panel' ?></title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet">
+   <?php if (isset($title) && strpos($title, 'Giriş') !== false): ?>
+   <link href="/assets/css/login-animations.css" rel="stylesheet">
+   <script src="/assets/js/login.js" defer></script>
+   <?php endif; ?>
   <script>
     try{
       const t=localStorage.getItem('theme');
@@ -32,7 +36,7 @@ function __($key) {
     }catch(e){}
   </script>
 </head>
-<body class="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 text-slate-900 dark:from-slate-900 dark:to-slate-950 dark:text-slate-100">
+<body class="min-h-screen <?php echo (isset($title) && strpos($title, 'Giriş') !== false) ? 'login-background' : 'bg-gradient-to-b from-slate-50 to-slate-100'; ?> text-slate-900 dark:from-slate-900 dark:to-slate-950 dark:text-slate-100">
 <?php if (empty($hideNav)): ?>
   <!-- Modern Header -->
   <header class="sticky top-0 z-50">
