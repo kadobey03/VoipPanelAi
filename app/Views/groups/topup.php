@@ -33,12 +33,18 @@
       <?php else: ?>
       <input type="hidden" name="method" value="manual">
       <?php endif; ?>
+      <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']!=='superadmin'): ?>
+        <div class="text-xs text-slate-500">Not: Talebiniz onaylanınca grup bakiyenize yansır.</div>
+      <?php endif; ?>
       <div>
         <label class="block text-sm mb-1">Tutar</label>
         <input type="number" step="0.01" min="0.01" name="amount" class="w-full border rounded p-2 bg-white dark:bg-gray-800" required>
       </div>
-      <button class="w-full bg-blue-600 text-white rounded p-2">Yükle</button>
+      <button class="w-full bg-blue-600 text-white rounded p-2">Gönder</button>
     </form>
+    <div class="mt-4 text-sm">
+      <a class="text-blue-600 hover:underline" href="<?= \App\Helpers\Url::to('/topups') ?>">Bakiye Yükleme Talepleri</a>
+    </div>
   </div>
 </body>
 </html>

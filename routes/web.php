@@ -47,3 +47,16 @@ $router->add('POST', '/numbers/spam', 'NumbersController@setSpam');
 
 // Webhook
 $router->add('POST', '/webhook/momvoip', 'WebhookController@momvoip');
+
+// Topup requests
+$router->add('GET', '/topups', 'TopupController@index');
+$router->add('POST', '/topups/approve', 'TopupController@approve');
+$router->add('POST', '/topups/reject', 'TopupController@reject');
+
+// Profile
+$router->add('GET', '/profile', 'ProfileController@index');
+$router->add('POST', '/profile', 'ProfileController@index');
+
+// Admin impersonation
+$router->add('GET', '/admin/impersonate', 'AdminController@impersonate'); // ?id=
+$router->add('GET', '/admin/impersonate/stop', 'AdminController@stopImpersonate');

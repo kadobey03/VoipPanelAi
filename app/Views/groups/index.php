@@ -36,7 +36,9 @@
           </td>
           <td class="p-3 space-x-2">
             <a class="inline-flex items-center gap-1 text-blue-600 hover:underline" href="<?= \App\Helpers\Url::to('/groups/show') ?>?id=<?= (int)$g['id'] ?>"><i class="fa-regular fa-eye"></i> Detay</a>
+            <?php if ($isSuper): ?>
             <a class="inline-flex items-center gap-1 text-indigo-600 hover:underline" href="<?= \App\Helpers\Url::to('/groups/edit') ?>?id=<?= (int)$g['id'] ?>"><i class="fa-regular fa-pen-to-square"></i> Düzenle</a>
+            <?php endif; ?>
             <a class="inline-flex items-center gap-1 text-emerald-600 hover:underline" href="<?= \App\Helpers\Url::to('/groups/topup') ?>?id=<?= (int)$g['id'] ?>"><i class="fa-solid fa-circle-plus"></i> Bakiye Yükle</a>
           </td>
         </tr>

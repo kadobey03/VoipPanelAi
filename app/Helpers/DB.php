@@ -76,5 +76,36 @@ class DB {
                 `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         }
+
+        // payment_methods table
+        $res = $db->query("SHOW TABLES LIKE 'payment_methods'");
+        if (!$res || $res->num_rows === 0) {
+            $db->query("CREATE TABLE IF NOT EXISTS `payment_methods` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `name` VARCHAR(100) NOT NULL,
+                `method_type` VARCHAR(50) NOT NULL,
+                `details` TEXT NULL,
+                `active` TINYINT(1) DEFAULT 1,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        } else { $res->free(); }
+
+        // topup_requests table
+        $res = $db->query("SHOW TABLES LIKE 'topup_requests'");
+        if (!$res || $res->num_rows === 0) {
+            $db->query("CREATE TABLE IF NOT EXISTS `topup_requests` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `group_id` INT NOT NULL,
+                `user_id` INT NOT NULL,
+                `amount` DECIMAL(12,4) NOT NULL,
+                `method` VARCHAR(50) NOT NULL,
+                `status` ENUM('pending','approved','rejected') DEFAULT 'pending',
+                `note` VARCHAR(255) NULL,
+                `reference` VARCHAR(64) NULL,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                `approved_at` DATETIME NULL,
+                `approved_by` INT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        } else { $res->free(); }
     }
 }

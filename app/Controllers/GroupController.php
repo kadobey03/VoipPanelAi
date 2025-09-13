@@ -48,7 +48,7 @@ class GroupController {
         $db = DB::conn();
         $id = (int)($_GET['id'] ?? 0);
         if (!$id) { \App\Helpers\Url::redirect('/groups'); }
-        if (!$this->isSuper() && $this->currentGroupId() !== $id) { http_response_code(403); echo 'Yetkisiz'; return; }
+        if (!$this->isSuper()) { http_response_code(403); echo 'Yetkisiz'; return; }
         $error = null; $ok = null;
         // Fetch API groups for mapping
         $apiGroups = [];
@@ -57,26 +57,18 @@ class GroupController {
             $name = trim($_POST['name'] ?? '');
             if ($name === '') { $error='İsim gerekli'; }
             else {
-                if ($this->isSuper()) {
-                    $margin = (float)($_POST['margin'] ?? 0);
-                    $api_group_id = isset($_POST['api_group_id']) && $_POST['api_group_id']!=='' ? (int)$_POST['api_group_id'] : null;
-                    $api_group_name = null;
-                    if ($api_group_id) {
-                        foreach ($apiGroups as $ag) { if ((int)($ag['id'] ?? 0) === $api_group_id) { $api_group_name = (string)($ag['name'] ?? ''); break; } }
-                    } else {
-                        foreach ($apiGroups as $ag) { if (strcasecmp((string)($ag['name'] ?? ''), $name) === 0) { $api_group_id = (int)($ag['id'] ?? 0); $api_group_name = (string)($ag['name'] ?? ''); break; } }
-                    }
-                    $stmt = $db->prepare('UPDATE groups SET name=?, margin=?, api_group_id=?, api_group_name=? WHERE id=?');
-                    $stmt->bind_param('sdisi', $name, $margin, $api_group_id, $api_group_name, $id);
-                    $ok = $stmt->execute() ? 'Güncellendi' : 'Güncelleme hatası';
-                    $stmt->close();
+                $margin = (float)($_POST['margin'] ?? 0);
+                $api_group_id = isset($_POST['api_group_id']) && $_POST['api_group_id']!=='' ? (int)$_POST['api_group_id'] : null;
+                $api_group_name = null;
+                if ($api_group_id) {
+                    foreach ($apiGroups as $ag) { if ((int)($ag['id'] ?? 0) === $api_group_id) { $api_group_name = (string)($ag['name'] ?? ''); break; } }
                 } else {
-                    // Group admin cannot change margin or mapping
-                    $stmt = $db->prepare('UPDATE groups SET name=? WHERE id=?');
-                    $stmt->bind_param('si', $name, $id);
-                    $ok = $stmt->execute() ? 'Güncellendi' : 'Güncelleme hatası';
-                    $stmt->close();
+                    foreach ($apiGroups as $ag) { if (strcasecmp((string)($ag['name'] ?? ''), $name) === 0) { $api_group_id = (int)($ag['id'] ?? 0); $api_group_name = (string)($ag['name'] ?? ''); break; } }
                 }
+                $stmt = $db->prepare('UPDATE groups SET name=?, margin=?, api_group_id=?, api_group_name=? WHERE id=?');
+                $stmt->bind_param('sdisi', $name, $margin, $api_group_id, $api_group_name, $id);
+                $ok = $stmt->execute() ? 'Güncellendi' : 'Güncelleme hatası';
+                $stmt->close();
             }
         }
         try {
@@ -135,23 +127,29 @@ class GroupController {
             $amount = (float)($_POST['amount'] ?? 0);
             $method = $_POST['method'] ?? ($this->isSuper() ? 'manual' : 'unknown');
             if ($amount>0) {
-                $db->begin_transaction();
-                try {
-                    $stmt = $db->prepare('UPDATE groups SET balance = balance + ? WHERE id=?');
-                    $stmt->bind_param('di', $amount, $id);
-                    $stmt->execute();
-                    $stmt->close();
+                if ($this->isSuper()) {
+                    $db->begin_transaction();
+                    try {
+                        $stmt = $db->prepare('UPDATE groups SET balance = balance + ? WHERE id=?');
+                        $stmt->bind_param('di', $amount, $id);
+                        $stmt->execute();
+                        $stmt->close();
 
-                    $type = 'topup'; $desc = 'Topup method: '.$method; $ref = null;
-                    $stmt = $db->prepare('INSERT INTO transactions (group_id, type, amount, reference, description) VALUES (?,?,?,?,?)');
-                    $stmt->bind_param('isdss', $id, $type, $amount, $ref, $desc);
-                    $stmt->execute();
+                        $type = 'topup'; $desc = 'Topup method: '.$method; $ref = null;
+                        $stmt = $db->prepare('INSERT INTO transactions (group_id, type, amount, reference, description) VALUES (?,?,?,?,?)');
+                        $stmt->bind_param('isdss', $id, $type, $amount, $ref, $desc);
+                        $stmt->execute();
+                        $stmt->close();
+                        $db->commit();
+                        $ok = 'Bakiye eklendi';
+                    } catch (\Throwable $e) { $db->rollback(); $error = 'Hata: '.$e->getMessage(); }
+                } else {
+                    // Group admin: create pending request
+                    $uid = (int)($_SESSION['user']['id'] ?? 0);
+                    $stmt = $db->prepare('INSERT INTO topup_requests (group_id, user_id, amount, method, status) VALUES (?,?,?,?,"pending")');
+                    $stmt->bind_param('iids', $id, $uid, $amount, $method);
+                    if ($stmt->execute()) { $ok='Yükleme talebiniz alındı. Onay bekliyor.'; } else { $error='Talep oluşturulamadı'; }
                     $stmt->close();
-                    $db->commit();
-                    $ok = 'Bakiye eklendi';
-                } catch (\Throwable $e) {
-                    $db->rollback();
-                    $error = 'Hata: '.$e->getMessage();
                 }
             } else { $error='Geçerli tutar girin'; }
         }
