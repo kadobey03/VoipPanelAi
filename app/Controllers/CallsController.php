@@ -366,12 +366,3 @@ class CallsController {
         echo json_encode(['imported' => $imported], JSON_UNESCAPED_UNICODE);
     }
 }
-        } catch (\Throwable $e) {
-            // Log error
-            \App\Helpers\Logger::log('syncCallStats error: ' . $e->getMessage());
-        }
-        // Simple response
-        header('Content-Type: application/json');
-        echo json_encode(['status' => 'ok']);
-    }
-}
