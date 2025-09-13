@@ -43,8 +43,8 @@ class AgentsController {
         }
         $api = new ApiClient();
         $error = null;
-        // Get active agents from DB
-        $agentsDb = $db->query('SELECT exten, user_login, group_name FROM agents WHERE active=1')->fetch_all(MYSQLI_ASSOC);
+        // Get all agents from DB
+        $agentsDb = $db->query('SELECT exten, user_login, group_name, active FROM agents')->fetch_all(MYSQLI_ASSOC);
 
         // Get status from API
         $agentsApi = [];
@@ -55,6 +55,13 @@ class AgentsController {
         foreach ($agentsApi as $a) {
             $statusMap[$a['exten']] = $a;
         }
+        // Filter for group admin
+        if (!$isSuper) {
+            $agentsDb = array_filter($agentsDb, function($a) use ($userGroupName) {
+                return ($a['active'] ?? 1) == 1 && $a['group_name'] === $userGroupName;
+            });
+        }
+
         $agents = [];
         foreach ($agentsDb as $agent) {
             $exten = $agent['exten'];
