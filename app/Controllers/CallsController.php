@@ -240,6 +240,7 @@ class CallsController {
             $statCount = is_array($stats) ? count($stats) : 0;
             if (is_array($stats)) {
                 foreach ($stats as $stat) {
+                    if (!is_array($stat)) continue;
                     $key = $stat['user_login'] . '|' . $from . '|' . $to;
                     if (!isset($existingKeys[$key])) {
                         // New stat, save
@@ -319,6 +320,7 @@ class CallsController {
                 $stats = $api->getCallStat($currentFrom . ' 00:00:00', $currentTo . ' 23:59:59');
                 if (is_array($stats)) {
                     foreach ($stats as $stat) {
+                        if (!is_array($stat)) continue;
                         // Check if exists
                         $stmt = $db->prepare('SELECT id FROM call_stats WHERE user_login=? AND date_from=? AND date_to=? LIMIT 1');
                         $stmt->bind_param('sss', $stat['user_login'], $currentFrom . ' 00:00:00', $currentTo . ' 23:59:59');
