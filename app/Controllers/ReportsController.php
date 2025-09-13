@@ -22,6 +22,18 @@ class ReportsController {
             $groupFilter = (int)($_SESSION['user']['group_id'] ?? 0);
         }
 
+        // Groupmember için session'da agent_id yoksa veritabanından çek
+        if ($this->isGroupMember() && !isset($_SESSION['user']['agent_id'])) {
+            $stmt = $db->prepare('SELECT agent_id FROM users WHERE id=?');
+            $stmt->bind_param('i', (int)$_SESSION['user']['id']);
+            $stmt->execute();
+            $r = $stmt->get_result()->fetch_assoc();
+            if ($r && $r['agent_id']) {
+                $_SESSION['user']['agent_id'] = $r['agent_id'];
+            }
+            $stmt->close();
+        }
+
         // Build a condition mapping calls.group_id to local groups via (groups.id OR groups.api_group_id)
         $where = 'c.start BETWEEN ? AND ?';
         $types = 'ss';
@@ -31,17 +43,20 @@ class ReportsController {
         if ($this->isGroupMember()) {
             // Groupmember için agent_id'den exten al
             $agentExten = '';
-            if (isset($_SESSION['user']['agent_id']) && (int)$_SESSION['user']['agent_id'] > 0) {
+            $agentId = isset($_SESSION['user']['agent_id']) ? (int)$_SESSION['user']['agent_id'] : 0;
+            if ($agentId > 0) {
                 $stmt = $db->prepare('SELECT exten FROM agents WHERE id=?');
-                $stmt->bind_param('i', (int)$_SESSION['user']['agent_id']);
+                $stmt->bind_param('i', $agentId);
                 $stmt->execute();
                 $r = $stmt->get_result()->fetch_assoc();
                 if ($r) $agentExten = $r['exten'];
                 $stmt->close();
             }
-            $where .= ' AND c.src=?';
-            $types .= 's';
-            $params[] = $agentExten;
+            if (!empty($agentExten)) {
+                $where .= ' AND c.src=?';
+                $types .= 's';
+                $params[] = $agentExten;
+            }
         }
 
         // Summary per group (map to local group id)

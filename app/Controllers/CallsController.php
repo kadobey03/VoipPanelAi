@@ -38,6 +38,19 @@ class CallsController {
         $user = $_SESSION['user'];
         $isSuper = ($user['role'] ?? '') === 'superadmin';
         $isGroupMember = ($user['role'] ?? '') === 'groupmember';
+
+        // Groupmember için session'da agent_id yoksa veritabanından çek
+        if ($isGroupMember && !isset($user['agent_id'])) {
+            $stmt = $db->prepare('SELECT agent_id FROM users WHERE id=?');
+            $stmt->bind_param('i', (int)$user['id']);
+            $stmt->execute();
+            $r = $stmt->get_result()->fetch_assoc();
+            if ($r && $r['agent_id']) {
+                $_SESSION['user']['agent_id'] = $r['agent_id'];
+                $user['agent_id'] = $r['agent_id'];
+            }
+            $stmt->close();
+        }
         $from = date('Y-m-d H:i:s', strtotime($_GET['from'] ?? '-1 day'));
         $to   = date('Y-m-d H:i:s', strtotime($_GET['to']   ?? 'now'));
         $src  = trim($_GET['src']  ?? '');
@@ -55,8 +68,7 @@ class CallsController {
         if ($isGroupMember) {
             // Groupmember için agent_id'den exten al
             $agentExten = '';
-            $agentId = (int)$user['agent_id'];
-            error_log("Groupmember agent_id: " . $agentId);
+            $agentId = isset($user['agent_id']) ? (int)$user['agent_id'] : 0;
             if ($agentId > 0) {
                 $stmt = $db->prepare('SELECT exten FROM agents WHERE id=?');
                 $stmt->bind_param('i', $agentId);
@@ -64,21 +76,13 @@ class CallsController {
                 $r = $stmt->get_result()->fetch_assoc();
                 if ($r) {
                     $agentExten = $r['exten'];
-                    error_log("Found agent exten: " . $agentExten);
-                } else {
-                    error_log("Agent not found for id: " . $agentId);
                 }
                 $stmt->close();
-            } else {
-                error_log("No agent_id for groupmember");
             }
             if (!empty($agentExten)) {
                 $where .= ' AND src=?';
                 $types.='s';
                 $params[] = $agentExten;
-                error_log("Applying filter with exten: " . $agentExten);
-            } else {
-                error_log("No exten found, no filter applied");
             }
         }
         if ($isSuper && $selectedGroup) { $where .= ' AND group_id=?'; $types.='i'; $params[] = $selectedGroup; }

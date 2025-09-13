@@ -41,6 +41,18 @@ class AgentsController {
         $isSuper = $this->isSuper();
         $isUser = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'user';
         $isGroupMember = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'groupmember';
+
+        // Groupmember için session'da agent_id yoksa veritabanından çek
+        if ($isGroupMember && !isset($_SESSION['user']['agent_id'])) {
+            $stmt = $db->prepare('SELECT agent_id FROM users WHERE id=?');
+            $stmt->bind_param('i', (int)$_SESSION['user']['id']);
+            $stmt->execute();
+            $r = $stmt->get_result()->fetch_assoc();
+            if ($r && $r['agent_id']) {
+                $_SESSION['user']['agent_id'] = $r['agent_id'];
+            }
+            $stmt->close();
+        }
         $userGroupName = '';
         $userAgentId = 0;
         if (!$isSuper) {
@@ -52,7 +64,7 @@ class AgentsController {
             $stmt->close();
             if ($r) $userGroupName = $r['name'];
             if ($isGroupMember) {
-                $userAgentId = (int)($_SESSION['user']['agent_id'] ?? 0);
+                $userAgentId = isset($_SESSION['user']['agent_id']) ? (int)$_SESSION['user']['agent_id'] : 0;
             }
         }
         $api = new ApiClient();
