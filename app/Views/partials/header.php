@@ -205,11 +205,11 @@ function __($key) {
                 <form method="post" action="/change-lang">
                   <button type="submit" name="lang" value="tr" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
                     <span class="text-lg">🇹🇷</span>
-                    <span class="text-sm font-medium text-slate-800 dark:text-white">Türkçe</span>
+                    <span class="text-sm font-medium text-slate-800 dark:text-white"><?= __('turkish') ?: 'Türkçe' ?></span>
                   </button>
                   <button type="submit" name="lang" value="en" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
                     <span class="text-lg">🇺🇸</span>
-                    <span class="text-sm font-medium text-slate-800 dark:text-white">English</span>
+                    <span class="text-sm font-medium text-slate-800 dark:text-white"><?= __('english') ?: 'English' ?></span>
                   </button>
                 </form>
               </div>

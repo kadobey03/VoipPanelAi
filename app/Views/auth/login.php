@@ -28,8 +28,8 @@
           </div>
 
           <!-- Enhanced title with rainbow effect -->
-          <h1 class="text-4xl font-bold text-white mt-6 text-glow drop-shadow-lg animate-fade-in-up rainbow-text">PapaM VoIP Panel</h1>
-          <p class="label-text text-lg mt-3 font-medium animate-fade-in-up" style="animation-delay: 0.3s;">Modern İletişim Çözümleri</p>
+          <h1 class="text-4xl font-bold text-white mt-6 text-glow drop-shadow-lg animate-fade-in-up rainbow-text"><?= __('papam_voip_panel') ?></h1>
+          <p class="label-text text-lg mt-3 font-medium animate-fade-in-up" style="animation-delay: 0.3s;"><?= __('modern_communication_solutions') ?></p>
 
           <!-- Additional decorative elements -->
           <div class="flex justify-center gap-4 mt-4">
@@ -58,14 +58,14 @@
                 <i class="fa-solid fa-user text-cyan-300 animate-pulse"></i>
                 <div class="absolute -top-1 -right-1 w-2 h-2 bg-cyan-400 rounded-full animate-ping"></div>
               </div>
-              Kullanıcı Adı
+              <?= __('username') ?>
             </label>
             <div class="relative group">
               <input
                 name="login"
                 required
                 class="form-input input-text w-full border-2 border-white/30 rounded-xl p-4 pl-14 bg-white/15 backdrop-blur-sm focus:ring-2 focus:ring-cyan-300 focus:border-cyan-300 focus:bg-white/20 transition-all duration-300 placeholder-text hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/25"
-                placeholder="Kullanıcı adınızı girin">
+                placeholder="<?= __('enter_username') ?>">
               <div class="absolute left-4 top-1/2 -translate-y-1/2">
                 <i class="fa-solid fa-user input-icon group-hover:text-cyan-300 group-hover:animate-bounce transition-all duration-300"></i>
               </div>
@@ -82,7 +82,7 @@
                 <i class="fa-solid fa-lock text-purple-300 animate-pulse"></i>
                 <div class="absolute -top-1 -right-1 w-2 h-2 bg-purple-400 rounded-full animate-ping"></div>
               </div>
-              Şifre
+              <?= __('password') ?>
             </label>
             <div class="relative group">
               <input
@@ -90,7 +90,7 @@
                 name="password"
                 required
                 class="form-input input-text w-full border-2 border-white/30 rounded-xl p-4 pl-14 pr-14 bg-white/15 backdrop-blur-sm focus:ring-2 focus:ring-purple-300 focus:border-purple-300 focus:bg-white/20 transition-all duration-300 placeholder-text hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/25"
-                placeholder="Şifrenizi girin">
+                placeholder="<?= __('enter_password') ?>">
               <div class="absolute left-4 top-1/2 -translate-y-1/2">
                 <i class="fa-solid fa-lock input-icon group-hover:text-purple-300 group-hover:animate-bounce transition-all duration-300"></i>
               </div>
@@ -110,7 +110,7 @@
               class="login-btn w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold rounded-xl p-4 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-purple-500/50 relative overflow-hidden group">
               <span class="flex items-center justify-center gap-2 button-text relative z-10">
                 <i class="fa-solid fa-right-to-bracket group-hover:animate-bounce"></i>
-                <span>Giriş Yap</span>
+                <span><?= __('login_button') ?></span>
               </span>
               <!-- Button shine effect -->
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>

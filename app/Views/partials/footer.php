@@ -39,8 +39,8 @@
         </div>
 
         <!-- Animated brand text -->
-        <h2 class="text-2xl font-bold text-white mt-4 mb-2 footer-rainbow-text animate-fade-in-up">PapaM VoIP Panel</h2>
-        <p class="text-white/80 text-sm animate-fade-in-up" style="animation-delay: 0.2s;">Modern İletişim Çözümleri</p>
+        <h2 class="text-2xl font-bold text-white mt-4 mb-2 footer-rainbow-text animate-fade-in-up"><?= __('papam_voip_panel') ?></h2>
+        <p class="text-white/80 text-sm animate-fade-in-up" style="animation-delay: 0.2s;"><?= __('modern_communication_solutions') ?></p>
 
         <!-- Animated dots -->
         <div class="flex justify-center gap-3 mt-4">
@@ -53,7 +53,7 @@
 
       <!-- Enhanced Contact Section -->
       <div class="mb-8">
-        <h3 class="text-xl font-bold text-white mb-4 footer-rainbow-text animate-fade-in-up" style="animation-delay: 0.3s;">İletişim</h3>
+        <h3 class="text-xl font-bold text-white mb-4 footer-rainbow-text animate-fade-in-up" style="animation-delay: 0.3s;"><?= __('communication') ?></h3>
         <div class="flex flex-wrap items-center justify-center gap-6">
           <!-- Telegram Links with Enhanced Animations -->
           <a href="https://t.me/lionmw" target="_blank"
@@ -81,7 +81,7 @@
         <button id="install-btn" class="hidden group relative px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-purple-500/50 overflow-hidden">
           <span class="flex items-center justify-center gap-2 relative z-10">
             <i class="fa-solid fa-download group-hover:animate-bounce"></i>
-            <span>Uygulamayı İndir</span>
+            <span><?= __('download_app') ?></span>
           </span>
           <!-- Shine effect -->
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -92,7 +92,7 @@
       <div class="relative">
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent blur-sm"></div>
         <p class="relative text-white/90 font-medium animate-fade-in-up footer-rainbow-text" style="animation-delay: 0.5s;">
-          © <?= date('Y') ?> PapaM VoIP Panel
+          © <?= date('Y') ?> <?= __('papam_voip_panel') ?>
         </p>
       </div>
 
