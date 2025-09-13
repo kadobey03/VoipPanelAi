@@ -33,7 +33,7 @@
                 <td class="p-2"><?= htmlspecialchars((string)($a['las_call_time'] ?? '')) ?></td>
                 <td class="p-2"><?= htmlspecialchars($a['lead'] ?? '') ?></td>
                 <td class="p-2">
-<form method="post" action="/agents/toggle-hidden" style="display:inline;">
+<form method="post" action="<?= \App\Helpers\Url::to('/agents/toggle-hidden') ?>" style="display:inline;">
 <input type="hidden" name="exten" value="<?= htmlspecialchars($a['exten']) ?>">
 <button type="submit" class="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
 <?= (($a['hidden'] ?? 0) ? 'Göster' : 'Gizle') ?>
@@ -72,7 +72,7 @@
             <td class="p-2"><?= htmlspecialchars((string)($a['las_call_time'] ?? '')) ?></td>
             <td class="p-2"><?= htmlspecialchars($a['lead'] ?? '') ?></td>
 <?php if ($isSuper): ?><td class="p-2">
-<form method="post" action="/agents/toggle-hidden" style="display:inline;">
+<form method="post" action="<?= \App\Helpers\Url::to('/agents/toggle-hidden') ?>" style="display:inline;">
 <input type="hidden" name="exten" value="<?= htmlspecialchars($a['exten']) ?>">
 <button type="submit" class="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
 <?= (($a['hidden'] ?? 0) ? 'Göster' : 'Gizle') ?>
