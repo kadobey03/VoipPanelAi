@@ -42,3 +42,10 @@ try {
     // Log but do not break the app
     if (class_exists('App\\Helpers\\Logger')) { \App\Helpers\Logger::log('Migration error: '.$e->getMessage()); }
 }
+
+// Language setup
+include __DIR__.'/../app/Helpers/Lang.php';
+if (isset($_GET['lang']) && in_array($_GET['lang'], ['tr', 'en'])) {
+    \App\Helpers\Lang::set($_GET['lang']);
+}
+\App\Helpers\Lang::load(\App\Helpers\Lang::current());

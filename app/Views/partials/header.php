@@ -1,5 +1,12 @@
 <?php
 use App\Helpers\Url;
+use App\Helpers\Lang;
+
+Lang::load(Lang::current());
+
+function __($key) {
+    return Lang::get($key);
+}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -35,7 +42,7 @@ use App\Helpers\Url;
           <span class="font-semibold tracking-wide">PapaM VoIP Panel</span>
         </a>
         <nav class="hidden md:flex items-center gap-4 text-white/90">
-          <a class="hover:text-white transition" href="<?= Url::to('/users') ?>"><i class="fa-solid fa-users"></i> Kullanıcılar</a>
+          <a class="hover:text-white transition" href="<?= Url::to('/users') ?>"><i class="fa-solid fa-users"></i> <?= __('users') ?></a>
           <a class="hover:text-white transition" href="<?= Url::to('/groups') ?>"><i class="fa-solid fa-layer-group"></i> Gruplar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
@@ -57,6 +64,10 @@ use App\Helpers\Url;
           <a class="hover:text-white transition" href="<?= Url::to('/settings') ?>"><i class="fa-solid fa-cogs"></i> Ayarlar</a>
           <?php endif; ?>
           <a class="hover:text-white transition" href="<?= Url::to('/logout') ?>"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</a>
+          <select id="lang-select" class="ml-2 px-2 py-1 rounded bg-white/20 hover:bg-white/30 text-white border-none">
+            <option value="tr" <?= Lang::current() === 'tr' ? 'selected' : '' ?>>TR</option>
+            <option value="en" <?= Lang::current() === 'en' ? 'selected' : '' ?>>EN</option>
+          </select>
           <button id="toggle-theme" class="ml-2 px-3 py-1 rounded bg-white/20 hover:bg-white/30 text-white"><i class="fa-solid fa-moon"></i></button>
         </nav>
         <button id="menu-btn" class="md:hidden text-white text-2xl"><i class="fa-solid fa-bars"></i></button>
@@ -98,6 +109,12 @@ use App\Helpers\Url;
         // Close if click is outside both the menu and the button (including its children)
         document.addEventListener('click', function(e){ if(!bmenu.contains(e.target) && !bbtn.contains(e.target)){ bmenu.classList.add('hidden'); } });
       }
+    });
+
+    // Language selector
+    document.getElementById('lang-select').addEventListener('change', function() {
+      const lang = this.value;
+      window.location.href = '?lang=' + lang;
     });
   </script>
   <script>
