@@ -237,6 +237,7 @@ class CallsController {
         }
         try {
             $stats = $api->getCallStat($from, $to);
+            $statCount = is_array($stats) ? count($stats) : 0;
             if (is_array($stats)) {
                 foreach ($stats as $stat) {
                     $key = $stat['user_login'] . '|' . $from . '|' . $to;
@@ -295,10 +296,12 @@ class CallsController {
         } catch (\Throwable $e) {
             // Log error
             \App\Helpers\Logger::log('syncCallStats error: ' . $e->getMessage());
+            $statCount = 0;
+            $error = $e->getMessage();
         }
         // Simple response
         header('Content-Type: application/json');
-        echo json_encode(['status' => 'ok']);
+        echo json_encode(['stat_count' => $statCount ?? 0, 'error' => $error ?? null]);
     }
 
     public function syncHistoricalCallStats(){
