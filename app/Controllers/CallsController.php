@@ -49,6 +49,7 @@ class CallsController {
         $types = 'ss';
         $params = [$from, $to];
         if (!$isSuper) { $where .= ' AND group_id=?'; $types.='i'; $params[] = (int)($user['group_id'] ?? 0); }
+        if (($user['role'] ?? '') === 'user') { $where .= ' AND src=?'; $types.='s'; $params[] = $user['exten'] ?? ''; }
         if ($isSuper && $selectedGroup) { $where .= ' AND group_id=?'; $types.='i'; $params[] = $selectedGroup; }
         if ($src !== '') { $where .= ' AND src LIKE ?'; $types.='s'; $params[] = $src.'%'; }
         if ($dst !== '') { $where .= ' AND dst LIKE ?'; $types.='s'; $params[] = $dst.'%'; }
