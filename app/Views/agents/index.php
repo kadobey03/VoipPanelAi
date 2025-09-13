@@ -304,6 +304,14 @@
 
 <?php else: ?>
   <!-- Single Group View for Non-Super Users -->
+  <div class="mb-4 p-4 bg-yellow-100 rounded">
+    <strong>Debug Info:</strong><br>
+    IsSuper: <?php echo $isSuper ? 'true' : 'false'; ?><br>
+    User Role: <?php echo $_SESSION['user']['role'] ?? 'none'; ?><br>
+    User Group Name: <?php echo htmlspecialchars($userGroupName ?? 'none'); ?><br>
+    AgentsByGroup Keys: <?php echo implode(', ', array_keys($agentsByGroup ?? [])); ?><br>
+    AgentsByGroup JSON: <pre><?php echo json_encode($agentsByGroup ?? [], JSON_PRETTY_PRINT); ?></pre>
+  </div>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     <?php
     $agents = $agentsByGroup[key($agentsByGroup ?? [])] ?? [];
