@@ -125,9 +125,18 @@ class AgentsController {
         foreach ($agentsApi as $agent) {
             $exten = $agent['exten'];
             $login = $agent['user_login'] ?? '';
-            $group = $agent['group'] ?? '';
+            $apiGroup = $agent['group'] ?? '';
+            $localGroup = '';
+            if ($apiGroup) {
+                $stmt = $db->prepare('SELECT name FROM groups WHERE api_group_name=? OR api_group_id=?');
+                $stmt->bind_param('ss', $apiGroup, $apiGroup);
+                $stmt->execute();
+                $r = $stmt->get_result()->fetch_assoc();
+                if ($r) $localGroup = $r['name'];
+                $stmt->close();
+            }
             $stmt = $db->prepare('INSERT INTO agents (exten, user_login, group_name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE user_login=VALUES(user_login), group_name=VALUES(group_name), updated_at=NOW()');
-            $stmt->bind_param('sss', $exten, $login, $group);
+            $stmt->bind_param('sss', $exten, $login, $localGroup);
             $stmt->execute();
             $stmt->close();
         }
