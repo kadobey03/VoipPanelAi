@@ -22,6 +22,7 @@ class ApiClient {
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30); // 30 saniye timeout
             $response = curl_exec($ch);
             if ($response === false) {
                 $err = curl_error($ch);
