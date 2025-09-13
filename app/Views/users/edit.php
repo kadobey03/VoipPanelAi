@@ -27,8 +27,9 @@
       <div>
         <label class="block text-sm mb-1">Rol</label>
         <select name="role" class="w-full border rounded p-2 bg-white dark:bg-slate-900">
-          <option value="groupadmin" <?= $user['role']==='groupadmin'?'selected':'' ?>>groupadmin</option>
+          <option value="groupmember" <?= ($user['role']==='groupmember' || empty($user['role']))?'selected':'' ?>>groupmember</option>
           <option value="user" <?= $user['role']==='user'?'selected':'' ?>>user</option>
+          <option value="groupadmin" <?= $user['role']==='groupadmin'?'selected':'' ?>>groupadmin</option>
           <option value="superadmin" <?= $user['role']==='superadmin'?'selected':'' ?>>superadmin</option>
         </select>
       </div>

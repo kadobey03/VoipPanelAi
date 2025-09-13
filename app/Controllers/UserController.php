@@ -42,7 +42,7 @@ class UserController {
             $login = trim($_POST['login'] ?? '');
             $password = $_POST['password'] ?? '';
             $exten = trim($_POST['exten'] ?? '');
-            $role = $this->isSuperAdmin() ? ($_POST['role'] ?? 'groupadmin') : 'groupadmin';
+            $role = $this->isSuperAdmin() ? ($_POST['role'] ?? 'groupmember') : 'groupmember';
             $group_id = $this->isSuperAdmin() ? (int)($_POST['group_id'] ?? 0) : (int)($_SESSION['user']['group_id'] ?? 0);
             $agent_id = $this->isSuperAdmin() && ($role === 'groupmember' || $role === 'user') ? (int)($_POST['agent_id'] ?? 0) : null;
             if ($login && $password) {

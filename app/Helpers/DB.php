@@ -167,6 +167,16 @@ class DB {
             if (!$hasCol('topup_requests','fee_fixed')) { $db->query('ALTER TABLE `topup_requests` ADD COLUMN `fee_fixed` DECIMAL(12,4) DEFAULT 0.0000 AFTER `fee_percent`'); }
             if (!$hasCol('topup_requests','charge_total')) { $db->query('ALTER TABLE `topup_requests` ADD COLUMN `charge_total` DECIMAL(12,4) DEFAULT 0.0000 AFTER `fee_fixed`'); }
             if (!$hasCol('topup_requests','receipt_path')) { $db->query('ALTER TABLE `topup_requests` ADD COLUMN `receipt_path` VARCHAR(255) NULL AFTER `reference`'); }
+
         }
+
+        // users table migrations
+        if (!$hasCol('users', 'agent_id')) {
+            $db->query('ALTER TABLE `users` ADD COLUMN `agent_id` INT NULL AFTER `group_id`');
+        }
+        // Update role enum to include groupmember
+        $db->query('ALTER TABLE `users` MODIFY COLUMN `role` ENUM(\'superadmin\',\'groupadmin\',\'user\',\'groupmember\') DEFAULT \'groupmember\'');
+        // Update empty or null roles to groupmember
+        $db->query('UPDATE users SET role=\'groupmember\' WHERE role=\'\' OR role IS NULL');
     }
 }

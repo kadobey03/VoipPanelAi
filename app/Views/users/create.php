@@ -27,8 +27,9 @@
       <div>
         <label class="block text-sm mb-1">Rol</label>
         <select name="role" class="w-full border rounded p-2 bg-white dark:bg-slate-900">
-          <option value="groupadmin">groupadmin</option>
+          <option value="groupmember" selected>groupmember</option>
           <option value="user">user</option>
+          <option value="groupadmin">groupadmin</option>
           <option value="superadmin">superadmin</option>
         </select>
       </div>

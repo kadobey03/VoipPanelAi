@@ -1,5 +1,6 @@
-﻿<?php $title='Raporlar - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title='Raporlar - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
 <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
+<?php $isGroupMember = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='groupmember'; ?>
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-600"></i> Raporlar</h1>
   </div>
@@ -45,7 +46,7 @@
       <i class="fa-solid fa-coins text-amber-600 text-2xl"></i>
       <div><div class="text-xs text-slate-500">Maliyet</div><div class="text-xl font-semibold"><?= number_format((float)$totCost,2) ?></div></div>
     </div>
-    <?php else: ?>
+    <?php elseif (!$isGroupMember): ?>
     <div class="bg-white/80 dark:bg-slate-800 rounded-xl shadow p-4 flex items-center gap-3">
       <i class="fa-solid fa-wallet text-amber-600 text-2xl"></i>
       <div><div class="text-xs text-slate-500">Harcanan</div><div class="text-xl font-semibold"><?= number_format((float)($spent??0),2) ?></div></div>
@@ -75,7 +76,7 @@
       </div>
     </div>
   </div>
-  <?php else: ?>
+  <?php elseif (!$isGroupMember): ?>
   <div class="grid md:grid-cols-2 gap-4 mb-6">
     <div class="bg-white/80 dark:bg-slate-800 rounded-xl shadow p-4 flex items-center gap-3">
       <i class="fa-solid fa-piggy-bank text-teal-600 text-2xl"></i>
@@ -139,7 +140,7 @@
               <th class="p-2">Login</th>
               <th class="p-2">Cagri</th>
               <th class="p-2">Cevap</th>
-              <th class="p-2">Billsec</th>
+              <?php if (!$isGroupMember): ?><th class="p-2">Billsec</th><?php endif; ?>
               <th class="p-2">Exten</th>
             </tr>
           </thead>
@@ -149,7 +150,7 @@
               <td class="p-2"><?= htmlspecialchars($r['user_login'] ?? '') ?></td>
               <td class="p-2"><?= (int)($r['calls'] ?? 0) ?></td>
               <td class="p-2"><?= (int)($r['answer'] ?? 0) ?></td>
-              <td class="p-2"><?= (int)($r['billsec'] ?? 0) ?></td>
+              <?php if (!$isGroupMember): ?><td class="p-2"><?= (int)($r['billsec'] ?? 0) ?></td><?php endif; ?>
               <td class="p-2"><?= htmlspecialchars($r['voip_exten'] ?? '') ?></td>
             </tr>
             <?php endforeach; ?>
@@ -161,7 +162,7 @@
 
   <div class="grid md:grid-cols-2 gap-4 mt-6">
     <div class="bg-white/80 dark:bg-slate-800 rounded-xl shadow p-4">
-      <div class="text-lg font-semibold mb-2">Top Agentler (Billsec)</div>
+      <div class="text-lg font-semibold mb-2">Top Agentler <?php if (!$isGroupMember): ?>(Billsec)<?php endif; ?></div>
       <canvas id="topAgents" height="160"></canvas>
     </div>
     <div class="bg-white/80 dark:bg-slate-800 rounded-xl shadow p-4">
@@ -179,10 +180,17 @@
     new Chart(ctx, { type:'line', data:{ labels, datasets:[ {label:'Maliyet', data:cost, borderColor:'rgba(239,68,68,1)', backgroundColor:'rgba(239,68,68,0.2)', tension:.25}, {label:'Gelir', data:revenue, borderColor:'rgba(16,185,129,1)', backgroundColor:'rgba(16,185,129,0.2)', tension:.25} ] }, options:{responsive:true, animation:{duration:800, easing:'easeOutQuart'}, scales:{y:{beginAtZero:true}}} });
 
     const agentStats = <?= json_encode($allAgents ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    <?php if ($isGroupMember): ?>
+    const topAgents = (agentStats||[]).slice().sort((a,b)=>(+b.calls)-(+a.calls)).slice(0,10);
+    const aLabels = topAgents.map(a=> (a.user_login||a.voip_exten||'agent'));
+    const aBill = topAgents.map(a=> +a.calls||0);
+    new Chart(document.getElementById('topAgents').getContext('2d'), { type:'bar', data:{ labels:aLabels, datasets:[{ label:'Çağrı', data:aBill, backgroundColor:'rgba(59,130,246,0.6)', borderRadius:6}] }, options:{responsive:true, animation:{duration:700}, scales:{y:{beginAtZero:true}}} });
+    <?php else: ?>
     const topAgents = (agentStats||[]).slice().sort((a,b)=>(+b.billsec)-(+a.billsec)).slice(0,10);
     const aLabels = topAgents.map(a=> (a.user_login||a.voip_exten||'agent'));
     const aBill = topAgents.map(a=> +a.billsec||0);
     new Chart(document.getElementById('topAgents').getContext('2d'), { type:'bar', data:{ labels:aLabels, datasets:[{ label:'Billsec', data:aBill, backgroundColor:'rgba(59,130,246,0.6)', borderRadius:6}] }, options:{responsive:true, animation:{duration:700}, scales:{y:{beginAtZero:true}}} });
+    <?php endif; ?>
 
     const disp = <?= json_encode($dispRows ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const dLabels = (disp||[]).map(x=>x.d);

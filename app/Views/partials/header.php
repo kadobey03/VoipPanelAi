@@ -42,15 +42,15 @@ function __($key) {
           <span class="font-semibold tracking-wide">PapaM VoIP Panel</span>
         </a>
         <nav class="hidden md:flex items-center gap-4 text-white/90">
-          <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='user'): ?>
-          <a class="hover:text-white transition" href="<?= Url::to('/users') ?>"><i class="fa-solid fa-users"></i> <?= __('users') ?></a>
-          <a class="hover:text-white transition" href="<?= Url::to('/groups') ?>"><i class="fa-solid fa-layer-group"></i> Gruplar</a>
-          <?php endif; ?>
-          <a class="hover:text-white transition" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
-          <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='user'): ?>
-          <a class="hover:text-white transition" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
-          <a class="hover:text-white transition" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
-          <?php endif; ?>
+          <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
+            <a class="hover:text-white transition" href="<?= Url::to('/users') ?>"><i class="fa-solid fa-users"></i> <?= __('users') ?></a>
+            <a class="hover:text-white transition" href="<?= Url::to('/groups') ?>"><i class="fa-solid fa-layer-group"></i> Gruplar</a>
+            <?php endif; ?>
+            <a class="hover:text-white transition" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
+            <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
+            <a class="hover:text-white transition" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
+            <a class="hover:text-white transition" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
+            <?php endif; ?>
           <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='groupmember'): ?>
           <div class="relative">
             <button id="balance-menu-btn" class="hover:text-white transition inline-flex items-center gap-1"><i class="fa-solid fa-wallet"></i> Bakiye <i class="fa-solid fa-caret-down text-xs"></i></button>
@@ -82,12 +82,12 @@ function __($key) {
       </div>
       <div id="mobile-menu" class="md:hidden hidden px-4 pb-3 text-white/90">
         <div class="grid grid-cols-2 gap-2 text-sm">
-          <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='user'): ?>
+          <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
           <a class="hover:text-white" href="<?= Url::to('/users') ?>"><i class="fa-solid fa-users"></i> Kullanıcılar</a>
           <a class="hover:text-white" href="<?= Url::to('/groups') ?>"><i class="fa-solid fa-layer-group"></i> Gruplar</a>
           <?php endif; ?>
           <a class="hover:text-white" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
-          <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='user'): ?>
+          <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
           <a class="hover:text-white" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
           <a class="hover:text-white" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
           <?php endif; ?>

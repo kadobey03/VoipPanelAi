@@ -8,6 +8,7 @@ class CallsController {
     private function startSession(){ if(session_status()===PHP_SESSION_NONE) session_start(); }
     private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ \App\Helpers\Url::redirect('/login'); } }
     private function isSuper(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='superadmin'; }
+    private function isGroupMember(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='groupmember'; }
     private function currentGroupId(): ?int { return $_SESSION['user']['group_id'] ?? null; }
 
     public function index(){
@@ -36,6 +37,7 @@ class CallsController {
         $db = DB::conn();
         $user = $_SESSION['user'];
         $isSuper = ($user['role'] ?? '') === 'superadmin';
+        $isGroupMember = ($user['role'] ?? '') === 'groupmember';
         $from = date('Y-m-d H:i:s', strtotime($_GET['from'] ?? '-1 day'));
         $to   = date('Y-m-d H:i:s', strtotime($_GET['to']   ?? 'now'));
         $src  = trim($_GET['src']  ?? '');
@@ -50,18 +52,39 @@ class CallsController {
         $params = [$from, $to];
         if (!$isSuper) { $where .= ' AND group_id=?'; $types.='i'; $params[] = (int)($user['group_id'] ?? 0); }
         if (($user['role'] ?? '') === 'user') { $where .= ' AND src=?'; $types.='s'; $params[] = $user['exten'] ?? ''; }
+        if ($isGroupMember && isset($user['agent_id']) && (int)$user['agent_id'] > 0) {
+            // Join with users table to filter by agent_id
+            $where = 'c.start BETWEEN ? AND ? AND c.group_id=? AND u.agent_id=?';
+            $types = 'ssii';
+            $params = [$from, $to, (int)($user['group_id'] ?? 0), (int)$user['agent_id']];
+            // Update the main query to join with users
+            $whereCount = $where;
+            $whereData = $where . ' ORDER BY c.start DESC LIMIT ' . $per . ' OFFSET ' . $offset;
+        }
         if ($isSuper && $selectedGroup) { $where .= ' AND group_id=?'; $types.='i'; $params[] = $selectedGroup; }
         if ($src !== '') { $where .= ' AND src LIKE ?'; $types.='s'; $params[] = $src.'%'; }
         if ($dst !== '') { $where .= ' AND dst LIKE ?'; $types.='s'; $params[] = $dst.'%'; }
 
         // Count
-        $stmt = $db->prepare("SELECT COUNT(*) c FROM calls WHERE $where");
+        $countQuery = "SELECT COUNT(*) c FROM calls c";
+        if ($isGroupMember && isset($user['agent_id']) && (int)$user['agent_id'] > 0) {
+            $countQuery .= " LEFT JOIN users u ON c.src = u.exten WHERE $where";
+        } else {
+            $countQuery .= " WHERE $where";
+        }
+        $stmt = $db->prepare($countQuery);
         $stmt->bind_param($types, ...$params);
         $stmt->execute(); $total = (int)$stmt->get_result()->fetch_assoc()['c']; $stmt->close();
         $totalPages = max(1, (int)ceil($total / $per)); if ($page > $totalPages) { $page = $totalPages; $offset = ($page-1)*$per; }
 
         // Data
-        $stmt = $db->prepare("SELECT call_id, src, dst, start, duration, billsec, disposition, group_id, user_id, cost_api, margin_percent, amount_charged FROM calls WHERE $where ORDER BY start DESC LIMIT $per OFFSET $offset");
+        $dataQuery = "SELECT c.call_id, c.src, c.dst, c.start, c.duration, c.billsec, c.disposition, c.group_id, c.user_id, c.cost_api, c.margin_percent, c.amount_charged FROM calls c";
+        if ($isGroupMember && isset($user['agent_id']) && (int)$user['agent_id'] > 0) {
+            $dataQuery .= " LEFT JOIN users u ON c.src = u.exten WHERE $where ORDER BY c.start DESC LIMIT $per OFFSET $offset";
+        } else {
+            $dataQuery .= " WHERE $where ORDER BY c.start DESC LIMIT $per OFFSET $offset";
+        }
+        $stmt = $db->prepare($dataQuery);
         $stmt->bind_param($types, ...$params);
         $stmt->execute(); $res = $stmt->get_result();
         $calls=[]; while($row=$res->fetch_assoc()){$calls[]=$row;} $stmt->close();

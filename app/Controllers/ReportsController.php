@@ -8,6 +8,7 @@ class ReportsController {
     private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ header('Location: /login'); exit; } }
     private function isSuper(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='superadmin'; }
     private function isUser(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='user'; }
+    private function isGroupMember(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='groupmember'; }
 
     public function index(){
         $this->requireAuth();
@@ -121,7 +122,7 @@ class ReportsController {
 
         // Group admin KPIs: spent and remaining balance
         $spent = 0.0; $callsCount = 0; $answerCount = 0; $noAnswerCount = 0; $balance = null;
-        if (!$this->isSuper() && $groupFilter) {
+        if (!$this->isSuper() && !$this->isGroupMember() && $groupFilter) {
             $stmt = $db->prepare("SELECT COALESCE(SUM(amount_charged),0) s, COUNT(*) c, SUM(CASE WHEN UPPER(disposition) IN ('ANSWERED','ANSWER') THEN 1 ELSE 0 END) a FROM calls c WHERE c.group_id=? AND c.start BETWEEN ? AND ?");
             $stmt->bind_param('iss', $groupFilter, $from, $to);
             $stmt->execute(); $r=$stmt->get_result()->fetch_assoc(); $stmt->close();
