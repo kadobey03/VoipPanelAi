@@ -288,6 +288,15 @@ class CallsController {
                     }
                 }
             }
+        } catch (\Throwable $e) {
+            // Log error
+            \App\Helpers\Logger::log('syncCallStats error: ' . $e->getMessage());
+        }
+        // Simple response
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'ok']);
+    }
+
     public function syncHistoricalCallStats(){
         $this->requireAuth();
         if (!$this->isSuper()) { http_response_code(403); echo 'Yetkisiz'; return; }
