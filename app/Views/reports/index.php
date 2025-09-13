@@ -99,34 +99,64 @@
 
   <div class="bg-white/80 dark:bg-slate-800 rounded-xl shadow p-4 mt-6">
     <div class="text-lg font-semibold mb-2">Agent Ozeti (DB)</div>
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-xs md:text-sm">
-        <thead class="bg-slate-50 dark:bg-slate-900/40">
-          <tr class="border-b border-slate-200 dark:border-slate-700 text-left">
-            <th class="p-2">Login</th>
-            <th class="p-2">Grup</th>
-            <th class="p-2">Cagri</th>
-            <th class="p-2">Cevap</th>
-            <th class="p-2">Billsec</th>
-<?php if ($isSuper): ?><th class="p-2">Cost</th><?php endif; ?>
-            <th class="p-2">Exten</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach (($agentStats ?? []) as $r): ?>
-          <tr class="border-b border-slate-100 dark:border-slate-700/60">
-            <td class="p-2"><?= htmlspecialchars($r['user_login'] ?? '') ?></td>
-            <td class="p-2"><?= htmlspecialchars($r['group_name'] ?? '') ?></td>
-            <td class="p-2"><?= (int)($r['calls'] ?? 0) ?></td>
-            <td class="p-2"><?= (int)($r['answer'] ?? 0) ?></td>
-            <td class="p-2"><?= (int)($r['billsec'] ?? 0) ?></td>
-<?php if ($isSuper): ?><td class="p-2"><?= number_format((float)($r['cost'] ?? 0),2) ?></td><?php endif; ?>
-            <td class="p-2"><?= htmlspecialchars($r['voip_exten'] ?? '') ?></td>
-          </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
+    <?php if ($isSuper): ?>
+      <?php foreach (($agentsByGroup ?? []) as $groupName => $agents): ?>
+        <details open class="mb-4">
+          <summary class="cursor-pointer bg-slate-50 dark:bg-slate-900/40 p-2 rounded font-semibold"><?= htmlspecialchars($groupName) ?></summary>
+          <div class="overflow-x-auto mt-2">
+            <table class="min-w-full text-xs md:text-sm">
+              <thead class="bg-slate-50 dark:bg-slate-900/40">
+                <tr class="border-b border-slate-200 dark:border-slate-700 text-left">
+                  <th class="p-2">Login</th>
+                  <th class="p-2">Cagri</th>
+                  <th class="p-2">Cevap</th>
+                  <th class="p-2">Billsec</th>
+                  <th class="p-2">Cost</th>
+                  <th class="p-2">Exten</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($agents as $r): ?>
+                <tr class="border-b border-slate-100 dark:border-slate-700/60">
+                  <td class="p-2"><?= htmlspecialchars($r['user_login'] ?? '') ?></td>
+                  <td class="p-2"><?= (int)($r['calls'] ?? 0) ?></td>
+                  <td class="p-2"><?= (int)($r['answer'] ?? 0) ?></td>
+                  <td class="p-2"><?= (int)($r['billsec'] ?? 0) ?></td>
+                  <td class="p-2"><?= number_format((float)($r['cost'] ?? 0),2) ?></td>
+                  <td class="p-2"><?= htmlspecialchars($r['voip_exten'] ?? '') ?></td>
+                </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-xs md:text-sm">
+          <thead class="bg-slate-50 dark:bg-slate-900/40">
+            <tr class="border-b border-slate-200 dark:border-slate-700 text-left">
+              <th class="p-2">Login</th>
+              <th class="p-2">Cagri</th>
+              <th class="p-2">Cevap</th>
+              <th class="p-2">Billsec</th>
+              <th class="p-2">Exten</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach (($agentsByGroup[key($agentsByGroup ?? [])] ?? []) as $r): ?>
+            <tr class="border-b border-slate-100 dark:border-slate-700/60">
+              <td class="p-2"><?= htmlspecialchars($r['user_login'] ?? '') ?></td>
+              <td class="p-2"><?= (int)($r['calls'] ?? 0) ?></td>
+              <td class="p-2"><?= (int)($r['answer'] ?? 0) ?></td>
+              <td class="p-2"><?= (int)($r['billsec'] ?? 0) ?></td>
+              <td class="p-2"><?= htmlspecialchars($r['voip_exten'] ?? '') ?></td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    <?php endif; ?>
   </div>
 
   <div class="grid md:grid-cols-2 gap-4 mt-6">
@@ -148,7 +178,7 @@
     const ctx = document.getElementById('trend').getContext('2d');
     new Chart(ctx, { type:'line', data:{ labels, datasets:[ {label:'Maliyet', data:cost, borderColor:'rgba(239,68,68,1)', backgroundColor:'rgba(239,68,68,0.2)', tension:.25}, {label:'Gelir', data:revenue, borderColor:'rgba(16,185,129,1)', backgroundColor:'rgba(16,185,129,0.2)', tension:.25} ] }, options:{responsive:true, animation:{duration:800, easing:'easeOutQuart'}, scales:{y:{beginAtZero:true}}} });
 
-    const agentStats = <?= json_encode($agentStats ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    const agentStats = <?= json_encode($allAgents ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const topAgents = (agentStats||[]).slice().sort((a,b)=>(+b.billsec)-(+a.billsec)).slice(0,10);
     const aLabels = topAgents.map(a=> (a.user_login||a.voip_exten||'agent'));
     const aBill = topAgents.map(a=> +a.billsec||0);

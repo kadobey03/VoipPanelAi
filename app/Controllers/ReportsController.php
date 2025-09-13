@@ -86,6 +86,24 @@ class ReportsController {
         $agentStats = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
+        // Group agents by group name and filter for group admin
+        $agentsByGroup = [];
+        $userGroupName = '';
+        if (!$this->isSuper()) {
+            $stmt = $db->prepare('SELECT name FROM groups WHERE id=?');
+            $stmt->bind_param('i', $groupFilter);
+            $stmt->execute();
+            $r = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if ($r) $userGroupName = $r['name'];
+        }
+        foreach ($agentStats as $agent) {
+            $group = $agent['group_name'];
+            if ($this->isSuper() || $group === $userGroupName) {
+                $agentsByGroup[$group][] = $agent;
+            }
+        }
+
         // Disposition distribution for chart
         $sql4 = "SELECT UPPER(c.disposition) d, COUNT(*) n
                   FROM calls c
@@ -110,6 +128,12 @@ class ReportsController {
             $stmt=$db->prepare('SELECT balance FROM groups WHERE id=?');
             $stmt->bind_param('i',$groupFilter); $stmt->execute(); $r=$stmt->get_result()->fetch_assoc(); $stmt->close();
             if ($r){ $balance=(float)$r['balance']; }
+        }
+
+        // Flatten agents for JavaScript
+        $allAgents = [];
+        foreach ($agentsByGroup as $group => $agents) {
+            $allAgents = array_merge($allAgents, $agents);
         }
 
         require __DIR__.'/../Views/reports/index.php';
