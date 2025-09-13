@@ -7,7 +7,7 @@ class ReportsController {
     private function startSession(){ if(session_status()===PHP_SESSION_NONE) session_start(); }
     private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ header('Location: /login'); exit; } }
     private function isSuper(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='superadmin'; }
-    private function isGroupMember(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='groupmember'; }
+    private function isUser(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='user'; }
 
     public function index(){
         $this->requireAuth();

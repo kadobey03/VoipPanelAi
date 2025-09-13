@@ -35,11 +35,11 @@ class AgentsController {
             $db->query('SELECT agent_id FROM users LIMIT 1');
         } catch (\Throwable $e) {
             $db->query('ALTER TABLE users ADD COLUMN agent_id INT AFTER group_id');
-            $db->query('ALTER TABLE users MODIFY COLUMN role ENUM(\'superadmin\',\'groupadmin\',\'groupmember\') DEFAULT \'groupadmin\'');
+            $db->query('ALTER TABLE users MODIFY COLUMN role ENUM(\'superadmin\',\'groupadmin\',\'user\') DEFAULT \'groupadmin\'');
         }
 
         $isSuper = $this->isSuper();
-        $isGroupMember = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'groupmember';
+        $isUser = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'user';
         $userGroupName = '';
         $userAgentId = 0;
         if (!$isSuper) {
@@ -97,7 +97,7 @@ class AgentsController {
         }
         // Filter for group admin or member
         if (!$isSuper) {
-            if ($isGroupMember) {
+            if ($isUser) {
                 $agentsDb = array_filter($agentsDb, function($a) use ($userAgentId) {
                     return ($a['active'] ?? 1) == 1 && $a['id'] == $userAgentId;
                 });
