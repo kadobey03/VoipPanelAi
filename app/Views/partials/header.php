@@ -47,6 +47,7 @@ function __($key) {
           <a class="hover:text-white transition" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
           <a class="hover:text-white transition" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
+          <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='groupmember'): ?>
           <div class="relative">
             <button id="balance-menu-btn" class="hover:text-white transition inline-flex items-center gap-1"><i class="fa-solid fa-wallet"></i> Bakiye <i class="fa-solid fa-caret-down text-xs"></i></button>
             <div id="balance-menu" class="absolute hidden right-0 mt-2 w-60 bg-white text-slate-800 rounded shadow-lg py-2">
@@ -59,6 +60,7 @@ function __($key) {
               <?php endif; ?>
             </div>
           </div>
+          <?php endif; ?>
           <a class="hover:text-white transition" href="<?= Url::to('/profile') ?>"><i class="fa-solid fa-user-gear"></i> Profil</a>
           <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
           <a class="hover:text-white transition" href="<?= Url::to('/settings') ?>"><i class="fa-solid fa-cogs"></i> Ayarlar</a>
@@ -81,11 +83,14 @@ function __($key) {
           <a class="hover:text-white" href="<?= Url::to('/calls/history') ?>"><i class="fa-solid fa-phone"></i> Çağrılar</a>
           <a class="hover:text-white" href="<?= Url::to('/reports') ?>"><i class="fa-solid fa-chart-line"></i> Raporlar</a>
           <a class="hover:text-white" href="<?= Url::to('/agents') ?>"><i class="fa-solid fa-user-nurse"></i> Agent</a>
+          <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='groupmember'): ?>
           <a class="hover:text-white" href="<?= Url::to('/topups') ?>"><i class="fa-solid fa-inbox"></i> Yükleme Talepleri</a>
           <a class="hover:text-white" href="<?= Url::to('/balance/topup') ?>"><i class="fa-solid fa-circle-plus"></i> Bakiye Yükle</a>
           <a class="hover:text-white" href="<?= Url::to('/transactions') ?>"><i class="fa-solid fa-clock-rotate-left"></i> Bakiye Geçmişi</a>
           <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
           <a class="hover:text-white" href="<?= Url::to('/payment-methods') ?>"><i class="fa-solid fa-money-bill-transfer"></i> Ödeme Yöntemleri</a>
+          <?php endif; ?>
+          <a class="hover:text-white" href="<?= Url::to('/balance') ?>"><i class="fa-solid fa-wallet"></i> Bakiye</a>
           <?php endif; ?>
           <a class="hover:text-white" href="<?= Url::to('/profile') ?>"><i class="fa-solid fa-user-gear"></i> Profil</a>
           <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>

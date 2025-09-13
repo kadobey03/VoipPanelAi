@@ -30,8 +30,18 @@ class AgentsController {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )');
 
+        // Auto-migrate: add agent_id to users if not exists
+        try {
+            $db->query('SELECT agent_id FROM users LIMIT 1');
+        } catch (\Throwable $e) {
+            $db->query('ALTER TABLE users ADD COLUMN agent_id INT AFTER group_id');
+            $db->query('ALTER TABLE users MODIFY COLUMN role ENUM(\'superadmin\',\'groupadmin\',\'groupmember\') DEFAULT \'groupadmin\'');
+        }
+
         $isSuper = $this->isSuper();
+        $isGroupMember = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'groupmember';
         $userGroupName = '';
+        $userAgentId = 0;
         if (!$isSuper) {
             $groupId = (int)($_SESSION['user']['group_id'] ?? 0);
             $stmt = $db->prepare('SELECT name FROM groups WHERE id=?');
@@ -40,11 +50,41 @@ class AgentsController {
             $r = $stmt->get_result()->fetch_assoc();
             $stmt->close();
             if ($r) $userGroupName = $r['name'];
+            if ($isGroupMember) {
+                $userAgentId = (int)($_SESSION['user']['agent_id'] ?? 0);
+            }
         }
         $api = new ApiClient();
         $error = null;
         // Get all agents from DB
         $agentsDb = $db->query('SELECT exten, user_login, group_name, active FROM agents')->fetch_all(MYSQLI_ASSOC);
+
+        // If no agents in DB, try to sync from API
+        if (empty($agentsDb)) {
+            $api = new ApiClient();
+            $agentsApi = [];
+            try { $agentsApi = $api->getAgentsStatus(); } catch (\Throwable $e) { $error = $e->getMessage(); }
+            foreach ($agentsApi as $agent) {
+                $exten = $agent['exten'];
+                $login = $agent['user_login'] ?? '';
+                $apiGroup = $agent['group'] ?? '';
+                $localGroup = '';
+                if ($apiGroup) {
+                    $stmt = $db->prepare('SELECT name FROM groups WHERE api_group_name=?');
+                    $stmt->bind_param('s', $apiGroup);
+                    $stmt->execute();
+                    $r = $stmt->get_result()->fetch_assoc();
+                    if ($r) $localGroup = $r['name'];
+                    $stmt->close();
+                }
+                $stmt = $db->prepare('INSERT INTO agents (exten, user_login, group_name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE user_login=VALUES(user_login), group_name=VALUES(group_name), updated_at=NOW()');
+                $stmt->bind_param('sss', $exten, $login, $localGroup);
+                $stmt->execute();
+                $stmt->close();
+            }
+            // Refresh agentsDb
+            $agentsDb = $db->query('SELECT exten, user_login, group_name, active FROM agents')->fetch_all(MYSQLI_ASSOC);
+        }
 
         // Get status from API
         $agentsApi = [];
@@ -55,11 +95,17 @@ class AgentsController {
         foreach ($agentsApi as $a) {
             $statusMap[$a['exten']] = $a;
         }
-        // Filter for group admin
+        // Filter for group admin or member
         if (!$isSuper) {
-            $agentsDb = array_filter($agentsDb, function($a) use ($userGroupName) {
-                return ($a['active'] ?? 1) == 1 && strtolower($a['group_name']) === strtolower($userGroupName);
-            });
+            if ($isGroupMember) {
+                $agentsDb = array_filter($agentsDb, function($a) use ($userAgentId) {
+                    return ($a['active'] ?? 1) == 1 && $a['id'] == $userAgentId;
+                });
+            } else {
+                $agentsDb = array_filter($agentsDb, function($a) use ($userGroupName) {
+                    return ($a['active'] ?? 1) == 1 && strtolower($a['group_name']) === strtolower($userGroupName);
+                });
+            }
         }
 
         $agents = [];

@@ -5,7 +5,8 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     exten VARCHAR(20),
     group_id INT,
-    role ENUM('superadmin','groupadmin') DEFAULT 'groupadmin',
+    agent_id INT,
+    role ENUM('superadmin','groupadmin','groupmember') DEFAULT 'groupadmin',
     hidden TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

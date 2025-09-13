@@ -20,10 +20,10 @@ class UserController {
         $this->requireAuth();
         $mysqli = DB::conn();
         if ($this->isSuperAdmin()) {
-            $res = $mysqli->query('SELECT id, login, role, group_id, exten FROM users ORDER BY id DESC');
+            $res = $mysqli->query('SELECT id, login, role, group_id, agent_id, exten FROM users ORDER BY id DESC');
         } else {
             $gid = (int)($_SESSION['user']['group_id'] ?? 0);
-            $stmt = $mysqli->prepare('SELECT id, login, role, group_id, exten FROM users WHERE group_id=? ORDER BY id DESC');
+            $stmt = $mysqli->prepare('SELECT id, login, role, group_id, agent_id, exten FROM users WHERE group_id=? ORDER BY id DESC');
             $stmt->bind_param('i', $gid);
             $stmt->execute();
             $res = $stmt->get_result();
@@ -44,10 +44,16 @@ class UserController {
             $exten = trim($_POST['exten'] ?? '');
             $role = $this->isSuperAdmin() ? ($_POST['role'] ?? 'groupadmin') : 'groupadmin';
             $group_id = $this->isSuperAdmin() ? (int)($_POST['group_id'] ?? 0) : (int)($_SESSION['user']['group_id'] ?? 0);
+            $agent_id = $this->isSuperAdmin() && $role === 'groupmember' ? (int)($_POST['agent_id'] ?? 0) : null;
             if ($login && $password) {
                 $hash = Security::hash($password);
-                $stmt = $mysqli->prepare('INSERT INTO users (login, password, exten, role, group_id) VALUES (?,?,?,?,?)');
-                $stmt->bind_param('ssssi', $login, $hash, $exten, $role, $group_id);
+                if ($agent_id !== null) {
+                    $stmt = $mysqli->prepare('INSERT INTO users (login, password, exten, role, group_id, agent_id) VALUES (?,?,?,?,?,?)');
+                    $stmt->bind_param('ssssii', $login, $hash, $exten, $role, $group_id, $agent_id);
+                } else {
+                    $stmt = $mysqli->prepare('INSERT INTO users (login, password, exten, role, group_id) VALUES (?,?,?,?,?)');
+                    $stmt->bind_param('ssssi', $login, $hash, $exten, $role, $group_id);
+                }
                 if ($stmt->execute()) {
                     $ok = 'Kullanıcı oluşturuldu';
                 } else {
@@ -58,11 +64,14 @@ class UserController {
                 $error = 'Zorunlu alanlar eksik';
             }
         }
-        // fetch groups for superadmin selection
+        // fetch groups and agents for superadmin selection
         $groups = [];
+        $agents = [];
         if ($this->isSuperAdmin()) {
             $res = $mysqli->query('SELECT id, name FROM groups ORDER BY name');
             while ($row = $res->fetch_assoc()) { $groups[] = $row; }
+            $res2 = $mysqli->query('SELECT id, user_login, exten FROM agents WHERE active=1 ORDER BY user_login');
+            while ($row = $res2->fetch_assoc()) { $agents[] = $row; }
         }
         require __DIR__.'/../Views/users/create.php';
     }
@@ -96,7 +105,7 @@ class UserController {
             $stmt->close();
         }
         // fetch current
-        $stmt = $mysqli->prepare('SELECT id, login, role, group_id, exten FROM users WHERE id=?');
+        $stmt = $mysqli->prepare('SELECT id, login, role, group_id, agent_id, exten FROM users WHERE id=?');
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
