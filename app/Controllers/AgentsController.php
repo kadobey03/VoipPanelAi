@@ -58,7 +58,7 @@ class AgentsController {
         // Filter for group admin
         if (!$isSuper) {
             $agentsDb = array_filter($agentsDb, function($a) use ($userGroupName) {
-                return ($a['active'] ?? 1) == 1 && $a['group_name'] === $userGroupName;
+                return ($a['active'] ?? 1) == 1 && strtolower($a['group_name']) === strtolower($userGroupName);
             });
         }
 
