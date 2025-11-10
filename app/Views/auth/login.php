@@ -58,6 +58,19 @@
           </div>
         <?php endif; ?>
 
+        <!-- DEBUG INFO (geçici) -->
+        <?php if ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
+          <div class="mb-6 p-4 rounded-xl bg-blue-500/30 border-2 border-blue-500/50 text-white font-semibold">
+            <div class="text-sm">
+              <strong>DEBUG:</strong><br>
+              POST Data: <?= htmlspecialchars(json_encode($_POST)) ?><br>
+              Request URI: <?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? 'N/A') ?><br>
+              Request Method: <?= htmlspecialchars($_SERVER['REQUEST_METHOD']) ?><br>
+              Session Started: <?= session_status() === PHP_SESSION_ACTIVE ? 'Yes' : 'No' ?>
+            </div>
+          </div>
+        <?php endif; ?>
+
         <!-- Login Form -->
         <form method="post" action="/VoipPanelAi/login" class="space-y-6" id="loginForm">
           <!-- Username Field -->

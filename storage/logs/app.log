@@ -1,0 +1,6 @@
+[2025-11-10 22:56:54] Migration error: Class "mysqli" not found
+[2025-11-10 22:56:54] FatalError: Uncaught Error: Class "mysqli" not found in /home/kadir/VoipPanelAi/app/Helpers/DB.php:16
+Stack trace:
+#0 Command line code(6): App\Helpers\DB::conn()
+#1 {main}
+  thrown in /home/kadir/VoipPanelAi/app/Helpers/DB.php:16
