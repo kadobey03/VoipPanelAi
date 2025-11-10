@@ -409,43 +409,57 @@ class GroupController {
      * Get or create dummy wallet for central wallet system
      */
     private function getOrCreateDummyWallet($walletAddress, $db) {
-        // Check if dummy wallet already exists (group_id = 0 for central wallet)
+        // Try to find existing dummy wallet first
         $stmt = $db->prepare('SELECT id FROM crypto_wallets WHERE address = ? AND group_id = 0');
         $stmt->bind_param('s', $walletAddress);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
         $stmt->close();
         
-        if ($result) {
-            return $result['id'];
+        if ($result && isset($result['id'])) {
+            return (int)$result['id'];
         }
         
-        // Create dummy wallet record for central wallet (group_id = 0)
-        $stmt = $db->prepare(
-            'INSERT IGNORE INTO crypto_wallets (address, private_key_encrypted, group_id, created_at)
-             VALUES (?, ?, 0, NOW())'
-        );
-        $encryptedDummy = 'central_wallet_dummy'; // Not a real private key
-        $stmt->bind_param('ss', $walletAddress, $encryptedDummy);
-        $stmt->execute();
-        $walletId = $stmt->insert_id;
-        $stmt->close();
-        
-        // If INSERT IGNORE didn't create new record, get existing one
-        if (!$walletId) {
-            $stmt = $db->prepare('SELECT id FROM crypto_wallets WHERE address = ? AND group_id = 0');
-            $stmt->bind_param('s', $walletAddress);
-            $stmt->execute();
-            $result = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
+        // Try to create new dummy wallet
+        try {
+            $stmt = $db->prepare(
+                'INSERT INTO crypto_wallets (address, private_key_encrypted, group_id, created_at)
+                 VALUES (?, ?, 0, NOW())'
+            );
+            $encryptedDummy = 'central_wallet_dummy';
+            $stmt->bind_param('ss', $walletAddress, $encryptedDummy);
             
-            if ($result && isset($result['id'])) {
-                $walletId = $result['id'];
-            } else {
-                throw new \Exception('Failed to create or find dummy wallet for address: ' . $walletAddress);
+            if ($stmt->execute()) {
+                $walletId = $stmt->insert_id;
+                $stmt->close();
+                
+                if ($walletId > 0) {
+                    return (int)$walletId;
+                }
+            }
+            $stmt->close();
+        } catch (\Exception $e) {
+            // Ignore duplicate entry error, try to fetch existing
+            if (strpos($e->getMessage(), 'Duplicate entry') === false) {
+                error_log('Dummy wallet creation error: ' . $e->getMessage());
             }
         }
         
-        return $walletId;
+        // Last attempt to find existing record
+        $stmt = $db->prepare('SELECT id FROM crypto_wallets WHERE address = ? AND group_id = 0');
+        $stmt->bind_param('s', $walletAddress);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        
+        if ($result && isset($result['id'])) {
+            return (int)$result['id'];
+        }
+        
+        // Complete failure - log details for debugging
+        error_log("Complete failure creating dummy wallet. Address: $walletAddress");
+        error_log("Database error: " . $db->error);
+        
+        throw new \Exception("Unable to create or locate dummy wallet. Please check database connection and table structure.");
     }
 }
