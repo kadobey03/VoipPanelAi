@@ -36,7 +36,7 @@ function __($key) {
     }catch(e){}
   </script>
 </head>
-<body class="min-h-screen <?php echo (isset($title) && strpos($title, 'Giriş') !== false) ? 'login-background' : 'bg-gradient-to-b from-slate-50 to-slate-100'; ?> text-slate-900 dark:from-slate-900 dark:to-slate-950 dark:text-slate-100">
+<body class="min-h-screen <?php echo (isset($title) && strpos($title, 'Giriş') !== false) ? 'login-background dark' : 'bg-gradient-to-b from-slate-50 to-slate-100'; ?> text-slate-900 dark:from-slate-900 dark:to-slate-950 dark:text-slate-100">
 <?php if (empty($hideNav)): ?>
   <!-- Modern Header -->
   <header class="sticky top-0 z-50">

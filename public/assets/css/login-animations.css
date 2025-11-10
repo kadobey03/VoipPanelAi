@@ -509,10 +509,59 @@
 
 /* Dark Mode Compatibilities */
 .dark .login-background {
-  background: linear-gradient(45deg, #1e293b 0%, #334155 50%, #475569 100%);
+  background: linear-gradient(45deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
 }
 
 .dark .glass-card {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(25px);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.dark .particle {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark .label-text {
+  color: #f8fafc !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(255, 255, 255, 0.1);
+}
+
+.dark .input-text {
+  color: #f8fafc !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.dark .placeholder-text::placeholder {
+  color: rgba(248, 250, 252, 0.7) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.dark .input-icon {
+  color: rgba(248, 250, 252, 0.8) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.dark .form-input {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark .form-input:focus {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.dark .login-btn {
+  background: linear-gradient(135deg, #1e40af 0%, #7c3aed 50%, #be185d 100%);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.dark .login-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #8b5cf6 50%, #c2185b 100%);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
 }
