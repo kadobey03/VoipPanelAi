@@ -270,7 +270,7 @@ class GroupController {
                 );
                 
                 $requestStatus = 'pending';
-                $stmt->bind_param('iidssiss', $groupId, $userId, $amount, $method, $requestStatus, $paymentId, $wallet['address']);
+                $stmt->bind_param('iidssss', $groupId, $userId, $amount, $method, $requestStatus, $paymentId, $wallet['address']);
                 $stmt->execute();
                 $stmt->close();
                 
