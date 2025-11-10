@@ -143,12 +143,31 @@ try {
     
     // Initialize TRON client for blockchain check with error handling
     try {
+        // Check if GuzzleHttp is available
+        if (!class_exists('GuzzleHttp\Client')) {
+            error_log('GuzzleHttp\Client class not found - composer dependencies missing');
+            echo json_encode([
+                'status' => 'waiting',
+                'confirmations' => 0,
+                'message' => 'Blockchain servisi başlatılamıyor. Lütfen composer install çalıştırın.'
+            ]);
+            exit;
+        }
+        
         $tronClient = new TronClient();
     } catch (\Exception $e) {
         error_log('TronClient initialization error: ' . $e->getMessage());
         echo json_encode([
             'status' => 'error',
             'message' => 'Blockchain bağlantı hatası'
+        ]);
+        exit;
+    } catch (\Error $e) {
+        error_log('TronClient fatal error: ' . $e->getMessage());
+        echo json_encode([
+            'status' => 'waiting',
+            'confirmations' => 0,
+            'message' => 'Sistem bağımlılıkları eksik. Composer install gerekli.'
         ]);
         exit;
     }
