@@ -1,4 +1,5 @@
 <?php
+// Routes updated - cache refresh
 // Auth
 $router->add('GET', '/login', 'AuthController@login');
 $router->add('POST', '/login', 'AuthController@login');
@@ -43,7 +44,7 @@ $router->add('GET', '/calls/record', 'CallsController@record');
 
 // Cron endpoints (token required)
 $router->add('GET', '/cron/calls/sync', 'CallsController@syncCron');
-$router->add('GET', '/cron/agents/sync', 'AgentsController@syncCron');
+$router->add('GET', '/cron/sync-agents', 'AgentsController@syncCron');
 
 // Reports
 $router->add('GET', '/reports', 'ReportsController@index');
