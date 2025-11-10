@@ -142,33 +142,45 @@ class BinanceClient {
     /**
      * Check recent deposits for specific amount and address
      */
-    public function checkRecentDeposits($expectedAmount, $network = 'TRX', $timeWindow = 3600) {
+    public function checkRecentDeposits($expectedAmount, $network = 'TRX', $paymentCreatedTime = null) {
         $deposits = $this->getDepositHistory('USDT', 20);
-        $cutoffTime = time() - $timeWindow; // Son 1 saat
         
         if (!is_array($deposits)) {
+            error_log('BinanceClient: getDepositHistory returned non-array');
             return false;
         }
+        
+        // Eğer payment creation time verilmişse, sadece ondan sonraki depolarına bak
+        $cutoffTime = $paymentCreatedTime ? strtotime($paymentCreatedTime) : (time() - 6000); // Varsayılan 30 dakika
+        
+        error_log("BinanceClient: Checking deposits after " . date('Y-m-d H:i:s', $cutoffTime));
+        error_log("BinanceClient: Looking for amount $expectedAmount on network $network");
         
         foreach ($deposits as $deposit) {
             $depositTime = $deposit['insertTime'] / 1000; // ms to seconds
             $depositAmount = (float)$deposit['amount'];
             $depositNetwork = $deposit['network'] ?? '';
             
-            // Zaman, miktar ve network kontrolü
-            if ($depositTime >= $cutoffTime && 
-                abs($depositAmount - $expectedAmount) < 0.01 && 
+            error_log("BinanceClient: Deposit - Time: " . date('Y-m-d H:i:s', $depositTime) . ", Amount: $depositAmount, Network: $depositNetwork");
+            
+            // Zaman, miktar ve network kontrolü (daha sıkı)
+            if ($depositTime >= $cutoffTime &&
+                abs($depositAmount - $expectedAmount) < 0.01 &&
                 $depositNetwork === $network) {
+                
+                error_log("BinanceClient: MATCH FOUND!");
                 return [
                     'found' => true,
                     'amount' => $depositAmount,
                     'txId' => $deposit['txId'] ?? '',
                     'confirmTimes' => $deposit['confirmTimes'] ?? 0,
-                    'status' => $deposit['status'] ?? 0
+                    'status' => $deposit['status'] ?? 0,
+                    'depositTime' => $depositTime
                 ];
             }
         }
         
+        error_log("BinanceClient: No matching deposit found");
         return false;
     }
 }

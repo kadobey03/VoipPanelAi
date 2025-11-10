@@ -177,8 +177,11 @@ try {
     
     $expectedAmount = (float)$payment['amount_requested'];
     
-    // Check recent Binance deposits for this amount
-    $recentDeposit = $binanceClient->checkRecentDeposits($expectedAmount, 'TRX', 1800); // Son 30 dakika
+    // Check recent Binance deposits for this amount (sadece payment creation time'dan sonraki)
+    $paymentCreatedAt = $payment['created_at'] ?? null;
+    error_log("Debug - Payment created at: $paymentCreatedAt, Expected amount: $expectedAmount");
+    
+    $recentDeposit = $binanceClient->checkRecentDeposits($expectedAmount, 'TRX', $paymentCreatedAt);
     
     if ($recentDeposit && $recentDeposit['found']) {
         error_log("Debug - Found matching deposit: " . json_encode($recentDeposit));
