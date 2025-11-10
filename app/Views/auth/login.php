@@ -3,11 +3,15 @@
     // Login sayfası için dark mode'u zorla
     document.documentElement.classList.add('dark');
     document.body.classList.add('dark');
+    document.body.style.background = 'linear-gradient(45deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%)';
+    document.body.style.color = '#ffffff';
+    document.body.style.backgroundSize = '400% 400%';
+    document.body.style.animation = 'gradientShift 15s ease infinite';
   </script>
   <!-- Particle Background -->
   <div class="particles" id="particles"></div>
 
-  <div class="min-h-screen flex items-center justify-center relative z-10">
+  <div class="min-h-screen flex items-center justify-center relative z-10" style="background: transparent;">
     <div class="w-full max-w-md p-4">
       <!-- Login Card -->
       <div class="glass-card login-card rounded-2xl shadow-2xl p-8">

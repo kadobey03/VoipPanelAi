@@ -1,10 +1,18 @@
 /* Login Page Custom Animations */
 
-/* Animated Background - Default Dark Theme */
+/* Force Dark Theme for Login Page */
+body.login-background,
+html.dark body.login-background,
 .login-background {
-  background: linear-gradient(45deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background: linear-gradient(45deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%) !important;
+  background-size: 400% 400% !important;
+  animation: gradientShift 15s ease infinite !important;
+  color: #ffffff !important;
+}
+
+/* Ensure all text is white on login page */
+body.login-background * {
+  color: inherit !important;
 }
 
 @keyframes gradientShift {
