@@ -27,7 +27,7 @@
 
           <?php if ($isSuper): ?>
           <div class="flex gap-4">
-            <form method="post" action="/agents/sync" class="inline">
+            <form method="post" action="/VoipPanelAi/agents/sync" class="inline">
               <button type="submit" class="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105">
                 <i class="fa-solid fa-sync-alt"></i>
                 Agentleri Güncelle
@@ -142,26 +142,44 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               <?php foreach (($groupData['agents'] ?? []) as $agentIndex => $a): ?>
-                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+                <?php
+                // Agent'ın abonelik durumunu kontrol et
+                $userAgents = [];
+                if ($isSuper) {
+                  $stmt = $db->prepare('SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee FROM user_agents ua JOIN agent_products ap ON ua.agent_product_id = ap.id WHERE ua.agent_number LIKE ? AND ua.status = "active"');
+                  $searchPattern = '%' . ($a['exten'] ?? '') . '%';
+                  $stmt->bind_param('s', $searchPattern);
+                  $stmt->execute();
+                  $userAgents = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                  $stmt->close();
+                }
+                ?>
+                <div class="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-600/50 overflow-hidden">
                   <div class="p-6">
+                    <!-- Agent Header -->
                     <div class="flex items-center justify-between mb-4">
                       <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-                          <span class="text-white font-bold">
+                        <div class="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <span class="text-white font-bold text-lg">
                             <?php echo strtoupper(substr(htmlspecialchars($a['user_login'] ?? 'A'), 0, 1)); ?>
                           </span>
                         </div>
                         <div>
-                          <h4 class="font-bold text-slate-900 dark:text-white">
+                          <h4 class="font-bold text-slate-900 dark:text-white text-lg">
                             <?php echo htmlspecialchars($a['user_login'] ?? ''); ?>
                           </h4>
                           <p class="text-sm text-slate-600 dark:text-slate-400">
-                            #<?php echo htmlspecialchars($a['exten'] ?? ''); ?>
+                            Extension: #<?php echo htmlspecialchars($a['exten'] ?? ''); ?>
                           </p>
+                          <?php if (!empty($userAgents)): ?>
+                          <p class="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                            <?php echo count($userAgents); ?> Aktif Abonelik
+                          </p>
+                          <?php endif; ?>
                         </div>
                       </div>
-                      <div class="flex items-center gap-2">
-                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                      <div class="flex flex-col items-end gap-1">
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full
                           <?php
                           $status = strtolower($a['status'] ?? '');
                           if ($status === 'up' || $status === 'online') echo 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300';
@@ -170,36 +188,99 @@
                           else echo 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300';
                           ?>">
                           <?php
-                          if ($status === 'up' || $status === 'online') echo 'Çevrimiçi';
-                          elseif ($status === 'ring' || $status === 'ringing') echo 'Çalıyor';
-                          elseif ($status === 'busy') echo 'Meşgul';
-                          else echo 'Çevrimdışı';
+                          if ($status === 'up' || $status === 'online') echo '🟢 Çevrimiçi';
+                          elseif ($status === 'ring' || $status === 'ringing') echo '🟡 Çalıyor';
+                          elseif ($status === 'busy') echo '🔴 Meşgul';
+                          else echo '⚪ Çevrimdışı';
                           ?>
                         </span>
                       </div>
                     </div>
 
-                    <div class="space-y-3 mb-4">
+                    <!-- Agent Details -->
+                    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 mb-4 space-y-2">
                       <div class="flex justify-between text-sm">
-                        <span class="text-slate-600 dark:text-slate-400">Durum:</span>
-                        <span class="font-medium <?php echo ($a['active'] ?? 1) ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'; ?>">
-                          <?php echo ($a['active'] ?? 1) ? 'Aktif' : 'Pasif'; ?>
+                        <span class="text-slate-600 dark:text-slate-400">Sistem Durumu:</span>
+                        <span class="font-semibold <?php echo ($a['active'] ?? 1) ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'; ?>">
+                          <?php echo ($a['active'] ?? 1) ? '✅ Aktif' : '❌ Pasif'; ?>
                         </span>
                       </div>
                       <div class="flex justify-between text-sm">
-                        <span class="text-slate-600 dark:text-slate-400">Son Çağrı:</span>
-                        <span class="font-medium"><?php echo htmlspecialchars((string)($a['las_call_time'] ?? '-')); ?></span>
+                        <span class="text-slate-600 dark:text-slate-400">Grup:</span>
+                        <span class="font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($a['group_name'] ?? $groupData['groupName'] ?? '-'); ?></span>
                       </div>
+                      <div class="flex justify-between text-sm">
+                        <span class="text-slate-600 dark:text-slate-400">Son Çağrı:</span>
+                        <span class="font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars((string)($a['las_call_time'] ?? '-')); ?></span>
+                      </div>
+                      <?php if ($a['lead'] ?? false): ?>
+                      <div class="flex justify-between text-sm">
+                        <span class="text-slate-600 dark:text-slate-400">Lead:</span>
+                        <span class="font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($a['lead']); ?></span>
+                      </div>
+                      <?php endif; ?>
                     </div>
 
-                    <form method="post" action="/agents/toggle-active" class="inline">
-                      <input type="hidden" name="exten" value="<?php echo htmlspecialchars($a['exten']); ?>">
-                      <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200
-                        <?php echo ($a['active'] ?? 1) ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'; ?>">
-                        <i class="fa-solid fa-<?php echo ($a['active'] ?? 1) ? 'ban' : 'check'; ?> mr-2"></i>
-                        <?php echo ($a['active'] ?? 1) ? 'Deaktif Et' : 'Aktif Et'; ?>
+                    <!-- Abonelikler -->
+                    <?php if (!empty($userAgents)): ?>
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-3 mb-4">
+                      <h5 class="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-2">
+                        <i class="fa-solid fa-crown mr-1"></i>Aktif Abonelikler
+                      </h5>
+                      <?php foreach ($userAgents as $userAgent): ?>
+                      <div class="flex justify-between items-center text-xs mb-1 last:mb-0">
+                        <span class="text-purple-700 dark:text-purple-400"><?php echo htmlspecialchars($userAgent['product_name']); ?></span>
+                        <div class="flex items-center gap-2">
+                          <span class="text-purple-800 dark:text-purple-300 font-medium">#<?php echo htmlspecialchars($userAgent['agent_number']); ?></span>
+                          <?php if ($isSuper): ?>
+                          <form method="post" action="/VoipPanelAi/agents/remove-subscription" class="inline">
+                            <input type="hidden" name="user_agent_id" value="<?php echo $userAgent['id']; ?>">
+                            <button type="submit" onclick="return confirm('Bu aboneliği iptal etmek istediğinizden emin misiniz?')"
+                                    class="text-red-500 hover:text-red-700 text-xs">
+                              <i class="fa-solid fa-times"></i>
+                            </button>
+                          </form>
+                          <?php endif; ?>
+                        </div>
+                      </div>
+                      <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Action Buttons -->
+                    <?php if ($isSuper): ?>
+                    <div class="grid grid-cols-1 gap-2">
+                      <!-- Toggle Active/Inactive -->
+                      <form method="post" action="/VoipPanelAi/agents/toggle-active" class="inline">
+                        <input type="hidden" name="exten" value="<?php echo htmlspecialchars($a['exten']); ?>">
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 transform hover:scale-105
+                          <?php echo ($a['active'] ?? 1) ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg'; ?>">
+                          <i class="fa-solid fa-<?php echo ($a['active'] ?? 1) ? 'ban' : 'check'; ?> mr-2"></i>
+                          <?php echo ($a['active'] ?? 1) ? 'Deaktif Et' : 'Aktif Et'; ?>
+                        </button>
+                      </form>
+
+                      <!-- Edit Name Button -->
+                      <button onclick="openEditNameModal('<?php echo htmlspecialchars($a['exten']); ?>', '<?php echo htmlspecialchars($a['user_login'] ?? ''); ?>')"
+                              class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+                        <i class="fa-solid fa-edit mr-2"></i>
+                        Adını Değiştir
                       </button>
-                    </form>
+
+                      <!-- Add Subscription Button -->
+                      <button onclick="openAddSubscriptionModal('<?php echo htmlspecialchars($a['exten']); ?>', '<?php echo htmlspecialchars($a['user_login'] ?? ''); ?>')"
+                              class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+                        <i class="fa-solid fa-plus mr-2"></i>
+                        Abonelik Ekle
+                      </button>
+                    </div>
+                    <?php else: ?>
+                    <div class="text-center">
+                      <span class="inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 rounded-xl text-sm font-semibold">
+                        <i class="fa-solid fa-check mr-2"></i>Aktif Agent
+                      </span>
+                    </div>
+                    <?php endif; ?>
                   </div>
                 </div>
               <?php endforeach; ?>
@@ -297,6 +378,230 @@
     <?php endif; ?>
   </div>
 </div>
+
+<!-- Agent Adı Değiştirme Modali -->
+<div id="editNameModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+          <i class="fa-solid fa-edit mr-2 text-blue-600"></i>Agent Adını Değiştir
+        </h3>
+        <button onclick="closeEditNameModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="editNameForm" method="post" action="/VoipPanelAi/agents/update-agent-name">
+        <input type="hidden" id="editNameExten" name="exten" value="">
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Mevcut Ad:
+          </label>
+          <div class="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+            <span id="currentAgentName" class="text-slate-900 dark:text-white font-medium"></span>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <label for="newAgentName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Yeni Ad:
+          </label>
+          <input type="text" id="newAgentName" name="new_name" required
+                 class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                 placeholder="Yeni agent adını girin">
+        </div>
+        
+        <div class="flex gap-3">
+          <button type="button" onclick="closeEditNameModal()"
+                  class="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            İptal
+          </button>
+          <button type="submit"
+                  class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-colors font-semibold">
+            <i class="fa-solid fa-save mr-2"></i>Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Abonelik Ekleme Modali -->
+<div id="addSubscriptionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+          <i class="fa-solid fa-plus mr-2 text-purple-600"></i>Abonelik Ekle
+        </h3>
+        <button onclick="closeAddSubscriptionModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="addSubscriptionForm" method="post" action="/VoipPanelAi/agents/add-subscription">
+        <input type="hidden" id="subscriptionExten" name="agent_exten" value="">
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Agent:
+          </label>
+          <div class="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+            <span id="subscriptionAgentName" class="text-slate-900 dark:text-white font-medium"></span>
+            <span class="text-slate-500 dark:text-slate-400 ml-2">- Extension: #<span id="subscriptionAgentExten"></span></span>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label for="agentProductId" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Agent Ürünü Seçin:
+          </label>
+          <select id="agentProductId" name="agent_product_id" required
+                  class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+            <option value="">Ürün Seçin...</option>
+            <?php
+            // Agent ürünlerini getir
+            $stmt = $db->prepare('SELECT id, name, price, subscription_monthly_fee FROM agent_products WHERE is_active = 1 ORDER BY name');
+            $stmt->execute();
+            $products = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+            
+            foreach ($products as $product):
+            ?>
+            <option value="<?php echo $product['id']; ?>"
+                    data-price="<?php echo $product['price']; ?>"
+                    data-monthly="<?php echo $product['subscription_monthly_fee'] ?? 0; ?>">
+              <?php echo htmlspecialchars($product['name']); ?>
+              - Fiyat: $<?php echo number_format($product['price'], 2); ?>
+              <?php if ($product['subscription_monthly_fee'] > 0): ?>
+                (Aylık: $<?php echo number_format($product['subscription_monthly_fee'], 2); ?>)
+              <?php endif; ?>
+            </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label for="agentNumber" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Agent Numarası:
+          </label>
+          <input type="text" id="agentNumber" name="agent_number" required
+                 class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                 placeholder="Örn: 05551234567">
+        </div>
+
+        <div id="priceInfo" class="mb-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg hidden">
+          <h4 class="font-semibold text-purple-800 dark:text-purple-300 mb-2">Fiyat Bilgileri:</h4>
+          <div class="space-y-1 text-sm">
+            <div class="flex justify-between">
+              <span class="text-purple-700 dark:text-purple-400">Kurulum Ücreti:</span>
+              <span id="setupPrice" class="font-semibold text-purple-800 dark:text-purple-300"></span>
+            </div>
+            <div id="monthlyFeeInfo" class="flex justify-between hidden">
+              <span class="text-purple-700 dark:text-purple-400">Aylık Abonelik:</span>
+              <span id="monthlyPrice" class="font-semibold text-purple-800 dark:text-purple-300"></span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex gap-3">
+          <button type="button" onclick="closeAddSubscriptionModal()"
+                  class="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            İptal
+          </button>
+          <button type="submit"
+                  class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-colors font-semibold">
+            <i class="fa-solid fa-plus mr-2"></i>Abonelik Ekle
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Agent ad değiştirme modal fonksiyonları
+function openEditNameModal(exten, currentName) {
+  document.getElementById('editNameExten').value = exten;
+  document.getElementById('currentAgentName').textContent = currentName;
+  document.getElementById('newAgentName').value = currentName;
+  document.getElementById('editNameModal').classList.remove('hidden');
+  document.getElementById('editNameModal').classList.add('flex');
+  document.getElementById('newAgentName').focus();
+}
+
+function closeEditNameModal() {
+  document.getElementById('editNameModal').classList.add('hidden');
+  document.getElementById('editNameModal').classList.remove('flex');
+  document.getElementById('editNameForm').reset();
+}
+
+// Abonelik ekleme modal fonksiyonları
+function openAddSubscriptionModal(exten, agentName) {
+  document.getElementById('subscriptionExten').value = exten;
+  document.getElementById('subscriptionAgentName').textContent = agentName;
+  document.getElementById('subscriptionAgentExten').textContent = exten;
+  document.getElementById('addSubscriptionModal').classList.remove('hidden');
+  document.getElementById('addSubscriptionModal').classList.add('flex');
+}
+
+function closeAddSubscriptionModal() {
+  document.getElementById('addSubscriptionModal').classList.add('hidden');
+  document.getElementById('addSubscriptionModal').classList.remove('flex');
+  document.getElementById('addSubscriptionForm').reset();
+  document.getElementById('priceInfo').classList.add('hidden');
+}
+
+// Ürün seçildiğinde fiyat bilgilerini göster
+document.getElementById('agentProductId').addEventListener('change', function() {
+  const selectedOption = this.options[this.selectedIndex];
+  const priceInfo = document.getElementById('priceInfo');
+  const setupPrice = document.getElementById('setupPrice');
+  const monthlyPrice = document.getElementById('monthlyPrice');
+  const monthlyFeeInfo = document.getElementById('monthlyFeeInfo');
+  
+  if (selectedOption.value) {
+    const price = parseFloat(selectedOption.dataset.price);
+    const monthly = parseFloat(selectedOption.dataset.monthly || 0);
+    
+    setupPrice.textContent = '$' + price.toFixed(2);
+    
+    if (monthly > 0) {
+      monthlyPrice.textContent = '$' + monthly.toFixed(2);
+      monthlyFeeInfo.classList.remove('hidden');
+    } else {
+      monthlyFeeInfo.classList.add('hidden');
+    }
+    
+    priceInfo.classList.remove('hidden');
+  } else {
+    priceInfo.classList.add('hidden');
+  }
+});
+
+// Modal dışında tıklandığında kapat
+document.getElementById('editNameModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeEditNameModal();
+  }
+});
+
+document.getElementById('addSubscriptionModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeAddSubscriptionModal();
+  }
+});
+
+// Escape tuşu ile modal kapatma
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeEditNameModal();
+    closeAddSubscriptionModal();
+  }
+});
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

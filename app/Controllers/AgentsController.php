@@ -371,6 +371,234 @@ class AgentsController {
         exit;
     }
 
+    /**
+     * Agent adını güncelle
+     */
+    public function updateAgentName() {
+        $this->requireAuth();
+        if (!$this->isSuper()) {
+            $_SESSION['error'] = 'Yetkisiz işlem';
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            die('Geçersiz istek');
+        }
+
+        $exten = $_POST['exten'] ?? '';
+        $newName = trim($_POST['new_name'] ?? '');
+
+        if (!$exten || !$newName) {
+            $_SESSION['error'] = 'Eksik parametreler';
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+            exit;
+        }
+
+        $db = DB::conn();
+        
+        try {
+            // Agent'ın mevcut olup olmadığını kontrol et
+            $stmt = $db->prepare('SELECT user_login FROM agents WHERE exten = ?');
+            $stmt->bind_param('s', $exten);
+            $stmt->execute();
+            $agent = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$agent) {
+                $_SESSION['error'] = 'Agent bulunamadı';
+                header('Location: ' . \App\Helpers\Url::to('/agents'));
+                exit;
+            }
+
+            // Agent adını güncelle (sadece lokal veritabanında, API'yi etkilemez)
+            $stmt = $db->prepare('UPDATE agents SET user_login = ?, updated_at = NOW() WHERE exten = ?');
+            $stmt->bind_param('ss', $newName, $exten);
+            $stmt->execute();
+            $stmt->close();
+
+            $_SESSION['success'] = 'Agent adı başarıyla güncellendi: ' . htmlspecialchars($newName);
+
+        } catch (Exception $e) {
+            error_log('Agent name update error: ' . $e->getMessage());
+            $_SESSION['error'] = 'Agent adı güncellenirken hata oluştu';
+        }
+
+        header('Location: ' . \App\Helpers\Url::to('/agents'));
+        exit;
+    }
+
+    /**
+     * Agent'a abonelik ekle
+     */
+    public function addSubscription() {
+        $this->requireAuth();
+        if (!$this->isSuper()) {
+            $_SESSION['error'] = 'Yetkisiz işlem';
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            die('Geçersiz istek');
+        }
+
+        $exten = $_POST['exten'] ?? '';
+        $productId = (int)($_POST['product_id'] ?? 0);
+
+        if (!$exten || !$productId) {
+            $_SESSION['error'] = 'Eksik parametreler';
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+            exit;
+        }
+
+        $db = DB::conn();
+        $this->createAgentPurchaseTables();
+
+        try {
+            $db->begin_transaction();
+
+            // Agent'ı bul
+            $stmt = $db->prepare('SELECT * FROM agents WHERE exten = ?');
+            $stmt->bind_param('s', $exten);
+            $stmt->execute();
+            $agent = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$agent) {
+                throw new Exception('Agent bulunamadı');
+            }
+
+            // Ürün bilgilerini al
+            $stmt = $db->prepare('SELECT * FROM agent_products WHERE id = ? AND is_active = 1');
+            $stmt->bind_param('i', $productId);
+            $stmt->execute();
+            $product = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$product) {
+                throw new Exception('Ürün bulunamadı');
+            }
+
+            // Grup bilgilerini al (agent'ın grup adından)
+            $groupId = 0;
+            if ($agent['group_name']) {
+                $stmt = $db->prepare('SELECT id FROM groups WHERE name = ? OR api_group_name = ? LIMIT 1');
+                $stmt->bind_param('ss', $agent['group_name'], $agent['group_name']);
+                $stmt->execute();
+                $groupResult = $stmt->get_result()->fetch_assoc();
+                if ($groupResult) $groupId = $groupResult['id'];
+                $stmt->close();
+            }
+
+            // Kullanıcı bul (agent login'den)
+            $userId = 0;
+            if ($agent['user_login']) {
+                $stmt = $db->prepare('SELECT id FROM users WHERE login = ? LIMIT 1');
+                $stmt->bind_param('s', $agent['user_login']);
+                $stmt->execute();
+                $userResult = $stmt->get_result()->fetch_assoc();
+                if ($userResult) $userId = $userResult['id'];
+                $stmt->close();
+            }
+
+            // Agent numarası oluştur
+            $agentNumber = $this->generateAgentNumber($product['phone_prefix']);
+
+            // User agent oluştur
+            $stmt = $db->prepare('INSERT INTO user_agents (user_id, group_id, agent_product_id, agent_number, status, is_lifetime, next_subscription_due) VALUES (?, ?, ?, ?, "active", ?, ?)');
+            $isLifetime = $product['is_subscription'] ? 0 : 1;
+            $nextDue = $product['is_subscription'] ? date('Y-m-d H:i:s', strtotime('+1 month')) : null;
+            $stmt->bind_param('iiisos', $userId, $groupId, $productId, $agentNumber, $isLifetime, $nextDue);
+            $stmt->execute();
+            $userAgentId = $db->insert_id;
+            $stmt->close();
+
+            // Abonelik ödemesi planla (eğer abonelik ürünse)
+            if ($product['is_subscription'] && $product['subscription_monthly_fee'] > 0) {
+                $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status) VALUES (?, ?, ?, DATE_ADD(CURDATE(), INTERVAL 1 MONTH), "pending")');
+                $stmt->bind_param('iid', $userAgentId, $userId, $product['subscription_monthly_fee']);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            $db->commit();
+            $_SESSION['success'] = 'Agent\'a başarıyla abonelik eklendi. Agent Numarası: ' . $agentNumber;
+
+        } catch (Exception $e) {
+            $db->rollback();
+            error_log('Add subscription error: ' . $e->getMessage());
+            $_SESSION['error'] = 'Abonelik eklenirken hata oluştu: ' . $e->getMessage();
+        }
+
+        header('Location: ' . \App\Helpers\Url::to('/agents'));
+        exit;
+    }
+
+    /**
+     * Agent aboneliğini sil/iptal et
+     */
+    public function removeSubscription() {
+        $this->requireAuth();
+        if (!$this->isSuper()) {
+            $_SESSION['error'] = 'Yetkisiz işlem';
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            die('Geçersiz istek');
+        }
+
+        $userAgentId = (int)($_POST['user_agent_id'] ?? 0);
+
+        if (!$userAgentId) {
+            $_SESSION['error'] = 'Eksik parametreler';
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+            exit;
+        }
+
+        $db = DB::conn();
+
+        try {
+            $db->begin_transaction();
+
+            // User agent'ı bul
+            $stmt = $db->prepare('SELECT ua.*, ap.name as product_name FROM user_agents ua JOIN agent_products ap ON ua.agent_product_id = ap.id WHERE ua.id = ?');
+            $stmt->bind_param('i', $userAgentId);
+            $stmt->execute();
+            $userAgent = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$userAgent) {
+                throw new Exception('Abonelik bulunamadı');
+            }
+
+            // Agent'ı pasif yap
+            $stmt = $db->prepare('UPDATE user_agents SET status = "cancelled", updated_at = NOW() WHERE id = ?');
+            $stmt->bind_param('i', $userAgentId);
+            $stmt->execute();
+            $stmt->close();
+
+            // Bekleyen abonelik ödemelerini iptal et
+            $stmt = $db->prepare('UPDATE agent_subscription_payments SET status = "cancelled" WHERE user_agent_id = ? AND status = "pending"');
+            $stmt->bind_param('i', $userAgentId);
+            $stmt->execute();
+            $stmt->close();
+
+            $db->commit();
+            $_SESSION['success'] = 'Agent aboneliği başarıyla iptal edildi: ' . htmlspecialchars($userAgent['product_name']);
+
+        } catch (Exception $e) {
+            $db->rollback();
+            error_log('Remove subscription error: ' . $e->getMessage());
+            $_SESSION['error'] = 'Abonelik iptal edilirken hata oluştu: ' . $e->getMessage();
+        }
+
+        header('Location: ' . \App\Helpers\Url::to('/agents'));
+        exit;
+    }
+
     public function syncCron() {
         $token = $_GET['token'] ?? ($_POST['token'] ?? '');
         $expected = getenv('CRON_TOKEN') ?: '';
