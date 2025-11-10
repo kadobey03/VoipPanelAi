@@ -209,9 +209,10 @@
                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Kullanıcı</th>
                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Agent</th>
                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Aylık Ücret</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Başlangıç</th>
                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Sonraki Ödeme</th>
                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Durum</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">Satın Alma</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">İşlemler</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
@@ -230,36 +231,44 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 text-lg font-bold text-slate-900 dark:text-white">
-                  <?php if ($subscription['is_subscription']): ?>
-                    $<?php echo number_format($subscription['subscription_monthly_fee'], 2); ?>
-                  <?php else: ?>
-                    <span class="text-emerald-600 font-semibold">Lifetime</span>
-                  <?php endif; ?>
+                  $<?php echo number_format($subscription['subscription_monthly_fee'], 2); ?>
                 </td>
                 <td class="px-6 py-4 text-sm text-slate-900 dark:text-white">
-                  <?php if ($subscription['is_subscription'] && $subscription['next_subscription_due']): ?>
+                  <?php echo date('d.m.Y', strtotime($subscription['subscription_start'])); ?>
+                  <div class="text-xs text-slate-500">
                     <?php
-                    $nextDue = strtotime($subscription['next_subscription_due']);
-                    $now = time();
-                    $daysUntil = ceil(($nextDue - $now) / (24 * 60 * 60));
-                    echo date('d.m.Y', $nextDue);
+                    $startDate = new DateTime($subscription['subscription_start']);
+                    $now = new DateTime();
+                    $diff = $now->diff($startDate);
+                    echo $diff->days . ' gün önce';
                     ?>
-                    <div class="text-xs <?php echo $daysUntil <= 3 ? 'text-red-500' : ($daysUntil <= 7 ? 'text-orange-500' : 'text-slate-400'); ?>">
-                      <?php echo $daysUntil; ?> gün kaldı
-                    </div>
-                  <?php else: ?>
-                    <span class="text-emerald-600 font-semibold">
-                      <i class="fa-solid fa-infinity mr-1"></i>Ömür Boyu
-                    </span>
-                  <?php endif; ?>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-900 dark:text-white">
+                  <?php
+                  $nextDue = strtotime($subscription['subscription_end']);
+                  $now = time();
+                  $daysUntil = ceil(($nextDue - $now) / (24 * 60 * 60));
+                  echo date('d.m.Y', $nextDue);
+                  ?>
+                  <div class="text-xs <?php echo $daysUntil <= 3 ? 'text-red-500' : ($daysUntil <= 7 ? 'text-orange-500' : 'text-slate-400'); ?>">
+                    <?php echo $daysUntil; ?> gün kaldı
+                  </div>
                 </td>
                 <td class="px-6 py-4">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $subscription['status'] === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'; ?>">
                     <?php echo $subscription['status'] === 'active' ? 'Aktif' : ucfirst($subscription['status']); ?>
                   </span>
                 </td>
-                <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
-                  <?php echo date('d.m.Y', strtotime($subscription['purchase_date'])); ?>
+                <td class="px-6 py-4">
+                  <form method="post" action="/VoipPanelAi/agents/remove-subscription" class="inline">
+                    <input type="hidden" name="user_agent_id" value="<?php echo $subscription['id']; ?>">
+                    <button type="submit" onclick="return confirm('Bu aboneliği iptal etmek istediğinizden emin misiniz? Bir sonraki ay ücret alınmayacak.')"
+                            class="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors">
+                      <i class="fa-solid fa-ban mr-1"></i>
+                      İptal Et
+                    </button>
+                  </form>
                 </td>
               </tr>
               <?php endforeach; ?>

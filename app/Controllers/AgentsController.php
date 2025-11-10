@@ -1130,7 +1130,10 @@ class AgentsController {
      */
     public function subscriptions() {
         $this->requireAuth();
-        if (!$this->isSuper()) {
+        $isSuper = $this->isSuper();
+        $isGroupAdmin = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'groupadmin';
+        
+        if (!$isSuper && !$isGroupAdmin) {
             die('Yetkisiz erişim');
         }
 
@@ -1159,17 +1162,36 @@ class AgentsController {
         $recentPayments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
-        // Aktif abonelikler (hem lifetime hem subscription)
-        $stmt = $db->prepare('
-            SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee, ap.is_subscription,
-                   u.login as user_login, g.name as group_name, ua.created_at as purchase_date
-            FROM user_agents ua
-            JOIN agent_products ap ON ua.agent_product_id = ap.id
-            JOIN users u ON ua.user_id = u.id
-            JOIN groups g ON u.group_id = g.id
-            WHERE ua.status = "active"
-            ORDER BY ua.created_at DESC
-        ');
+        // Aktif abonelikler (sadece aylık olanlar)
+        if ($isSuper) {
+            // Super admin tüm abonelikleri görür
+            $stmt = $db->prepare('
+                SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee, ap.is_subscription,
+                       u.login as user_login, g.name as group_name, ua.created_at as subscription_start,
+                       ua.next_subscription_due as subscription_end
+                FROM user_agents ua
+                JOIN agent_products ap ON ua.agent_product_id = ap.id
+                JOIN users u ON ua.user_id = u.id
+                JOIN groups g ON u.group_id = g.id
+                WHERE ua.status = "active" AND ap.is_subscription = 1
+                ORDER BY ua.next_subscription_due ASC
+            ');
+        } else {
+            // Grup admin sadece kendi grubunun aboneliklerini görür
+            $userGroupId = $_SESSION['user']['group_id'];
+            $stmt = $db->prepare('
+                SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee, ap.is_subscription,
+                       u.login as user_login, g.name as group_name, ua.created_at as subscription_start,
+                       ua.next_subscription_due as subscription_end
+                FROM user_agents ua
+                JOIN agent_products ap ON ua.agent_product_id = ap.id
+                JOIN users u ON ua.user_id = u.id
+                JOIN groups g ON u.group_id = g.id
+                WHERE ua.status = "active" AND ap.is_subscription = 1 AND u.group_id = ?
+                ORDER BY ua.next_subscription_due ASC
+            ');
+            $stmt->bind_param('i', $userGroupId);
+        }
         $stmt->execute();
         $activeSubscriptions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
