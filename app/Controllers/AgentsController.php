@@ -467,7 +467,7 @@ class AgentsController {
             $stmt->close();
 
             if (!$agent) {
-                throw new Exception('Agent bulunamadı');
+                throw new \Exception('Agent bulunamadı');
             }
 
             // Ürün bilgilerini al
@@ -478,7 +478,7 @@ class AgentsController {
             $stmt->close();
 
             if (!$product) {
-                throw new Exception('Ürün bulunamadı');
+                throw new \Exception('Ürün bulunamadı');
             }
 
             // Agent'ın grubunu bul ve o grubun adminini al
@@ -506,7 +506,7 @@ class AgentsController {
             }
             
             if (!$userId) {
-                throw new Exception('Agent\'ın grubunun yöneticisi bulunamadı. Grup: ' . ($agent['group_name'] ?? 'bilinmeyen'));
+                throw new \Exception('Agent\'ın grubunun yöneticisi bulunamadı. Grup: ' . ($agent['group_name'] ?? 'bilinmeyen'));
             }
 
             // Agent numarası kullanıcıdan gelen veya otomatik oluştur
@@ -522,7 +522,7 @@ class AgentsController {
             $stmt->close();
             
             if ($result['count'] > 0) {
-                throw new Exception('Bu agent numarası zaten kullanımda');
+                throw new \Exception('Bu agent numarası zaten kullanımda');
             }
 
             // User agent oluştur
@@ -545,7 +545,7 @@ class AgentsController {
             $db->commit();
             $_SESSION['success'] = 'Agent\'a başarıyla abonelik eklendi. Agent Numarası: ' . $agentNumber;
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $db->rollback();
             error_log('Add subscription error: ' . $e->getMessage());
             $_SESSION['error'] = 'Abonelik eklenirken hata oluştu: ' . $e->getMessage();
