@@ -399,12 +399,26 @@
           wallet_address: address
         })
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          return response.text().then(text => {
+            console.error('Non-JSON response:', text);
+            throw new Error('Server yanıtı JSON formatında değil');
+          });
+        }
+        
+        return response.json();
+      })
       .then(data => {
         updatePaymentStatus(data);
       })
       .catch(error => {
-        console.log('Payment check error:', error);
+        console.error('Payment check error:', error);
         // Continue monitoring even if there's an error
       });
     }
