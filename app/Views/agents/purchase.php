@@ -19,7 +19,7 @@
           
           <?php if ($isSuper): ?>
           <div class="flex gap-4">
-            <a href="/agents/manage-products" class="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105">
+            <a href="/VoipPanelAi/agents/manage-products" class="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105">
               <i class="fa-solid fa-cog"></i>
               Ürün Yönetimi
             </a>
@@ -195,7 +195,7 @@
             </div>
 
             <!-- Purchase Button -->
-            <form method="post" action="/agents/purchase" class="mb-0">
+            <form method="post" action="/VoipPanelAi/agents/purchase" class="mb-0">
               <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
               <button type="submit" 
                       class="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 <?php echo ($balance < $product['price']) ? 'opacity-50 cursor-not-allowed' : ''; ?>"
@@ -214,7 +214,7 @@
 
             <?php if ($balance < $product['price']): ?>
             <div class="mt-3 text-center">
-              <a href="/balance/topup" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-sm font-medium">
+              <a href="/VoipPanelAi/balance/topup" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-sm font-medium">
                 <i class="fa-solid fa-plus-circle mr-1"></i>
                 Bakiye Yükle
               </a>
@@ -232,7 +232,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Purchase form confirmation
-  const purchaseForms = document.querySelectorAll('form[action="/agents/purchase"]');
+  const purchaseForms = document.querySelectorAll('form[action="/VoipPanelAi/agents/purchase"]');
   
   purchaseForms.forEach(form => {
     form.addEventListener('submit', function(e) {

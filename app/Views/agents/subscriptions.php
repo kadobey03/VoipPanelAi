@@ -151,7 +151,7 @@
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
-                    <form method="post" action="/agents/subscriptions/process-manual" class="inline">
+                    <form method="post" action="/VoipPanelAi/agents/subscriptions/process-manual" class="inline">
                       <input type="hidden" name="payment_id" value="<?php echo $payment['id']; ?>">
                       <input type="hidden" name="action" value="approve">
                       <button type="submit" 
@@ -161,7 +161,7 @@
                         Onayla
                       </button>
                     </form>
-                    <form method="post" action="/agents/subscriptions/process-manual" class="inline">
+                    <form method="post" action="/VoipPanelAi/agents/subscriptions/process-manual" class="inline">
                       <input type="hidden" name="payment_id" value="<?php echo $payment['id']; ?>">
                       <input type="hidden" name="action" value="reject">
                       <button type="submit" 

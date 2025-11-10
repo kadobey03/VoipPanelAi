@@ -147,7 +147,7 @@
 <div id="productModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
   <div class="flex items-center justify-center min-h-screen p-4">
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-      <form id="productForm" method="post" action="/agents/manage-products">
+      <form id="productForm" method="post" action="/VoipPanelAi/agents/manage-products">
         <input type="hidden" name="action" id="formAction" value="create">
         <input type="hidden" name="id" id="productId" value="">
         
@@ -256,7 +256,7 @@
 </div>
 
 <!-- Delete Form -->
-<form id="deleteForm" method="post" action="/agents/manage-products" style="display: none;">
+<form id="deleteForm" method="post" action="/VoipPanelAi/agents/manage-products" style="display: none;">
   <input type="hidden" name="action" value="delete">
   <input type="hidden" name="id" id="deleteId" value="">
 </form>
