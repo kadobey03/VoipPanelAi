@@ -438,7 +438,12 @@ class GroupController {
             $stmt->execute();
             $result = $stmt->get_result()->fetch_assoc();
             $stmt->close();
-            $walletId = $result['id'];
+            
+            if ($result && isset($result['id'])) {
+                $walletId = $result['id'];
+            } else {
+                throw new \Exception('Failed to create or find dummy wallet for address: ' . $walletAddress);
+            }
         }
         
         return $walletId;
