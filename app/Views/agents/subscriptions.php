@@ -230,18 +230,28 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 text-lg font-bold text-slate-900 dark:text-white">
-                  $<?php echo number_format($subscription['subscription_monthly_fee'], 2); ?>
+                  <?php if ($subscription['is_subscription']): ?>
+                    $<?php echo number_format($subscription['subscription_monthly_fee'], 2); ?>
+                  <?php else: ?>
+                    <span class="text-emerald-600 font-semibold">Lifetime</span>
+                  <?php endif; ?>
                 </td>
                 <td class="px-6 py-4 text-sm text-slate-900 dark:text-white">
-                  <?php 
-                  $nextDue = strtotime($subscription['next_subscription_due']);
-                  $now = time();
-                  $daysUntil = ceil(($nextDue - $now) / (24 * 60 * 60));
-                  echo date('d.m.Y', $nextDue);
-                  ?>
-                  <div class="text-xs <?php echo $daysUntil <= 3 ? 'text-red-500' : ($daysUntil <= 7 ? 'text-orange-500' : 'text-slate-400'); ?>">
-                    <?php echo $daysUntil; ?> gün kaldı
-                  </div>
+                  <?php if ($subscription['is_subscription'] && $subscription['next_subscription_due']): ?>
+                    <?php
+                    $nextDue = strtotime($subscription['next_subscription_due']);
+                    $now = time();
+                    $daysUntil = ceil(($nextDue - $now) / (24 * 60 * 60));
+                    echo date('d.m.Y', $nextDue);
+                    ?>
+                    <div class="text-xs <?php echo $daysUntil <= 3 ? 'text-red-500' : ($daysUntil <= 7 ? 'text-orange-500' : 'text-slate-400'); ?>">
+                      <?php echo $daysUntil; ?> gün kaldı
+                    </div>
+                  <?php else: ?>
+                    <span class="text-emerald-600 font-semibold">
+                      <i class="fa-solid fa-infinity mr-1"></i>Ömür Boyu
+                    </span>
+                  <?php endif; ?>
                 </td>
                 <td class="px-6 py-4">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $subscription['status'] === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'; ?>">
