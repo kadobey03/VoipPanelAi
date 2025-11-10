@@ -7,6 +7,7 @@ use App\Helpers\TronWallet;
 use App\Helpers\TronClient;
 use App\Helpers\CryptoSecurity;
 use App\Helpers\TelegramNotifier;
+use App\Helpers\SubscriptionManager;
 
 class GroupController {
     private function startSession() { if (session_status()===PHP_SESSION_NONE) session_start(); }
@@ -166,7 +167,32 @@ class GroupController {
                         $stmt->execute();
                         $stmt->close();
                         $db->commit();
-                        $ok = 'Bakiye eklendi';
+                        
+                        // Bakiye eklendikten sonra askıya alınan agentleri yeniden aktifleştir
+                        try {
+                            // Grup admin kullanıcısı varsa onun user_id'sini kullan, yoksa 0
+                            $stmt = $db->prepare('SELECT id FROM users WHERE group_id = ? AND role IN ("groupadmin", "user") LIMIT 1');
+                            $stmt->bind_param('i', $id);
+                            $stmt->execute();
+                            $userResult = $stmt->get_result()->fetch_assoc();
+                            $stmt->close();
+                            
+                            $groupUserId = $userResult ? $userResult['id'] : 0;
+                            if ($groupUserId > 0) {
+                                $reactivatedCount = SubscriptionManager::reactivateSuspendedAgents($groupUserId, $id);
+                                if ($reactivatedCount > 0) {
+                                    $ok = 'Bakiye eklendi. ' . $reactivatedCount . ' askıya alınmış agent yeniden aktifleştirildi.';
+                                } else {
+                                    $ok = 'Bakiye eklendi';
+                                }
+                            } else {
+                                $ok = 'Bakiye eklendi';
+                            }
+                        } catch (\Exception $e) {
+                            error_log('Agent reactivation error after topup: ' . $e->getMessage());
+                            $ok = 'Bakiye eklendi';
+                        }
+                        
                     } catch (\Throwable $e) { $db->rollback(); $error = 'Hata: '.$e->getMessage(); }
                 } else {
                     if ($isCrypto) {

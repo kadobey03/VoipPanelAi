@@ -57,6 +57,17 @@ $router->add('GET', '/agents/sync', 'AgentsController@syncAgents');
 $router->add('POST', '/agents/sync', 'AgentsController@syncAgents');
 $router->add('POST', '/agents/toggle-active', 'AgentsController@toggleActive');
 
+// Agent Purchase
+$router->add('GET', '/agents/purchase', 'AgentsController@purchase');
+$router->add('POST', '/agents/purchase', 'AgentsController@processPurchase');
+$router->add('GET', '/agents/manage-products', 'AgentsController@manageProducts');
+$router->add('POST', '/agents/manage-products', 'AgentsController@manageProducts');
+
+// Agent Subscriptions (Admin)
+$router->add('GET', '/agents/subscriptions', 'AgentsController@subscriptions');
+$router->add('POST', '/agents/subscriptions/process-manual', 'AgentsController@processManualSubscription');
+$router->add('GET', '/agents/subscriptions/cron', 'AgentsController@subscriptionCron');
+
 // Numbers
 $router->add('GET', '/numbers', 'NumbersController@index');
 $router->add('POST', '/numbers/active', 'NumbersController@setActive');

@@ -101,6 +101,139 @@ class TelegramNotifier
     }
     
     /**
+     * Agent satın alma bildirimini gönder
+     */
+    public function sendAgentPurchaseNotification($userName, $userEmail, $productName, $price, $paymentType, $balanceBefore, $balanceAfter)
+    {
+        $message = "🤖 *YENİ AGENT SATIN ALIMI*\n\n";
+        $message .= "👤 *Kullanıcı:* {$userName}\n";
+        $message .= "📧 *Email:* {$userEmail}\n";
+        $message .= "🎯 *Ürün:* {$productName}\n";
+        $message .= "💰 *Fiyat:* \${$price}\n";
+        $message .= "📋 *Ödeme Tipi:* " . ($paymentType === 'one_time' ? 'Tek Seferlik' : 'Aylık Abonelik') . "\n";
+        $message .= "📊 *Önceki Bakiye:* \$" . number_format($balanceBefore, 2) . "\n";
+        $message .= "📈 *Kalan Bakiye:* \$" . number_format($balanceAfter, 2) . "\n";
+        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
+        $message .= "✅ *Durum:* Agent başarıyla satın alındı\n";
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
+     * Abonelik ödemesi başarı bildirimini gönder
+     */
+    public function sendSubscriptionPaymentSuccess($userName, $userEmail, $productName, $price, $balanceBefore, $balanceAfter, $nextPaymentDate)
+    {
+        $message = "💳 *ABONELİK ÖDEMESİ BAŞARILI*\n\n";
+        $message .= "👤 *Kullanıcı:* {$userName}\n";
+        $message .= "📧 *Email:* {$userEmail}\n";
+        $message .= "🤖 *Agent:* {$productName}\n";
+        $message .= "💰 *Ödenen Tutar:* \${$price}\n";
+        $message .= "📊 *Önceki Bakiye:* \$" . number_format($balanceBefore, 2) . "\n";
+        $message .= "📈 *Kalan Bakiye:* \$" . number_format($balanceAfter, 2) . "\n";
+        $message .= "📅 *Sonraki Ödeme:* " . date('d.m.Y', strtotime($nextPaymentDate)) . "\n";
+        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
+        $message .= "✅ *Durum:* Abonelik devam ediyor\n";
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
+     * Abonelik ödemesi başarısız bildirimini gönder
+     */
+    public function sendSubscriptionPaymentFailed($userName, $userEmail, $productName, $requiredAmount, $currentBalance, $nextRetryDate)
+    {
+        $message = "❌ *ABONELİK ÖDEMESİ BAŞARISIZ*\n\n";
+        $message .= "👤 *Kullanıcı:* {$userName}\n";
+        $message .= "📧 *Email:* {$userEmail}\n";
+        $message .= "🤖 *Agent:* {$productName}\n";
+        $message .= "💰 *Gerekli Tutar:* \${$requiredAmount}\n";
+        $message .= "📊 *Mevcut Bakiye:* \$" . number_format($currentBalance, 2) . "\n";
+        $message .= "📅 *Sonraki Deneme:* " . date('d.m.Y', strtotime($nextRetryDate)) . "\n";
+        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
+        $message .= "⚠️ *Durum:* Yetersiz bakiye - Agent askıya alındı\n";
+        $message .= "📞 *Aksiyon:* Müşteriyi arayarak bakiye yüklemesi için uyarın\n";
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
+     * Agent askıya alma bildirimini gönder
+     */
+    public function sendAgentSuspendedNotification($userName, $userEmail, $productName, $daysOverdue)
+    {
+        $message = "⏸️ *AGENT ASKIYA ALINDI*\n\n";
+        $message .= "👤 *Kullanıcı:* {$userName}\n";
+        $message .= "📧 *Email:* {$userEmail}\n";
+        $message .= "🤖 *Agent:* {$productName}\n";
+        $message .= "📅 *Geciken Gün Sayısı:* {$daysOverdue} gün\n";
+        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
+        $message .= "🚫 *Durum:* Ödeme yapılmaması nedeniyle askıya alındı\n";
+        $message .= "📞 *Aksiyon:* Müşteriyi arayarak ödeme yapması için uyarın\n";
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
+     * Agent yeniden aktifleştirme bildirimini gönder
+     */
+    public function sendAgentReactivatedNotification($userName, $userEmail, $productName, $balanceUsed, $balanceAfter)
+    {
+        $message = "🔄 *AGENT YENİDEN AKTİFLEŞTİRİLDİ*\n\n";
+        $message .= "👤 *Kullanıcı:* {$userName}\n";
+        $message .= "📧 *Email:* {$userEmail}\n";
+        $message .= "🤖 *Agent:* {$productName}\n";
+        $message .= "💰 *Kullanılan Bakiye:* \${$balanceUsed}\n";
+        $message .= "📈 *Kalan Bakiye:* \$" . number_format($balanceAfter, 2) . "\n";
+        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
+        $message .= "✅ *Durum:* Agent başarıyla yeniden aktifleştirildi\n";
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
+     * Admin abonelik yönetimi bildirimini gönder
+     */
+    public function sendAdminSubscriptionAction($adminName, $action, $userName, $productName, $amount = null)
+    {
+        $message = "👨‍💼 *ADMİN ABONELİK İŞLEMİ*\n\n";
+        $message .= "👤 *Admin:* {$adminName}\n";
+        $message .= "🎯 *İşlem:* {$action}\n";
+        $message .= "👥 *Hedef Kullanıcı:* {$userName}\n";
+        $message .= "🤖 *Agent:* {$productName}\n";
+        
+        if ($amount !== null) {
+            $message .= "💰 *Tutar:* \${$amount}\n";
+        }
+        
+        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
+        $message .= "✅ *Durum:* İşlem başarıyla tamamlandı\n";
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
+     * Günlük abonelik raporu bildirimini gönder
+     */
+    public function sendDailySubscriptionReport($totalProcessed, $successCount, $failedCount, $totalRevenue, $suspendedCount)
+    {
+        $message = "📊 *GÜNLÜK ABONELİK RAPORU*\n\n";
+        $message .= "📈 *Toplam İşlem:* {$totalProcessed}\n";
+        $message .= "✅ *Başarılı Ödeme:* {$successCount}\n";
+        $message .= "❌ *Başarısız Ödeme:* {$failedCount}\n";
+        $message .= "💰 *Toplam Gelir:* \$" . number_format($totalRevenue, 2) . "\n";
+        $message .= "⏸️ *Askıya Alınan:* {$suspendedCount}\n";
+        $message .= "📅 *Tarih:* " . date('d.m.Y') . "\n";
+        $message .= "⏰ *Rapor Zamanı:* " . date('H:i:s') . "\n";
+        
+        if ($failedCount > 0) {
+            $message .= "\n⚠️ *DİKKAT:* Başarısız ödemeler için müşterilerle iletişime geçin";
+        }
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
      * Telegram'a mesaj gönder
      */
     private function sendMessage($message)

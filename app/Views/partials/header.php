@@ -108,12 +108,62 @@ function __($key) {
             </a>
 
             <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
-            <!-- Agents -->
-            <a href="<?= Url::to('/agents') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-              <i class="fa-solid fa-user-nurse text-base"></i>
-              <span class="font-medium text-sm">Agent</span>
-              <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </a>
+            <!-- Agent Dropdown -->
+            <div class="relative" id="agent-menu-container">
+              <button id="agent-menu-btn" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+                <i class="fa-solid fa-user-nurse text-base"></i>
+                <span class="font-medium text-sm">Agent</span>
+                <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300 group-hover:rotate-180"></i>
+                <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
+
+              <!-- Agent Dropdown Menu -->
+              <div id="agent-menu" class="absolute hidden right-0 mt-2 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/20 py-3 z-50">
+                <div class="px-4 py-2 border-b border-slate-200/50 dark:border-slate-700/50">
+                  <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Agent Yönetimi</h3>
+                </div>
+                <div class="py-2">
+                  <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/agents') ?>">
+                    <div class="p-2 bg-cyan-100 dark:bg-cyan-900/50 rounded-lg">
+                      <i class="fa-solid fa-headset text-cyan-600 dark:text-cyan-400"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white">Agentler</div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400">Agent durumlarını görüntüle</div>
+                    </div>
+                  </a>
+                  <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/agents/purchase') ?>">
+                    <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
+                      <i class="fa-solid fa-shopping-cart text-green-600 dark:text-green-400"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white">Agent Satın Al</div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400">Yeni agent satın alın</div>
+                    </div>
+                  </a>
+                  <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
+                  <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/agents/manage-products') ?>">
+                    <div class="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
+                      <i class="fa-solid fa-cogs text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white">Ürün Yönetimi</div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400">Agent ürünlerini yönet</div>
+                    </div>
+                  </a>
+                  <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/agents/subscriptions') ?>">
+                    <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
+                      <i class="fa-solid fa-calendar-alt text-indigo-600 dark:text-indigo-400"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white">Abonelik Yönetimi</div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400">Abonelikleri yönet</div>
+                    </div>
+                  </a>
+                  <?php endif; ?>
+                </div>
+              </div>
+            </div>
             <?php endif; ?>
 
             <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='groupmember'): ?>
@@ -351,9 +401,23 @@ function __($key) {
 
               <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents') ?>">
-                <i class="fa-solid fa-user-nurse text-white"></i>
-                <span class="text-white font-medium">Agent</span>
+                <i class="fa-solid fa-headset text-white"></i>
+                <span class="text-white font-medium">Agentler</span>
               </a>
+              <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents/purchase') ?>">
+                <i class="fa-solid fa-shopping-cart text-white"></i>
+                <span class="text-white font-medium">Agent Satın Al</span>
+              </a>
+              <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
+              <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents/manage-products') ?>">
+                <i class="fa-solid fa-cogs text-white"></i>
+                <span class="text-white font-medium">Ürün Yönetimi</span>
+              </a>
+              <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents/subscriptions') ?>">
+                <i class="fa-solid fa-calendar-alt text-white"></i>
+                <span class="text-white font-medium">Abonelik Yönetimi</span>
+              </a>
+              <?php endif; ?>
               <?php endif; ?>
 
               <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='groupmember'): ?>
@@ -603,7 +667,43 @@ function __($key) {
         if (e.key === 'Escape' && balanceMenu && !balanceMenu.classList.contains('hidden')) {
           balanceMenu.classList.add('hidden');
         }
+
+        // Close agent menu with Escape
+        const agentMenu = document.getElementById('agent-menu');
+        if (e.key === 'Escape' && agentMenu && !agentMenu.classList.contains('hidden')) {
+          agentMenu.classList.add('hidden');
+        }
       });
+
+      // Agent menu toggle
+      const agentBtn = document.getElementById('agent-menu-btn');
+      const agentMenu = document.getElementById('agent-menu');
+      const agentContainer = document.getElementById('agent-menu-container');
+
+      if (agentBtn && agentMenu) {
+        agentBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          agentMenu.classList.toggle('hidden');
+
+          // Rotate chevron icon
+          const chevron = agentBtn.querySelector('.fa-chevron-down');
+          if (chevron) {
+            chevron.classList.toggle('rotate-180');
+          }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+          if (agentContainer && !agentContainer.contains(e.target)) {
+            agentMenu.classList.add('hidden');
+            const chevron = agentBtn.querySelector('.fa-chevron-down');
+            if (chevron) {
+              chevron.classList.remove('rotate-180');
+            }
+          }
+        });
+      }
 
       // Add touch support for mobile
       if ('ontouchstart' in window) {
