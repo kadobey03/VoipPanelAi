@@ -120,4 +120,5 @@ return [
     'response_time' => 'Yanıt süresi',
     'turkish' => 'Türkçe',
     'english' => 'İngilizce',
+    'russian' => 'Rusça',
 ];

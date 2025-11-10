@@ -120,4 +120,5 @@ return [
     'response_time' => 'Response Time',
     'turkish' => 'Turkish',
     'english' => 'English',
+    'russian' => 'Russian',
 ];

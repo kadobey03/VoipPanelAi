@@ -48,6 +48,25 @@
           </div>
         </div>
 
+        <!-- Language Selector -->
+        <div class="language-selector mb-6 animate-fade-in-up" style="animation-delay: 0.4s;">
+          <div class="flex justify-center">
+            <div class="relative inline-block">
+              <select
+                id="languageSelect"
+                onchange="changeLanguage(this.value)"
+                class="appearance-none bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-2 pr-8 text-white text-sm font-medium hover:bg-white/15 hover:border-white/30 focus:bg-white/20 focus:border-cyan-300 focus:outline-none transition-all duration-300 cursor-pointer">
+                <option value="tr" <?= ($_SESSION['lang'] ?? 'tr') == 'tr' ? 'selected' : '' ?> class="bg-gray-800 text-white">🇹🇷 <?= __('turkish') ?></option>
+                <option value="en" <?= ($_SESSION['lang'] ?? 'tr') == 'en' ? 'selected' : '' ?> class="bg-gray-800 text-white">🇺🇸 <?= __('english') ?></option>
+                <option value="ru" <?= ($_SESSION['lang'] ?? 'tr') == 'ru' ? 'selected' : '' ?> class="bg-gray-800 text-white">🇷🇺 <?= __('russian') ?></option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <i class="fa-solid fa-chevron-down text-white/70 text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Error Message -->
         <?php if (!empty($error)): ?>
           <div class="error-message mb-6 p-4 rounded-xl bg-red-500/30 border-2 border-red-500/50 text-white font-semibold">
@@ -131,6 +150,23 @@
           </div>
         </form>
 
+        <script>
+          function changeLanguage(lang) {
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/VoipPanelAi/change-lang';
+            
+            const langInput = document.createElement('input');
+            langInput.type = 'hidden';
+            langInput.name = 'lang';
+            langInput.value = lang;
+            
+            form.appendChild(langInput);
+            document.body.appendChild(form);
+            form.submit();
+          }
+        </script>
 
         <!-- Enhanced Decorative Elements -->
         <!-- Floating geometric shapes -->
