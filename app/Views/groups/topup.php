@@ -443,17 +443,18 @@
       }
     }
     
-    // Start countdown timer (tamamen client-side, bilgisayar saati)
+    // Start countdown timer (backend created_at + timeout kullanarak)
     function startCountdown() {
       const timeoutMinutes = <?= $cryptoPaymentData['timeout_minutes'] ?? 10 ?>;
+      const createdAtStr = '<?= $cryptoPaymentData['created_at'] ?? '' ?>';
       
-      // Tamamen client-side: Şu anda + 10 dakika
-      const clientStartTime = new Date().getTime(); // Şu anki bilgisayar saati
+      // Backend'den gelen created_at zamanını parse et
+      const createdAtTime = new Date(createdAtStr).getTime();
       const timeoutMs = timeoutMinutes * 60 * 1000; // 10 dakika
-      const clientExpiryTime = clientStartTime + timeoutMs; // Bitiş zamanı
+      const realExpiryTime = createdAtTime + timeoutMs; // Gerçek bitiş zamanı
       
-      // Son Geçerlilik saati: Bilgisayar saati + 10 dakika
-      const expiryTime = new Date(clientExpiryTime);
+      // Son Geçerlilik saati: created_at + 10 dakika (sabit kalır)
+      const expiryTime = new Date(realExpiryTime);
       const expiryTimeElement = document.getElementById('expiryTime');
       if (expiryTimeElement) {
         expiryTimeElement.innerHTML = expiryTime.toLocaleTimeString('tr-TR', {
@@ -465,7 +466,7 @@
       
       countdownInterval = setInterval(function() {
         const now = new Date().getTime(); // Şu anki bilgisayar saati
-        const timeLeft = Math.max(0, clientExpiryTime - now); // Kalan süre
+        const timeLeft = Math.max(0, realExpiryTime - now); // Kalan süre
         
         if (timeLeft > 0) {
           const minutes = Math.floor(timeLeft / (1000 * 60));
