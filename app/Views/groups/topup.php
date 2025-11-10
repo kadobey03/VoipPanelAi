@@ -443,16 +443,16 @@
       }
     }
     
-    // Start countdown timer (backend created_at + timeout kullanarak, kullanıcı yerel zamanında)
+    // Start countdown timer (backend created_at direkt parse, sunucu timezone'ı ile uyumlu)
     function startCountdown() {
       const timeoutMinutes = <?= $cryptoPaymentData['timeout_minutes'] ?? 10 ?>;
       const createdAtStr = '<?= $cryptoPaymentData['created_at'] ?? '' ?>';
       
-      // Backend'den gelen created_at zamanını UTC olarak parse et ve kullanıcının yerel zamanına çevir
-      const createdAtUTC = new Date(createdAtStr + ' UTC'); // UTC olarak parse et
-      const createdAtLocal = createdAtUTC.getTime(); // Yerel zamana otomatik çevrilir
+      // Backend'den gelen created_at zamanını direkt parse et (sunucu timezone'ında)
+      // UTC suffix eklemeyin, JavaScript otomatik olarak local timezone'a göre yorumlar
+      const createdAtTime = new Date(createdAtStr).getTime();
       const timeoutMs = timeoutMinutes * 60 * 1000; // 10 dakika
-      const realExpiryTime = createdAtLocal + timeoutMs; // Gerçek bitiş zamanı (yerel zaman)
+      const realExpiryTime = createdAtTime + timeoutMs; // Gerçek bitiş zamanı
       
       // Son Geçerlilik saati: kullanıcının yerel saat diliminde göster (sabit kalır)
       const expiryTime = new Date(realExpiryTime);
