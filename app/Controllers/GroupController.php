@@ -422,7 +422,7 @@ class GroupController {
         
         // Create dummy wallet record for central wallet (group_id = 0)
         $stmt = $db->prepare(
-            'INSERT INTO crypto_wallets (address, private_key_encrypted, group_id, created_at)
+            'INSERT IGNORE INTO crypto_wallets (address, private_key_encrypted, group_id, created_at)
              VALUES (?, ?, 0, NOW())'
         );
         $encryptedDummy = 'central_wallet_dummy'; // Not a real private key
@@ -430,6 +430,16 @@ class GroupController {
         $stmt->execute();
         $walletId = $stmt->insert_id;
         $stmt->close();
+        
+        // If INSERT IGNORE didn't create new record, get existing one
+        if (!$walletId) {
+            $stmt = $db->prepare('SELECT id FROM crypto_wallets WHERE address = ? AND group_id = 0');
+            $stmt->bind_param('s', $walletAddress);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            $walletId = $result['id'];
+        }
         
         return $walletId;
     }
