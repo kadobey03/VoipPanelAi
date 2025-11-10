@@ -603,7 +603,7 @@ class AgentsController {
                 if ($subscriptionPaid) {
                     // Manuel ödeme - ödendi olarak işaretle
                     $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status, payment_date, payment_method) VALUES (?, ?, ?, ?, "paid", NOW(), "manual")');
-                    $nextPaymentDate = (new DateTime($subscriptionStartDate))->add(new DateInterval('P1M'))->format('Y-m-d');
+                    $nextPaymentDate = (new \DateTime($subscriptionStartDate))->add(new \DateInterval('P1M'))->format('Y-m-d');
                     $stmt->bind_param('iids', $userAgentId, $userId, $product['subscription_monthly_fee'], $nextPaymentDate);
                     $stmt->execute();
                     $stmt->close();
