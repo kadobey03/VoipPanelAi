@@ -1,7 +1,6 @@
 <?php
 namespace App\Helpers;
 
-use phpseclib3\Crypt\Random;
 use phpseclib3\Math\BigInteger;
 
 class TronWallet {
@@ -18,8 +17,8 @@ class TronWallet {
      */
     public function generateWallet() {
         try {
-            // Generate random 32-byte private key
-            $privateKey = Random::string(32);
+            // Generate random 32-byte private key using PHP's secure random
+            $privateKey = random_bytes(32);
             $privateKeyHex = bin2hex($privateKey);
             
             // Generate public key using secp256k1
@@ -257,8 +256,8 @@ class TronWallet {
                 return base64_decode($result['value']);
             }
             
-            // Generate new key
-            $key = Random::string(32);
+            // Generate new key using PHP's secure random
+            $key = random_bytes(32);
             $encodedKey = base64_encode($key);
             
             $stmt = $this->db->prepare(
