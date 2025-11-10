@@ -137,6 +137,11 @@ class GroupController {
             }
         }
         
+        // Check for existing pending crypto payment (prevent duplicates on page refresh)
+        if (!$continuePayment && !$cryptoPaymentData) {
+            $cryptoPaymentData = $this->getExistingPendingPayment($id);
+        }
+        
         if ($_SERVER['REQUEST_METHOD']==='POST') {
             $amount = (float)($_POST['amount'] ?? 0);
             $method = $_POST['method'] ?? ($this->isSuper() ? 'manual' : 'unknown');
@@ -164,11 +169,22 @@ class GroupController {
                     } catch (\Throwable $e) { $db->rollback(); $error = 'Hata: '.$e->getMessage(); }
                 } else {
                     if ($isCrypto) {
+                        // Check if there's already a pending crypto payment
+                        $existingPayment = $this->getExistingPendingPayment($id);
+                        if ($existingPayment) {
+                            // Redirect to continue existing payment (PRG pattern)
+                            $redirectUrl = '/groups/topup?id=' . $id . '&continue_payment=' . $existingPayment['payment_id'];
+                            header('Location: ' . $redirectUrl);
+                            exit;
+                        }
+                        
                         // Create cryptocurrency payment
                         $cryptoResult = $this->createCryptocurrencyPayment($id, (int)($_SESSION['user']['id'] ?? 0), $amount, $method, $methodId);
                         if ($cryptoResult['success']) {
-                            $cryptoPaymentData = $cryptoResult['data'];
-                            $ok = 'Cryptocurrency ödeme sayfası hazırlandı. Lütfen gösterilen adrese ödeme yapın.';
+                            // Redirect to continue payment (PRG pattern)
+                            $redirectUrl = '/groups/topup?id=' . $id . '&continue_payment=' . $cryptoResult['data']['payment_id'];
+                            header('Location: ' . $redirectUrl);
+                            exit;
                         } else {
                             $error = $cryptoResult['error'];
                         }
@@ -417,5 +433,130 @@ class GroupController {
         }
     }
     
+    /**
+     * Get existing pending crypto payment for group
+     */
+    private function getExistingPendingPayment($groupId) {
+        try {
+            $db = DB::conn();
+            $userId = (int)($_SESSION['user']['id'] ?? 0);
+            
+            $stmt = $db->prepare('
+                SELECT cp.id, cp.wallet_address, cp.amount_requested, cp.currency,
+                       cp.network, cp.expired_at, cp.created_at
+                FROM crypto_payments cp
+                JOIN topup_requests tr ON tr.crypto_payment_id = cp.id
+                WHERE cp.group_id = ? AND cp.user_id = ? AND cp.status = ?
+                  AND cp.expired_at > NOW()
+                ORDER BY cp.id DESC
+                LIMIT 1
+            ');
+            
+            $status = 'pending';
+            $stmt->bind_param('iis', $groupId, $userId, $status);
+            $stmt->execute();
+            $payment = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            
+            if (!$payment) {
+                return null;
+            }
+            
+            // Get timeout from created time
+            $createdAt = strtotime($payment['created_at']);
+            $expiryAt = strtotime($payment['expired_at']);
+            $timeoutMinutes = ($expiryAt - $createdAt) / 60;
+            
+            return [
+                'payment_id' => $payment['id'],
+                'wallet_address' => $payment['wallet_address'],
+                'amount' => $payment['amount_requested'],
+                'currency' => $payment['currency'],
+                'network' => $payment['network'],
+                'expires_at' => $payment['expired_at'],
+                'timeout_minutes' => (int)$timeoutMinutes
+            ];
+            
+        } catch (\Exception $e) {
+            error_log('GroupController::getExistingPendingPayment Error: ' . $e->getMessage());
+            return null;
+        }
+    }
     
+    /**
+     * Cancel crypto payment
+     */
+    public function cancelCryptoPayment() {
+        $this->requireSuperOrGroupAdmin();
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+            return;
+        }
+        
+        $input = json_decode(file_get_contents('php://input'), true);
+        $paymentId = (int)($input['payment_id'] ?? 0);
+        $groupId = (int)($input['group_id'] ?? 0);
+        
+        if (!$paymentId || !$groupId) {
+            echo json_encode(['success' => false, 'error' => 'Eksik parametreler']);
+            return;
+        }
+        
+        // Permission check
+        if (!$this->isSuper() && $this->currentGroupId() !== $groupId) {
+            echo json_encode(['success' => false, 'error' => 'Yetkisiz işlem']);
+            return;
+        }
+        
+        try {
+            $db = DB::conn();
+            $userId = (int)($_SESSION['user']['id'] ?? 0);
+            
+            $db->begin_transaction();
+            
+            // Verify payment belongs to user and is cancellable
+            $stmt = $db->prepare('
+                SELECT cp.id, cp.status
+                FROM crypto_payments cp
+                JOIN topup_requests tr ON tr.crypto_payment_id = cp.id
+                WHERE cp.id = ? AND cp.group_id = ? AND cp.user_id = ? AND cp.status = ?
+            ');
+            
+            $pendingStatus = 'pending';
+            $stmt->bind_param('iiis', $paymentId, $groupId, $userId, $pendingStatus);
+            $stmt->execute();
+            $payment = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            
+            if (!$payment) {
+                $db->rollback();
+                echo json_encode(['success' => false, 'error' => 'Ödeme bulunamadı veya iptal edilemez']);
+                return;
+            }
+            
+            // Cancel crypto payment
+            $stmt = $db->prepare('UPDATE crypto_payments SET status = ? WHERE id = ?');
+            $cancelledStatus = 'cancelled';
+            $stmt->bind_param('si', $cancelledStatus, $paymentId);
+            $stmt->execute();
+            $stmt->close();
+            
+            // Cancel topup request
+            $stmt = $db->prepare('UPDATE topup_requests SET status = ? WHERE crypto_payment_id = ?');
+            $stmt->bind_param('si', $cancelledStatus, $paymentId);
+            $stmt->execute();
+            $stmt->close();
+            
+            $db->commit();
+            
+            echo json_encode(['success' => true, 'message' => 'Ödeme başarıyla iptal edildi']);
+            
+        } catch (\Exception $e) {
+            if (isset($db)) $db->rollback();
+            error_log('GroupController::cancelCryptoPayment Error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'error' => 'Sistem hatası']);
+        }
+    }
 }

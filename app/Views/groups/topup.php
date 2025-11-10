@@ -105,8 +105,15 @@
             <div id="expiryTime" class="text-orange-100">--:--</div>
           </div>
         </div>
+        
+        <!-- Cancel Button -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-b-lg border-t border-gray-200 dark:border-gray-700">
+          <button onclick="showCancelModal()"
+                  class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+            ❌ Ödemeyi İptal Et
+          </button>
+        </div>
       </div>
-    </div>
 
     <!-- Success Modal (Hidden by default) -->
     <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
@@ -117,6 +124,42 @@
           <p class="text-gray-600 dark:text-gray-400 mb-4">USDT transferiniz başarıyla onaylandı ve bakiyeniz güncellendi.</p>
           <button onclick="location.reload()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
             Devam Et
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Cancel Confirmation Modal (Hidden by default) -->
+    <div id="cancelModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="text-center">
+          <div class="text-6xl mb-4">⚠️</div>
+          <h3 class="text-xl font-bold text-red-600 mb-2">Ödemeyi İptal Et</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">Bu ödeme talebini iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+          <div class="flex gap-3">
+            <button onclick="hideCancelModal()"
+                    class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium">
+              İptal
+            </button>
+            <button onclick="confirmCancel()"
+                    class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">
+              Evet, İptal Et
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Cancel Success Modal (Hidden by default) -->
+    <div id="cancelSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="text-center">
+          <div class="text-6xl mb-4">✅</div>
+          <h3 class="text-xl font-bold text-green-600 mb-2">İptal Edildi</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">Ödeme talebiniz başarıyla iptal edildi.</p>
+          <button onclick="location.href='/groups/topup?id=<?= $group['id'] ?>'"
+                  class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            Tamam
           </button>
         </div>
       </div>
@@ -394,6 +437,52 @@
           document.getElementById('paymentStatus').className = 'px-3 py-1 rounded-full text-xs font-medium bg-red-500/20 border border-red-300 text-red-700';
         }
       }, 1000);
+    }
+    
+    // Cancel payment functions
+    function showCancelModal() {
+      document.getElementById('cancelModal').classList.remove('hidden');
+    }
+    
+    function hideCancelModal() {
+      document.getElementById('cancelModal').classList.add('hidden');
+    }
+    
+    function confirmCancel() {
+      const paymentId = <?= $cryptoPaymentData['payment_id'] ?? 0 ?>;
+      const groupId = <?= $group['id'] ?? 0 ?>;
+      
+      // Hide cancel modal
+      hideCancelModal();
+      
+      // Send cancel request
+      fetch('/groups/cancel-crypto-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          payment_id: paymentId,
+          group_id: groupId
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Stop timers
+          clearInterval(paymentCheckInterval);
+          clearInterval(countdownInterval);
+          
+          // Show success modal
+          document.getElementById('cancelSuccessModal').classList.remove('hidden');
+        } else {
+          alert('İptal işlemi başarısız: ' + (data.error || 'Bilinmeyen hata'));
+        }
+      })
+      .catch(error => {
+        console.error('Cancel error:', error);
+        alert('İptal işlemi sırasında hata oluştu');
+      });
     }
   </script>
   <?php endif; ?>
