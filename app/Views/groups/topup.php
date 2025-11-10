@@ -10,7 +10,7 @@
   <div class="container mx-auto p-4 max-w-lg">
     <div class="mb-4 flex items-center justify-between">
       <h1 class="text-2xl font-bold">Bakiye Yükle - <?= htmlspecialchars($group['name']) ?></h1>
-      <a href="<?= \App\Helpers\Url::to('/groups') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Geri</a>
+      <a href="<?= \App\Helpers\Url::to('/topups') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Geri</a>
     </div>
     <?php if (!empty($error)): ?>
       <div class="mb-3 p-2 rounded bg-red-100 text-red-700"><?= htmlspecialchars($error) ?></div>
@@ -213,7 +213,7 @@
   
   <!-- Cryptocurrency JavaScript -->
   <?php if (isset($cryptoPaymentData) && $cryptoPaymentData): ?>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script>
     let paymentCheckInterval;
     let countdownInterval;
@@ -252,29 +252,30 @@
     // Generate QR Code
     function generateQRCode() {
       const address = '<?= htmlspecialchars($cryptoPaymentData['wallet_address']) ?>';
-      const amount = '<?= $cryptoPaymentData['amount'] ?>';
-      
-      // Simple TRON address QR (compatible with all wallets)
-      const qrData = address;
-      
       const qrContainer = document.getElementById('qrcode');
-      qrContainer.innerHTML = ''; // Clear previous
       
-      QRCode.toCanvas(qrContainer, qrData, {
-        width: 200,
-        height: 200,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#ffffff'
-        },
-        correctLevel: QRCode.CorrectLevel.M
-      }, function(error) {
-        if (error) {
-          console.error('QR Code generation failed:', error);
-          qrContainer.innerHTML = '<div class="p-4 text-center text-gray-500">QR kod oluşturulamadı</div>';
+      try {
+        // Create QR code using qrcode-generator library
+        const qr = qrcode(0, 'M');
+        qr.addData(address);
+        qr.make();
+        
+        // Generate HTML table and style it
+        const qrHTML = qr.createImgTag(4, 8); // cellSize=4, margin=8
+        qrContainer.innerHTML = qrHTML;
+        
+        // Style the generated image
+        const img = qrContainer.querySelector('img');
+        if (img) {
+          img.style.width = '200px';
+          img.style.height = '200px';
+          img.style.border = '1px solid #ddd';
+          img.style.borderRadius = '8px';
         }
-      });
+      } catch (error) {
+        console.error('QR Code generation failed:', error);
+        qrContainer.innerHTML = '<div class="p-4 text-center text-gray-500 border border-gray-300 rounded-lg">QR kod oluşturulamadı<br><small>Wallet adresini manuel kopyalayın</small></div>';
+      }
     }
     
     // Create progress bar
