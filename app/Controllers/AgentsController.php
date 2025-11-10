@@ -306,6 +306,22 @@ class AgentsController {
         error_log("AgentsByGroup keys: " . implode(', ', array_keys($agentsByGroup)));
         error_log("=== END DEBUG ===");
 
+        // Debug bilgilerini view'a geç
+        $debugInfo = [
+            'userGroupName' => $userGroupName,
+            'userApiGroupName' => $userApiGroupName,
+            'groupId' => $groupId ?? 'none',
+            'isSuper' => $isSuper,
+            'isGroupAdmin' => $isGroupAdmin ?? false,
+            'isUser' => $isUser ?? false,
+            'isGroupMember' => $isGroupMember ?? false,
+            'totalAgentsDbBeforeFilter' => count($db->query('SELECT * FROM agents')->fetch_all(MYSQLI_ASSOC)),
+            'agentsAfterFilter' => count($agents),
+            'agentsByGroupKeys' => array_keys($agentsByGroup),
+            'rawAgentsDb' => $agentsDb,
+            'filteredAgents' => $agents
+        ];
+
         require __DIR__.'/../Views/agents/index.php';
     }
 

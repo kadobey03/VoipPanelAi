@@ -120,6 +120,34 @@
       </div>
     </div>
 
+    <!-- Debug Info -->
+    <?php if (isset($debugInfo)): ?>
+    <div class="mb-8">
+      <div class="bg-red-50 dark:bg-red-900/20 rounded-2xl shadow-xl p-6 border border-red-200/50 dark:border-red-700/50">
+        <h3 class="text-xl font-bold text-red-800 dark:text-red-300 mb-4">🐛 DEBUG BİLGİLERİ</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div><strong>User Group Name:</strong> '<?php echo htmlspecialchars($debugInfo['userGroupName'] ?? 'NULL'); ?>'</div>
+          <div><strong>User API Group Name:</strong> '<?php echo htmlspecialchars($debugInfo['userApiGroupName'] ?? 'NULL'); ?>'</div>
+          <div><strong>Group ID:</strong> <?php echo htmlspecialchars($debugInfo['groupId'] ?? 'NULL'); ?></div>
+          <div><strong>Is Super:</strong> <?php echo $debugInfo['isSuper'] ? 'YES' : 'NO'; ?></div>
+          <div><strong>Is Group Admin:</strong> <?php echo $debugInfo['isGroupAdmin'] ? 'YES' : 'NO'; ?></div>
+          <div><strong>Is User:</strong> <?php echo $debugInfo['isUser'] ? 'YES' : 'NO'; ?></div>
+          <div><strong>Total Agents Before Filter:</strong> <?php echo $debugInfo['totalAgentsDbBeforeFilter'] ?? '0'; ?></div>
+          <div><strong>Agents After Filter:</strong> <?php echo $debugInfo['agentsAfterFilter'] ?? '0'; ?></div>
+        </div>
+        <div class="mt-4">
+          <strong>AgentsByGroup Keys:</strong> <?php echo implode(', ', $debugInfo['agentsByGroupKeys'] ?? []); ?>
+        </div>
+        <div class="mt-4">
+          <strong>Raw Agents DB (ilk 5):</strong>
+          <pre class="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-2"><?php
+          echo json_encode(array_slice($debugInfo['rawAgentsDb'] ?? [], 0, 5), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+          ?></pre>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Agents Grid -->
     <?php if ($isSuper): ?>
       <!-- Super Admin View -->
