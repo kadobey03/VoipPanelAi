@@ -389,7 +389,7 @@
       const paymentId = <?= $cryptoPaymentData['payment_id'] ?? 0 ?>;
       const address = '<?= htmlspecialchars($cryptoPaymentData['wallet_address']) ?>';
       
-      fetch('<?= \App\Helpers\Url::to('/api/check-payment-status') ?>', {
+      fetch('<?= \App\Helpers\Url::to('/api/check-payment-status.php') ?>', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
