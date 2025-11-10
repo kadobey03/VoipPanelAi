@@ -128,6 +128,15 @@ class GroupController {
         
         $error=null; $ok=null; $cryptoPaymentData = null;
         
+        // Check if continuing existing crypto payment
+        $continuePayment = (int)($_GET['continue_payment'] ?? 0);
+        if ($continuePayment) {
+            $cryptoPaymentData = $this->loadExistingCryptoPayment($continuePayment, $id);
+            if (!$cryptoPaymentData) {
+                $error = 'Ödeme bulunamadı veya süresi geçmiş';
+            }
+        }
+        
         if ($_SERVER['REQUEST_METHOD']==='POST') {
             $amount = (float)($_POST['amount'] ?? 0);
             $method = $_POST['method'] ?? ($this->isSuper() ? 'manual' : 'unknown');
@@ -300,6 +309,60 @@ class GroupController {
             if (isset($db)) $db->rollback();
             error_log('GroupController::createCryptocurrencyPayment Error: ' . $e->getMessage());
             return ['success' => false, 'error' => 'Sistem hatası: ' . $e->getMessage()];
+        }
+    }
+    
+    /**
+     * Load existing crypto payment data
+     */
+    private function loadExistingCryptoPayment($paymentId, $groupId) {
+        try {
+            $db = DB::conn();
+            
+            // Get crypto payment with permission check
+            $stmt = $db->prepare('
+                SELECT cp.*, tr.group_id, tr.user_id
+                FROM crypto_payments cp
+                JOIN topup_requests tr ON tr.crypto_payment_id = cp.id
+                WHERE cp.id = ? AND tr.group_id = ?
+            ');
+            $stmt->bind_param('ii', $paymentId, $groupId);
+            $stmt->execute();
+            $payment = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            
+            if (!$payment) {
+                return null;
+            }
+            
+            // Check if payment is still valid (10 minutes)
+            $expiredAt = strtotime($payment['expired_at']);
+            $now = time();
+            
+            if ($now > $expiredAt || $payment['status'] !== 'pending') {
+                // Mark as expired if still pending
+                if ($payment['status'] === 'pending') {
+                    $stmt = $db->prepare('UPDATE crypto_payments SET status = ? WHERE id = ?');
+                    $expiredStatus = 'expired';
+                    $stmt->bind_param('si', $expiredStatus, $paymentId);
+                    $stmt->execute();
+                    $stmt->close();
+                }
+                return null;
+            }
+            
+            return [
+                'payment_id' => $payment['id'],
+                'wallet_address' => $payment['wallet_address'],
+                'amount' => $payment['amount_requested'],
+                'currency' => $payment['currency'],
+                'network' => $payment['network'],
+                'expires_at' => $payment['expired_at']
+            ];
+            
+        } catch (\Exception $e) {
+            error_log('GroupController::loadExistingCryptoPayment Error: ' . $e->getMessage());
+            return null;
         }
     }
 

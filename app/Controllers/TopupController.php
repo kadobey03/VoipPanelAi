@@ -301,6 +301,67 @@ class TopupController {
     }
     
     /**
+     * Continue crypto payment process
+     */
+    public function continueCrypto() {
+            $this->start();
+            
+            $paymentId = (int)($_GET['payment_id'] ?? 0);
+            if (!$paymentId) {
+                \App\Helpers\Url::redirect('/topups');
+                return;
+            }
+            
+            $db = DB::conn();
+            
+            // Get crypto payment details with permission check
+            $stmt = $db->prepare('
+                SELECT cp.*, tr.group_id, tr.user_id, tr.amount as requested_amount
+                FROM crypto_payments cp
+                JOIN topup_requests tr ON tr.crypto_payment_id = cp.id
+                WHERE cp.id = ?
+            ');
+            $stmt->bind_param('i', $paymentId);
+            $stmt->execute();
+            $payment = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            
+            if (!$payment) {
+                \App\Helpers\Url::redirect('/topups?error=payment_not_found');
+                return;
+            }
+            
+            // Check permission (same group or super admin)
+            $userGroupId = (int)($_SESSION['user']['group_id'] ?? 0);
+            if (!$this->isSuper() && $userGroupId !== (int)$payment['group_id']) {
+                \App\Helpers\Url::redirect('/topups?error=unauthorized');
+                return;
+            }
+            
+            // Check if payment is still valid (10 minutes)
+            $expiredAt = strtotime($payment['expired_at']);
+            $now = time();
+            
+            if ($now > $expiredAt) {
+                // Mark as expired if not already
+                if ($payment['status'] === 'pending') {
+                    $stmt = $db->prepare('UPDATE crypto_payments SET status = ? WHERE id = ?');
+                    $expiredStatus = 'expired';
+                    $stmt->bind_param('si', $expiredStatus, $paymentId);
+                    $stmt->execute();
+                    $stmt->close();
+                }
+                \App\Helpers\Url::redirect('/topups?error=payment_expired');
+                return;
+            }
+            
+            // Redirect to payment page with all necessary data
+            $groupId = $payment['group_id'];
+            \App\Helpers\Url::redirect("/groups/topup?id={$groupId}&continue_payment={$paymentId}");
+        }
+    }
+    
+    /**
      * Get setting value
      */
     private function getSetting($name) {

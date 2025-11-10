@@ -74,6 +74,7 @@ $router->add('GET', '/topups/receipt', 'TopupController@receipt');
 $router->add('GET', '/topups/crypto/status', 'TopupController@checkCryptoStatus');
 $router->add('GET', '/topups/crypto/transaction', 'TopupController@getCryptoTransactionDetails');
 $router->add('POST', '/topups/crypto/approve', 'TopupController@approveCrypto');
+$router->add('GET', '/topups/crypto/continue', 'TopupController@continueCrypto');
 
 // Profile
 $router->add('GET', '/profile', 'ProfileController@index');

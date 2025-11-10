@@ -28,8 +28,27 @@
           <td class="p-2"><?= number_format((float)$it['amount'],2) ?></td>
           <td class="p-2"><?= htmlspecialchars($it['method']) ?></td>
           <td class="p-2 capitalize">
-            <?php $st=$it['status']; $cls=$st==='approved'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200':($st==='rejected'?'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200':'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'); ?>
+            <?php
+            $st = $it['status'];
+            $isCrypto = !empty($it['currency']); // Crypto payment if currency field exists
+            
+            // Check if crypto payment has expired (10 minutes)
+            $isExpired = false;
+            if ($isCrypto && $st === 'pending' && !empty($it['crypto_expired_at'])) {
+                $isExpired = strtotime($it['crypto_expired_at']) < time();
+            }
+            
+            if ($isExpired) {
+                $st = 'İptal oldu';
+                $cls = 'bg-gray-100 text-gray-700 dark:bg-gray-900/40 dark:text-gray-200';
+            } else {
+                $cls = $st==='approved'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200':($st==='rejected'?'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200':'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200');
+            }
+            ?>
             <span class="px-2 py-0.5 rounded text-xs <?= $cls ?>"><?= htmlspecialchars($st) ?></span>
+            <?php if ($isCrypto && $it['status'] === 'pending' && !$isExpired && !empty($it['crypto_payment_id'])): ?>
+              <br><a class="text-blue-600 hover:underline text-xs mt-1 inline-block" href="<?= \App\Helpers\Url::to('/topups/crypto/continue') ?>?payment_id=<?= (int)$it['crypto_payment_id'] ?>">Görüntüle</a>
+            <?php endif; ?>
           </td>
           <td class="p-2"><?= htmlspecialchars($it['created_at']) ?></td>
           <td class="p-2"><?= htmlspecialchars((string)$it['note']) ?></td>
