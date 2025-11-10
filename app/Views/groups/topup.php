@@ -264,24 +264,69 @@
     // Copy address to clipboard
     function copyAddress() {
       const addressInput = document.getElementById('walletAddress');
+      const addressText = addressInput.value;
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(addressText).then(function() {
+          // Success with modern API
+          showCopySuccess(btn, originalText);
+        }).catch(function() {
+          // Fallback to legacy method
+          legacyCopyToClipboard(addressInput, btn, originalText);
+        });
+      } else {
+        // Use legacy method directly
+        legacyCopyToClipboard(addressInput, btn, originalText);
+      }
+    }
+    
+    // Legacy clipboard copy method
+    function legacyCopyToClipboard(inputElement, btn, originalText) {
+      try {
+        // Select and copy using old method
+        inputElement.select();
+        inputElement.setSelectionRange(0, 99999);
+        
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showCopySuccess(btn, originalText);
+        } else {
+          showCopyError();
+        }
+      } catch (err) {
+        console.error('Copy failed:', err);
+        showCopyError();
+      }
+      
+      // Clear selection
+      if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+      }
+    }
+    
+    // Show copy success feedback
+    function showCopySuccess(btn, originalText) {
+      btn.innerHTML = '✅ Kopyalandı!';
+      btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+      btn.classList.add('bg-green-600', 'hover:bg-green-700');
+      
+      setTimeout(function() {
+        btn.innerHTML = originalText;
+        btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+      }, 2000);
+    }
+    
+    // Show copy error with manual selection
+    function showCopyError() {
+      const addressInput = document.getElementById('walletAddress');
       addressInput.select();
       addressInput.setSelectionRange(0, 99999);
       
-      navigator.clipboard.writeText(addressInput.value).then(function() {
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '✅ Kopyalandı!';
-        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-        btn.classList.add('bg-green-600', 'hover:bg-green-700');
-        
-        setTimeout(function() {
-          btn.innerHTML = originalText;
-          btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-          btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-        }, 2000);
-      }).catch(function() {
-        alert('Kopyalama başarısız. Lütfen manuel olarak kopyalayın.');
-      });
+      alert('Otomatik kopyalama başarısız.\n\nAdres şu anda seçilmiş durumda.\nLütfen Ctrl+C (Windows/Linux) veya Cmd+C (Mac) ile kopyalayın.');
     }
     
     // Initialize everything when page loads
