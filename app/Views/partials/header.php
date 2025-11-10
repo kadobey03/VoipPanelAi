@@ -14,20 +14,20 @@ function __($key) {
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <meta name="theme-color" content="#3b82f6">
-   <link rel="manifest" href="/manifest.json">
-   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+   <link rel="manifest" href="/VoipPanelAi/manifest.json">
+   <link rel="icon" href="/VoipPanelAi/favicon.ico" type="image/x-icon">
    <meta name="description" content="PapaM VoIP Panel - VoIP çağrı yönetimi ve raporlama sistemi">
    <meta name="keywords" content="voip, çağrı, panel, rapor, telefon, iletişim, voip panel, çağrı merkezi">
    <meta property="og:title" content="PapaM VoIP Panel">
    <meta property="og:description" content="VoIP çağrı yönetimi ve raporlama sistemi">
-   <meta property="og:image" content="/assets/images/seo-image.png">
+   <meta property="og:image" content="/VoipPanelAi/public/assets/images/seo-image.png">
    <meta property="og:type" content="website">
    <title><?= isset($title) ? htmlspecialchars($title) : 'PapaM VoIP Panel' ?></title>
    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet">
    <?php if (isset($title) && strpos($title, 'Giriş') !== false): ?>
-   <link href="/assets/css/login-animations.css" rel="stylesheet">
-   <script src="/assets/js/login.js" defer></script>
+   <link href="/VoipPanelAi/public/assets/css/login-animations.css" rel="stylesheet">
+   <script src="/VoipPanelAi/public/assets/js/login.js" defer></script>
    <?php endif; ?>
   <script>
     try{
@@ -267,7 +267,7 @@ function __($key) {
 
               <!-- Language Dropdown -->
               <div id="lang-menu" class="absolute hidden right-0 mt-2 w-32 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/20 py-2 z-50">
-                <form method="post" action="/change-lang">
+                <form method="post" action="/VoipPanelAi/change-lang">
                   <button type="submit" name="lang" value="tr" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
                     <span class="text-lg">🇹🇷</span>
                     <span class="text-sm font-medium text-slate-800 dark:text-white"><?= __('turkish') ?: 'Türkçe' ?></span>
@@ -728,7 +728,7 @@ function __($key) {
   </script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
+      navigator.serviceWorker.register('/VoipPanelAi/sw.js')
         .then(registration => console.log('SW registered'))
         .catch(error => console.log('SW registration failed'));
     }
