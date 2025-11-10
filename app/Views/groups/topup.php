@@ -398,23 +398,17 @@
       }
     }
     
-    // Start countdown timer (using real payment creation time)
+    // Start countdown timer (tamamen client-side, bilgisayar saati)
     function startCountdown() {
-      const createdAtStr = '<?= $cryptoPaymentData['created_at'] ?? '' ?>';
       const timeoutMinutes = <?= $cryptoPaymentData['timeout_minutes'] ?? 10 ?>;
       
-      if (!createdAtStr) {
-        console.error('Payment creation time not available');
-        return;
-      }
+      // Tamamen client-side: Şu anda + 10 dakika
+      const clientStartTime = new Date().getTime(); // Şu anki bilgisayar saati
+      const timeoutMs = timeoutMinutes * 60 * 1000; // 10 dakika
+      const clientExpiryTime = clientStartTime + timeoutMs; // Bitiş zamanı
       
-      // Parse payment creation time (server time)
-      const paymentCreatedAt = new Date(createdAtStr).getTime();
-      const timeoutMs = timeoutMinutes * 60 * 1000; // Convert to milliseconds
-      const paymentExpiryTime = paymentCreatedAt + timeoutMs;
-      
-      // Calculate and display expiry time
-      const expiryTime = new Date(paymentExpiryTime);
+      // Son Geçerlilik saati: Bilgisayar saati + 10 dakika
+      const expiryTime = new Date(clientExpiryTime);
       const expiryTimeElement = document.getElementById('expiryTime');
       if (expiryTimeElement) {
         expiryTimeElement.innerHTML = expiryTime.toLocaleTimeString('tr-TR', {
@@ -425,8 +419,8 @@
       }
       
       countdownInterval = setInterval(function() {
-        const now = new Date().getTime(); // Current client time
-        const timeLeft = Math.max(0, paymentExpiryTime - now); // Remaining time from expiry
+        const now = new Date().getTime(); // Şu anki bilgisayar saati
+        const timeLeft = Math.max(0, clientExpiryTime - now); // Kalan süre
         
         if (timeLeft > 0) {
           const minutes = Math.floor(timeLeft / (1000 * 60));
