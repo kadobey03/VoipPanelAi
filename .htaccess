@@ -5,6 +5,9 @@
   # Serve assets from public directory
   RewriteRule ^assets/(.*)$ public/assets/$1 [L,NC]
 
+  # API requests - serve directly from api directory
+  RewriteRule ^api/(.*)$ api/$1 [L,NC]
+
   # Installer shortcut
   RewriteRule ^install/?$ install/index.php [L,NC]
 
