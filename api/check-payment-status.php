@@ -143,18 +143,14 @@ try {
     
     // Initialize TRON client for blockchain check with error handling
     try {
-        // Check if GuzzleHttp is available
-        if (!class_exists('GuzzleHttp\Client')) {
-            error_log('GuzzleHttp\Client class not found - composer dependencies missing');
-            echo json_encode([
-                'status' => 'waiting',
-                'confirmations' => 0,
-                'message' => 'Blockchain servisi başlatılamıyor. Lütfen composer install çalıştırın.'
-            ]);
-            exit;
+        // Try to use GuzzleHttp version first, fallback to curl version
+        if (class_exists('GuzzleHttp\Client')) {
+            error_log('Debug - Using GuzzleHttp TronClient');
+            $tronClient = new TronClient();
+        } else {
+            error_log('Debug - Using cURL TronClient as fallback');
+            $tronClient = new \App\Helpers\TronClientCurl();
         }
-        
-        $tronClient = new TronClient();
     } catch (\Exception $e) {
         error_log('TronClient initialization error: ' . $e->getMessage());
         echo json_encode([
@@ -164,12 +160,20 @@ try {
         exit;
     } catch (\Error $e) {
         error_log('TronClient fatal error: ' . $e->getMessage());
-        echo json_encode([
-            'status' => 'waiting',
-            'confirmations' => 0,
-            'message' => 'Sistem bağımlılıkları eksik. Composer install gerekli.'
-        ]);
-        exit;
+        
+        // Try cURL version as last resort
+        try {
+            error_log('Debug - Trying cURL TronClient as last resort');
+            $tronClient = new \App\Helpers\TronClientCurl();
+        } catch (\Throwable $e2) {
+            error_log('cURL TronClient also failed: ' . $e2->getMessage());
+            echo json_encode([
+                'status' => 'waiting',
+                'confirmations' => 0,
+                'message' => 'Blockchain servisi geçici olarak kullanılamıyor'
+            ]);
+            exit;
+        }
     }
     
     // Get USDT TRC20 balance for the wallet
