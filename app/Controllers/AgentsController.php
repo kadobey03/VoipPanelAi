@@ -523,7 +523,7 @@ class AgentsController {
             $stmt = $db->prepare('INSERT INTO user_agents (user_id, group_id, agent_product_id, agent_number, status, is_lifetime, next_subscription_due) VALUES (?, ?, ?, ?, "active", ?, ?)');
             $isLifetime = $product['is_subscription'] ? 0 : 1;
             $nextDue = $product['is_subscription'] ? date('Y-m-d H:i:s', strtotime('+1 month')) : null;
-            $stmt->bind_param('iiisos', $userId, $groupId, $productId, $agentNumber, $isLifetime, $nextDue);
+            $stmt->bind_param('iiisis', $userId, $groupId, $productId, $agentNumber, $isLifetime, $nextDue);
             $stmt->execute();
             $userAgentId = $db->insert_id;
             $stmt->close();
