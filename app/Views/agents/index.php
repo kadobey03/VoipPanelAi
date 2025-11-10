@@ -145,7 +145,8 @@
                 <?php
                 // Agent'ın abonelik durumunu kontrol et
                 $userAgents = [];
-                if ($isSuper) {
+                $isGroupAdmin = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'groupadmin';
+                if ($isSuper || $isGroupAdmin) {
                   $agentExten = $a['exten'] ?? '';
                   $agentLogin = $a['user_login'] ?? '';
                   $agentGroup = $a['group_name'] ?? '';
@@ -203,13 +204,35 @@
                     // Bulunan kullanıcıların aktif agent aboneliklerini getir
                     if (!empty($userIds)) {
                       $placeholders = str_repeat('?,', count($userIds) - 1) . '?';
+                      
+                      // Group admin için sadece kendi grubundaki abonelikleri getir
+                      $groupFilter = '';
+                      $bindParams = $userIds;
+                      $bindTypes = str_repeat('i', count($userIds));
+                      
+                      if ($isGroupAdmin && !$isSuper) {
+                        $userGroupId = $_SESSION['user']['group_id'] ?? 0;
+                        $groupFilter = ' AND ua.group_id = ?';
+                        $bindParams[] = $userGroupId;
+                        $bindTypes .= 'i';
+                      }
+                      
+                      // Agent'a özel abonelik filtresi ekle
+                      $agentFilter = '';
+                      if ($agentExten) {
+                        $agentFilter = " AND (ua.agent_exten = ? OR ua.agent_exten IS NULL)";
+                        $bindParams[] = $agentExten;
+                        $bindTypes .= 's';
+                      }
+                      
                       $stmt = $db->prepare("
-                        SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee, ap.phone_prefix
+                        SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee, ap.phone_prefix,
+                               ua.created_at as subscription_start, ua.next_subscription_due as subscription_end
                         FROM user_agents ua
                         JOIN agent_products ap ON ua.agent_product_id = ap.id
-                        WHERE ua.user_id IN ($placeholders) AND ua.status = 'active'
+                        WHERE ua.user_id IN ($placeholders) AND ua.status = 'active' $groupFilter $agentFilter
                       ");
-                      $stmt->bind_param(str_repeat('i', count($userIds)), ...$userIds);
+                      $stmt->bind_param($bindTypes, ...$bindParams);
                       $stmt->execute();
                       $userAgents = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                       $stmt->close();
@@ -287,22 +310,72 @@
                     <!-- Abonelikler -->
                     <?php if (!empty($userAgents)): ?>
                     <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-3 mb-4">
-                      <h5 class="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-2">
-                        <i class="fa-solid fa-crown mr-1"></i>Aktif Abonelikler
+                      <h5 class="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-3">
+                        <i class="fa-solid fa-crown mr-1"></i>Aktif Abonelikler (<?php echo count($userAgents); ?>)
                       </h5>
                       <?php foreach ($userAgents as $userAgent): ?>
-                      <div class="flex justify-between items-center text-xs mb-1 last:mb-0">
-                        <span class="text-purple-700 dark:text-purple-400"><?php echo htmlspecialchars($userAgent['product_name']); ?></span>
-                        <div class="flex items-center gap-2">
-                          <span class="text-purple-800 dark:text-purple-300 font-medium">#<?php echo htmlspecialchars($userAgent['agent_number']); ?></span>
+                      <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-2 mb-2 last:mb-0">
+                        <div class="flex justify-between items-start mb-1">
+                          <span class="text-purple-700 dark:text-purple-400 font-medium text-xs">
+                            <?php echo htmlspecialchars($userAgent['product_name']); ?>
+                          </span>
                           <?php if ($isSuper): ?>
                           <form method="post" action="/VoipPanelAi/agents/remove-subscription" class="inline">
                             <input type="hidden" name="user_agent_id" value="<?php echo $userAgent['id']; ?>">
                             <button type="submit" onclick="return confirm('Bu aboneliği iptal etmek istediğinizden emin misiniz?')"
-                                    class="text-red-500 hover:text-red-700 text-xs">
+                                    class="text-red-500 hover:text-red-700 text-xs ml-1">
                               <i class="fa-solid fa-times"></i>
                             </button>
                           </form>
+                          <?php endif; ?>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-1 text-xs">
+                          <div class="flex items-center gap-1">
+                            <i class="fa-solid fa-phone text-purple-600 text-xs"></i>
+                            <span class="text-purple-800 dark:text-purple-300 font-medium">
+                              #<?php echo htmlspecialchars($userAgent['agent_number']); ?>
+                            </span>
+                          </div>
+                          
+                          <div class="flex items-center gap-1">
+                            <i class="fa-solid fa-dollar-sign text-emerald-600 text-xs"></i>
+                            <span class="text-emerald-700 dark:text-emerald-400 font-medium">
+                              $<?php echo number_format($userAgent['subscription_monthly_fee'] ?? 0, 2); ?>
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div class="mt-1 text-xs space-y-1">
+                          <?php if (!empty($userAgent['subscription_start'])): ?>
+                          <div class="flex items-center justify-between">
+                            <span class="text-slate-600 dark:text-slate-400">
+                              <i class="fa-solid fa-calendar-plus text-xs mr-1"></i>Başlangıç:
+                            </span>
+                            <span class="text-slate-700 dark:text-slate-300 font-medium">
+                              <?php echo date('d.m.Y', strtotime($userAgent['subscription_start'])); ?>
+                            </span>
+                          </div>
+                          <?php endif; ?>
+                          
+                          <?php if (!empty($userAgent['subscription_end'])): ?>
+                          <div class="flex items-center justify-between">
+                            <span class="text-slate-600 dark:text-slate-400">
+                              <i class="fa-solid fa-calendar-check text-xs mr-1"></i>Sonraki Ödeme:
+                            </span>
+                            <span class="text-slate-700 dark:text-slate-300 font-medium">
+                              <?php
+                              $nextDate = strtotime($userAgent['subscription_end']);
+                              $daysLeft = ceil(($nextDate - time()) / (24 * 3600));
+                              echo date('d.m.Y', $nextDate);
+                              if ($daysLeft >= 0) {
+                                echo " <span class='text-xs text-blue-600'>($daysLeft gün)</span>";
+                              } else {
+                                echo " <span class='text-xs text-red-600'>(" . abs($daysLeft) . " gün gecikmiş)</span>";
+                              }
+                              ?>
+                            </span>
+                          </div>
                           <?php endif; ?>
                         </div>
                       </div>
@@ -331,18 +404,25 @@
                       </button>
 
                       <!-- Add/Edit Subscription Button -->
-                      <?php if (!empty($userAgents)): ?>
-                      <button onclick="openEditSubscriptionModal('<?php echo htmlspecialchars($a['exten']); ?>', '<?php echo htmlspecialchars($a['user_login'] ?? ''); ?>', <?php echo htmlspecialchars(json_encode($userAgents)); ?>)"
-                              class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
-                        <i class="fa-solid fa-edit mr-2"></i>
-                        Abonelik Düzenle
-                      </button>
-                      <?php else: ?>
-                      <button onclick="openAddSubscriptionModal('<?php echo htmlspecialchars($a['exten']); ?>', '<?php echo htmlspecialchars($a['user_login'] ?? ''); ?>')"
-                              class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
-                        <i class="fa-solid fa-plus mr-2"></i>
-                        Abonelik Ekle
-                      </button>
+                      <?php if ($isSuper): ?>
+                        <?php if (!empty($userAgents)): ?>
+                        <button onclick="openEditSubscriptionModal('<?php echo htmlspecialchars($a['exten']); ?>', '<?php echo htmlspecialchars($a['user_login'] ?? ''); ?>', <?php echo htmlspecialchars(json_encode($userAgents)); ?>)"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+                          <i class="fa-solid fa-edit mr-2"></i>
+                          Abonelik Düzenle
+                        </button>
+                        <?php else: ?>
+                        <button onclick="openAddSubscriptionModal('<?php echo htmlspecialchars($a['exten']); ?>', '<?php echo htmlspecialchars($a['user_login'] ?? ''); ?>')"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+                          <i class="fa-solid fa-plus mr-2"></i>
+                          Abonelik Ekle
+                        </button>
+                        <?php endif; ?>
+                      <?php elseif ($isGroupAdmin && !empty($userAgents)): ?>
+                        <div class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-xl shadow-lg">
+                          <i class="fa-solid fa-info-circle mr-2"></i>
+                          Abonelik Detayları Görüntüleniyor
+                        </div>
                       <?php endif; ?>
                     </div>
                     <?php else: ?>

@@ -470,6 +470,13 @@ class AgentsController {
 
         $db = DB::conn();
         $this->createAgentPurchaseTables();
+        
+        // Auto-migrate: user_agents tablosuna agent_exten kolonu ekle
+        try {
+            $db->query('SELECT agent_exten FROM user_agents LIMIT 1');
+        } catch (\Throwable $e) {
+            $db->query('ALTER TABLE user_agents ADD COLUMN agent_exten VARCHAR(20) AFTER agent_number');
+        }
 
         try {
             $db->begin_transaction();
@@ -590,10 +597,10 @@ class AgentsController {
             }
 
             // User agent oluştur - created_at başlangıç tarihi olacak
-            $stmt = $db->prepare('INSERT INTO user_agents (user_id, group_id, agent_product_id, agent_number, status, is_lifetime, next_subscription_due, created_at) VALUES (?, ?, ?, ?, "active", ?, ?, ?)');
+            $stmt = $db->prepare('INSERT INTO user_agents (user_id, group_id, agent_product_id, agent_number, agent_exten, status, is_lifetime, next_subscription_due, created_at) VALUES (?, ?, ?, ?, ?, "active", ?, ?, ?)');
             $isLifetime = $product['is_subscription'] ? 0 : 1;
             $createdAt = $subscriptionStartDate . ' ' . date('H:i:s');
-            $stmt->bind_param('iiisiss', $userId, $groupId, $productId, $agentNumber, $isLifetime, $nextDue, $createdAt);
+            $stmt->bind_param('iiississs', $userId, $groupId, $productId, $agentNumber, $exten, $isLifetime, $nextDue, $createdAt);
             $stmt->execute();
             $userAgentId = $db->insert_id;
             $stmt->close();
@@ -1047,8 +1054,8 @@ class AgentsController {
             // Agent numarası oluştur
             $agentNumber = $this->generateAgentNumber($product['phone_prefix']);
             
-            // Kullanıcı agenti oluştur
-            $stmt = $db->prepare('INSERT INTO user_agents (user_id, group_id, agent_product_id, agent_number, status, is_lifetime, next_subscription_due) VALUES (?, ?, ?, ?, "active", ?, ?)');
+            // Kullanıcı agenti oluştur - agent_exten ekle
+            $stmt = $db->prepare('INSERT INTO user_agents (user_id, group_id, agent_product_id, agent_number, agent_exten, status, is_lifetime, next_subscription_due) VALUES (?, ?, ?, ?, NULL, "active", ?, ?)');
             $isLifetime = $product['is_subscription'] ? 0 : 1;
             $nextDue = $product['is_subscription'] ? date('Y-m-d H:i:s', strtotime('+1 month')) : null;
             $stmt->bind_param('iiisos', $userId, $groupId, $productId, $agentNumber, $isLifetime, $nextDue);
