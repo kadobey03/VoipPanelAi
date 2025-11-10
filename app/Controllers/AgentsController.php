@@ -486,9 +486,10 @@ class AgentsController {
             $userId = 0;
             
             if ($agent['group_name']) {
-                // Grup ID'sini bul
-                $stmt = $db->prepare('SELECT id FROM groups WHERE name = ? OR api_group_name = ? LIMIT 1');
-                $stmt->bind_param('ss', $agent['group_name'], $agent['group_name']);
+                // Grup ID'sini bul - daha esnek arama
+                $stmt = $db->prepare('SELECT id FROM groups WHERE name = ? OR api_group_name = ? OR name LIKE ? OR api_group_name LIKE ? LIMIT 1');
+                $groupPattern = '%' . $agent['group_name'] . '%';
+                $stmt->bind_param('ssss', $agent['group_name'], $agent['group_name'], $groupPattern, $groupPattern);
                 $stmt->execute();
                 $groupResult = $stmt->get_result()->fetch_assoc();
                 if ($groupResult) $groupId = $groupResult['id'];
@@ -496,17 +497,35 @@ class AgentsController {
                 
                 // Bu grubun adminini bul
                 if ($groupId) {
-                    $stmt = $db->prepare('SELECT id FROM users WHERE group_id = ? AND role = "groupadmin" LIMIT 1');
+                    $stmt = $db->prepare('SELECT id, login FROM users WHERE group_id = ? AND role = "groupadmin" LIMIT 1');
                     $stmt->bind_param('i', $groupId);
                     $stmt->execute();
                     $adminResult = $stmt->get_result()->fetch_assoc();
                     if ($adminResult) $userId = $adminResult['id'];
                     $stmt->close();
                 }
+                
+                // Eğer hala admin bulunamazsa, superadmin kullan
+                if (!$userId) {
+                    $stmt = $db->prepare('SELECT id FROM users WHERE role = "superadmin" LIMIT 1');
+                    $stmt->execute();
+                    $superAdminResult = $stmt->get_result()->fetch_assoc();
+                    if ($superAdminResult) {
+                        $userId = $superAdminResult['id'];
+                        // Superadmin'in grup ID'sini al veya 0 olarak bırak
+                        $stmt2 = $db->prepare('SELECT group_id FROM users WHERE id = ?');
+                        $stmt2->bind_param('i', $userId);
+                        $stmt2->execute();
+                        $userGroupResult = $stmt2->get_result()->fetch_assoc();
+                        $groupId = $userGroupResult['group_id'] ?? 0;
+                        $stmt2->close();
+                    }
+                    $stmt->close();
+                }
             }
             
             if (!$userId) {
-                throw new \Exception('Agent\'ın grubunun yöneticisi bulunamadı. Grup: ' . ($agent['group_name'] ?? 'bilinmeyen'));
+                throw new \Exception('Abonelik sahibi bulunamadı. Agent grubu: ' . ($agent['group_name'] ?? 'bilinmeyen') . '. Sistem adminini kontrol edin.');
             }
 
             // Agent numarası kullanıcıdan gelen veya otomatik oluştur
