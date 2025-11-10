@@ -1,7 +1,9 @@
 <?php
 // Agent liste güncelleme cron job'u
-require_once __DIR__.'/app/Helpers/ApiClient.php';
-require_once __DIR__.'/app/Helpers/DB.php';
+require_once __DIR__.'/config/bootstrap.php';
+
+use App\Helpers\ApiClient;
+use App\Helpers\DB;
 
 $logFile = __DIR__.'/cron_agents.log';
 
