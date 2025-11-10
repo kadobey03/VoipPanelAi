@@ -344,7 +344,7 @@
       const paymentId = <?= $cryptoPaymentData['payment_id'] ?? 0 ?>;
       const address = '<?= htmlspecialchars($cryptoPaymentData['wallet_address']) ?>';
       
-      fetch('/api/check-payment-status', {
+      fetch('<?= \App\Helpers\Url::to('/api/check-payment-status') ?>', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -465,7 +465,7 @@
       statusElement.className = 'px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 border border-gray-300';
       
       // Send cancel request
-      fetch('/groups/cancel-crypto-payment', {
+      fetch('<?= \App\Helpers\Url::to('/groups/cancel-crypto-payment') ?>', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
