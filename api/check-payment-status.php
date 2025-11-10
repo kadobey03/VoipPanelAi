@@ -18,12 +18,26 @@ if (!isset($_SESSION['user'])) {
 }
 
 // Get POST data
-$input = json_decode(file_get_contents('php://input'), true);
+$rawInput = file_get_contents('php://input');
+error_log("Debug - Raw input: $rawInput");
+
+$input = json_decode($rawInput, true);
+error_log("Debug - Decoded input: " . json_encode($input));
+
 $paymentId = (int)($input['payment_id'] ?? 0);
 $walletAddress = $input['wallet_address'] ?? '';
 
+error_log("Debug - Payment ID: $paymentId, Wallet Address: $walletAddress");
+
 if (!$paymentId || !$walletAddress) {
-    echo json_encode(['error' => 'Invalid parameters']);
+    echo json_encode([
+        'error' => 'Invalid parameters',
+        'debug' => [
+            'payment_id' => $paymentId,
+            'wallet_address' => $walletAddress,
+            'raw_input' => $rawInput
+        ]
+    ]);
     exit;
 }
 
@@ -40,23 +54,74 @@ try {
         exit;
     }
     
+    // Check if crypto_payments table exists first
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'crypto_payments'");
+        if ($result->num_rows === 0) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Crypto ödeme sistemi kurulu değil'
+            ]);
+            exit;
+        }
+    } catch (\Exception $e) {
+        error_log('Table check error: ' . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Sistem kontrolü başarısız'
+        ]);
+        exit;
+    }
+    
     // Get payment info with better error handling
     try {
+        // Debug log the input parameters
+        error_log("Debug - Payment ID: $paymentId, Wallet Address: $walletAddress");
+        
+        // Try with simpler query first (without JOIN)
         $stmt = $db->prepare(
-            'SELECT cp.*, cw.group_id
-             FROM crypto_payments cp
-             JOIN crypto_wallets cw ON cp.wallet_id = cw.id
-             WHERE cp.id = ? AND cp.wallet_address = ?'
+            'SELECT * FROM crypto_payments WHERE id = ? AND wallet_address = ?'
         );
         $stmt->bind_param('is', $paymentId, $walletAddress);
         $stmt->execute();
         $payment = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+        
+        // Debug log the result
+        error_log("Debug - Payment found: " . ($payment ? 'YES' : 'NO'));
+        if ($payment) {
+            error_log("Debug - Payment data: " . json_encode($payment));
+        }
+        
+        // If payment found, get group_id from topup_requests
+        if ($payment) {
+            try {
+                $stmt = $db->prepare('SELECT group_id FROM topup_requests WHERE crypto_payment_id = ?');
+                $stmt->bind_param('i', $paymentId);
+                $stmt->execute();
+                $topupResult = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                
+                error_log("Debug - Topup result: " . ($topupResult ? json_encode($topupResult) : 'NO'));
+                
+                if ($topupResult) {
+                    $payment['group_id'] = $topupResult['group_id'];
+                } else {
+                    // Fallback: could not find group_id, set to 0 or get from session
+                    $payment['group_id'] = 0;
+                }
+            } catch (\Exception $e) {
+                error_log('Group ID fetch error: ' . $e->getMessage());
+                $payment['group_id'] = 0;
+            }
+        }
     } catch (\Exception $e) {
-        error_log('DB query error in check-payment-status: ' . $e->getMessage());
+        error_log('DB query error in check-payment-status: ' . $e->getMessage() . ' - SQL Error: ' . $db->error);
         echo json_encode([
             'status' => 'error',
-            'message' => 'Ödeme bilgisi alınamadı'
+            'message' => 'Ödeme bilgisi alınamadı',
+            'debug' => $e->getMessage(),
+            'sql_error' => $db->error
         ]);
         exit;
     }
