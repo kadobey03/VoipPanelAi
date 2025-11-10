@@ -101,20 +101,20 @@
         <input id="amount" type="number" step="0.01" min="0.01" name="amount" class="w-full border rounded p-2 bg-white dark:bg-gray-800" required>
       </div>
       <?php if (!isset($_SESSION['user']) || $_SESSION['user']['role']!=='superadmin'): ?>
-      <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded text-sm">
+      <div id="feeSection" class="bg-slate-50 dark:bg-slate-900 p-3 rounded text-sm">
         <div>Komisyon: <span id="feeText">0</span></div>
         <div>Ödenecek Toplam: <strong id="totalText">0</strong></div>
       </div>
-      <div>
+      <div id="noteSection">
         <label class="block text-sm mb-1">Açıklama (opsiyonel)</label>
         <input name="note" class="w-full border rounded p-2 bg-white dark:bg-gray-800" placeholder="Not/ek açıklama">
       </div>
-      <div>
+      <div id="receiptSection">
         <label class="block text-sm mb-1">Dekont (opsiyonel)</label>
         <input type="file" name="receipt" accept="image/*,application/pdf" class="w-full border rounded p-2 bg-white dark:bg-gray-800">
       </div>
       <?php endif; ?>
-      <button class="w-full bg-blue-600 text-white rounded p-2">Gönder</button>
+      <button id="submitBtn" class="w-full bg-blue-600 text-white rounded p-2">Gönder</button>
     </form>
     <?php endif; ?>
     
@@ -127,6 +127,17 @@
   <?php if (!isset($_SESSION['user']) || $_SESSION['user']['role']!=='superadmin'): ?>
   <script>
     (function(){
+      // Hide unnecessary sections for all payment gateways (auto payment)
+      var feeSection = document.getElementById('feeSection');
+      var noteSection = document.getElementById('noteSection');
+      var receiptSection = document.getElementById('receiptSection');
+      var submitBtn = document.getElementById('submitBtn');
+      
+      if (feeSection) feeSection.style.display = 'none';
+      if (noteSection) noteSection.style.display = 'none';
+      if (receiptSection) receiptSection.style.display = 'none';
+      if (submitBtn) submitBtn.textContent = 'İlerle';
+      
       function calc(){
         var sel=document.getElementById('method_id'); if(!sel) return;
         var p=parseFloat(sel.options[sel.selectedIndex].getAttribute('data-p')||'0');
@@ -134,8 +145,15 @@
         var name=sel.options[sel.selectedIndex].getAttribute('data-name')||'';
         var amt=parseFloat(document.getElementById('amount').value||'0');
         var fee= (amt * (p/100.0)) + f; var total = amt + fee;
-        document.getElementById('feeText').textContent = fee.toFixed(2) + ' ('+p.toFixed(2)+'% + '+f.toFixed(2)+')';
-        document.getElementById('totalText').textContent = total.toFixed(2);
+        
+        // For internal calculation (even if not displayed)
+        if (document.getElementById('feeText')) {
+          document.getElementById('feeText').textContent = fee.toFixed(2) + ' ('+p.toFixed(2)+'% + '+f.toFixed(2)+')';
+        }
+        if (document.getElementById('totalText')) {
+          document.getElementById('totalText').textContent = total.toFixed(2);
+        }
+        
         var mn=document.getElementById('method_name'); if(mn) mn.value=name;
       }
       var el=document.getElementById('method_id'); if(el){ el.addEventListener('change',calc); }
