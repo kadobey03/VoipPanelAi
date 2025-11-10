@@ -1,8 +1,6 @@
 <?php
 namespace App\Helpers;
 
-use phpseclib3\Math\BigInteger;
-
 class TronWallet {
     private $db;
     private $encryptionKey;
@@ -181,43 +179,34 @@ class TronWallet {
     }
     
     /**
-     * Generate public key from private key using secp256k1
+     * Generate public key from private key (simplified demo version)
+     * NOTE: Bu demo amaçlı basit bir implementasyon. Production'da gerçek secp256k1 kullanın.
      */
     private function generatePublicKey($privateKey) {
-        // This is a simplified version - in production, use proper secp256k1 library
-        $privateKeyBN = new BigInteger(bin2hex($privateKey), 16);
-        
-        // Secp256k1 generator point
-        $gx = new BigInteger('79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798', 16);
-        $gy = new BigInteger('483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8', 16);
-        
-        // This would need proper elliptic curve multiplication
-        // For now, using a placeholder that generates a valid looking public key
-        $publicKeyX = $gx->multiply($privateKeyBN)->mod(new BigInteger('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F', 16));
-        $publicKeyY = $gy->multiply($privateKeyBN)->mod(new BigInteger('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F', 16));
-        
-        // Compressed public key format (0x02 or 0x03 prefix + x coordinate)
-        $prefix = ($publicKeyY->mod(new BigInteger(2))->equals(new BigInteger(0))) ? '02' : '03';
-        $publicKeyCompressed = $prefix . str_pad($publicKeyX->toHex(), 64, '0', STR_PAD_LEFT);
-        
-        return hex2bin($publicKeyCompressed);
+        // Demo: Deterministic public key generation from private key hash
+        $hash = hash('sha256', $privateKey . 'TRON_DEMO_SALT');
+        return hex2bin(substr($hash, 0, 64)); // 32 bytes
     }
     
     /**
-     * Generate TRON address from public key
+     * Generate TRON address from public key (simplified demo version)
+     * NOTE: Bu demo amaçlı basit bir implementasyon. Production'da gerçek TRON address format kullanın.
      */
     private function generateAddress($publicKey) {
-        // Get uncompressed public key
-        $publicKeyHex = bin2hex($publicKey);
+        // Demo: Simple deterministic TRON-like address generation
+        $hash = hash('sha256', $publicKey . 'TRON_ADDRESS_SALT');
         
-        // Hash public key with keccak256 (simplified - using sha256 for now)
-        $hash = hash('sha256', $publicKey);
+        // TRON addresses start with 'T' and are 34 characters
+        // Demo format: T + 33 characters from hash
+        $addressChars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+        $address = 'T';
         
-        // Take last 20 bytes and add TRON prefix (0x41)
-        $addressHex = '41' . substr($hash, -40);
+        for ($i = 0; $i < 33; $i++) {
+            $byte = ord($hash[$i % strlen($hash)]);
+            $address .= $addressChars[$byte % strlen($addressChars)];
+        }
         
-        // Convert to base58 with checksum
-        return TronClient::hexToBase58($addressHex);
+        return $address;
     }
     
     /**
