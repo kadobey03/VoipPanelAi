@@ -249,7 +249,7 @@ class GroupController {
             // Create crypto payment record
             $stmt = $db->prepare(
                 'INSERT INTO crypto_payments (group_id, user_id, wallet_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))'
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))'
             );
             
             $currency = 'USDT';
@@ -287,7 +287,7 @@ class GroupController {
                         'amount' => $amount,
                         'currency' => $currency,
                         'network' => $network,
-                        'expires_at' => date('Y-m-d H:i:s', strtotime('+24 hours'))
+                        'expires_at' => date('Y-m-d H:i:s', strtotime('+10 minutes'))
                     ]
                 ];
             }
