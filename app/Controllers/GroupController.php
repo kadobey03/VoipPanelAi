@@ -409,8 +409,8 @@ class GroupController {
      * Get or create dummy wallet for central wallet system
      */
     private function getOrCreateDummyWallet($walletAddress, $db) {
-        // Check if dummy wallet already exists
-        $stmt = $db->prepare('SELECT id FROM crypto_wallets WHERE address = ? AND group_id IS NULL');
+        // Check if dummy wallet already exists (group_id = 0 for central wallet)
+        $stmt = $db->prepare('SELECT id FROM crypto_wallets WHERE address = ? AND group_id = 0');
         $stmt->bind_param('s', $walletAddress);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
@@ -420,10 +420,10 @@ class GroupController {
             return $result['id'];
         }
         
-        // Create dummy wallet record for central wallet
+        // Create dummy wallet record for central wallet (group_id = 0)
         $stmt = $db->prepare(
             'INSERT INTO crypto_wallets (address, private_key_encrypted, group_id, created_at)
-             VALUES (?, ?, NULL, NOW())'
+             VALUES (?, ?, 0, NOW())'
         );
         $encryptedDummy = 'central_wallet_dummy'; // Not a real private key
         $stmt->bind_param('ss', $walletAddress, $encryptedDummy);
