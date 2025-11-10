@@ -146,24 +146,70 @@
                 // Agent'ın abonelik durumunu kontrol et
                 $userAgents = [];
                 if ($isSuper) {
-                  // Önce agent'ın user_login'i ile users tablosundaki kullanıcıyı bul
+                  $agentExten = $a['exten'] ?? '';
                   $agentLogin = $a['user_login'] ?? '';
-                  if ($agentLogin) {
-                    $stmt = $db->prepare('SELECT u.id as user_id FROM users u WHERE u.login = ?');
-                    $stmt->bind_param('s', $agentLogin);
-                    $stmt->execute();
-                    $userResult = $stmt->get_result()->fetch_assoc();
-                    $stmt->close();
+                  $agentGroup = $a['group_name'] ?? '';
+                  
+                  // Çoklu kontrol stratejisi: exten, login, group bazlı arama
+                  if ($agentExten || $agentLogin) {
+                    $userIds = [];
                     
-                    if ($userResult) {
-                      // Bu kullanıcının aktif agent aboneliklerini bul
+                    // 1. Önce agent'ın user_login'i ile users tablosundaki kullanıcıyı bul
+                    if ($agentLogin) {
+                      $stmt = $db->prepare('SELECT u.id as user_id FROM users u WHERE u.login = ?');
+                      $stmt->bind_param('s', $agentLogin);
+                      $stmt->execute();
+                      $userResult = $stmt->get_result()->fetch_assoc();
+                      $stmt->close();
+                      if ($userResult) {
+                        $userIds[] = $userResult['user_id'];
+                      }
+                    }
+                    
+                    // 2. Eğer bulunamazsa, exten ile users.exten kolonunda ara
+                    if (empty($userIds) && $agentExten) {
+                      try {
+                        $stmt = $db->prepare('SELECT u.id as user_id FROM users u WHERE u.exten = ?');
+                        $stmt->bind_param('s', $agentExten);
+                        $stmt->execute();
+                        $userResult = $stmt->get_result()->fetch_assoc();
+                        $stmt->close();
+                        if ($userResult) {
+                          $userIds[] = $userResult['user_id'];
+                        }
+                      } catch (\Throwable $e) {
+                        // exten kolonu yoksa pas geç
+                      }
+                    }
+                    
+                    // 3. Eğer hala bulunamazsa, group bazlı arama yap
+                    if (empty($userIds) && $agentGroup) {
                       $stmt = $db->prepare('
+                        SELECT u.id as user_id FROM users u
+                        JOIN groups g ON u.group_id = g.id
+                        WHERE g.name = ? OR g.api_group_name = ?
+                        ORDER BY u.role = "groupadmin" DESC
+                        LIMIT 1
+                      ');
+                      $stmt->bind_param('ss', $agentGroup, $agentGroup);
+                      $stmt->execute();
+                      $userResult = $stmt->get_result()->fetch_assoc();
+                      $stmt->close();
+                      if ($userResult) {
+                        $userIds[] = $userResult['user_id'];
+                      }
+                    }
+                    
+                    // Bulunan kullanıcıların aktif agent aboneliklerini getir
+                    if (!empty($userIds)) {
+                      $placeholders = str_repeat('?,', count($userIds) - 1) . '?';
+                      $stmt = $db->prepare("
                         SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee, ap.phone_prefix
                         FROM user_agents ua
                         JOIN agent_products ap ON ua.agent_product_id = ap.id
-                        WHERE ua.user_id = ? AND ua.status = "active"
-                      ');
-                      $stmt->bind_param('i', $userResult['user_id']);
+                        WHERE ua.user_id IN ($placeholders) AND ua.status = 'active'
+                      ");
+                      $stmt->bind_param(str_repeat('i', count($userIds)), ...$userIds);
                       $stmt->execute();
                       $userAgents = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                       $stmt->close();
