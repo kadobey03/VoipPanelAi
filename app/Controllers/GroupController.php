@@ -238,27 +238,28 @@ class GroupController {
                 'method' => $method
             ]);
             
-            // Create TRON wallet for this payment
-            $tronWallet = new TronWallet();
-            $wallet = $tronWallet->getOrCreateWalletForGroup($groupId);
-            
-            if (!$wallet) {
-                return ['success' => false, 'error' => 'TRON wallet oluşturulamadı'];
+            // Get wallet address from settings
+            $walletAddress = $this->getSetting('crypto_usdt_wallet');
+            if (!$walletAddress) {
+                return ['success' => false, 'error' => 'Crypto wallet adresi ayarlanmamış. Lütfen admin ile iletişime geçin.'];
             }
             
             // Validate wallet address
-            $addressCheck = $security->validateTronAddress($wallet['address']);
+            $addressCheck = $security->validateTronAddress($walletAddress);
             if (!$addressCheck['valid']) {
-                return ['success' => false, 'error' => 'Wallet address validation failed'];
+                return ['success' => false, 'error' => 'Geçersiz wallet adresi ayarlanmış'];
             }
             
             $db = DB::conn();
             $db->begin_transaction();
             
-            // Create crypto payment record
+            // Get timeout from settings (default 10 minutes)
+            $timeout = $this->getSetting('crypto_payment_timeout') ?: 10;
+            
+            // Create crypto payment record (without wallet_id since we use central wallet)
             $stmt = $db->prepare(
-                'INSERT INTO crypto_payments (group_id, user_id, wallet_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))'
+                'INSERT INTO crypto_payments (group_id, user_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
             );
             
             $currency = 'USDT';
@@ -266,7 +267,7 @@ class GroupController {
             $network = 'TRC20';
             $status = 'pending';
             
-            $stmt->bind_param('iiidsssss', $groupId, $userId, $wallet['id'], $amount, $currency, $blockchain, $network, $wallet['address'], $status);
+            $stmt->bind_param('iidsssssi', $groupId, $userId, $amount, $currency, $blockchain, $network, $walletAddress, $status, $timeout);
             
             if ($stmt->execute()) {
                 $paymentId = $stmt->insert_id;
@@ -279,24 +280,21 @@ class GroupController {
                 );
                 
                 $requestStatus = 'pending';
-                $stmt->bind_param('iidssss', $groupId, $userId, $amount, $method, $requestStatus, $paymentId, $wallet['address']);
+                $stmt->bind_param('iidssss', $groupId, $userId, $amount, $method, $requestStatus, $paymentId, $walletAddress);
                 $stmt->execute();
                 $stmt->close();
                 
                 $db->commit();
                 
-                // Mark wallet as used
-                $tronWallet->markWalletAsUsed($wallet['id']);
-                
                 return [
                     'success' => true,
                     'data' => [
                         'payment_id' => $paymentId,
-                        'wallet_address' => $wallet['address'],
+                        'wallet_address' => $walletAddress,
                         'amount' => $amount,
                         'currency' => $currency,
                         'network' => $network,
-                        'expires_at' => date('Y-m-d H:i:s', strtotime('+10 minutes'))
+                        'expires_at' => date('Y-m-d H:i:s', strtotime("+{$timeout} minutes"))
                     ]
                 ];
             }
@@ -384,5 +382,23 @@ class GroupController {
         $transactions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
         require __DIR__.'/../Views/groups/show.php';
+    }
+    
+    /**
+     * Get setting value from database
+     */
+    private function getSetting($name) {
+        try {
+            $db = DB::conn();
+            $stmt = $db->prepare('SELECT value FROM settings WHERE name = ?');
+            $stmt->bind_param('s', $name);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            
+            return $result ? $result['value'] : null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }

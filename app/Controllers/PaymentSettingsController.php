@@ -1,0 +1,36 @@
+<?php
+namespace App\Controllers;
+
+use App\Helpers\DB;
+
+class PaymentSettingsController {
+    private function startSession(){ if(session_status()===PHP_SESSION_NONE) session_start(); }
+    private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ \App\Helpers\Url::redirect('/login'); } }
+    private function requireSuper(){ $this->requireAuth(); if(!isset($_SESSION['user']['role']) || $_SESSION['user']['role'] !== 'superadmin'){ die('Yetkisiz'); } }
+
+    public function index(){
+        $this->requireSuper();
+        $db = DB::conn();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            foreach ($_POST as $key => $value) {
+                if ($key !== 'submit') {
+                    $stmt = $db->prepare('INSERT INTO settings (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value=?');
+                    $stmt->bind_param('sss', $key, $value, $value);
+                    $stmt->execute();
+                    $stmt->close();
+                }
+            }
+            header('Location: ' . \App\Helpers\Url::to('/payment-settings'));
+            exit;
+        }
+
+        $settings = [];
+        $result = $db->query('SELECT name, value FROM settings');
+        while ($row = $result->fetch_assoc()) {
+            $settings[$row['name']] = $row['value'];
+        }
+
+        require __DIR__.'/../Views/payment-settings/index.php';
+    }
+}

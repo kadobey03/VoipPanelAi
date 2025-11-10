@@ -183,6 +183,13 @@ function __($key) {
               <span class="font-medium text-sm">Ayarlar</span>
               <div class="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
+            
+            <!-- Payment Settings -->
+            <a href="<?= Url::to('/payment-settings') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
+              <i class="fa-solid fa-credit-card text-base"></i>
+              <span class="font-medium text-sm">Ödeme Ayarları</span>
+              <div class="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </a>
             <?php endif; ?>
           </nav>
 
@@ -373,6 +380,10 @@ function __($key) {
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/settings') ?>">
                 <i class="fa-solid fa-cogs text-white"></i>
                 <span class="text-white font-medium">Ayarlar</span>
+              </a>
+              <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/payment-settings') ?>">
+                <i class="fa-solid fa-credit-card text-white"></i>
+                <span class="text-white font-medium">Ödeme Ayarları</span>
               </a>
               <?php endif; ?>
             </div>

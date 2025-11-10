@@ -101,6 +101,10 @@ $router->add('GET', '/transactions/export', 'TransactionsController@export');
 $router->add('GET', '/settings', 'SettingsController@index');
 $router->add('POST', '/settings', 'SettingsController@index');
 
+// Payment Settings
+$router->add('GET', '/payment-settings', 'PaymentSettingsController@index');
+$router->add('POST', '/payment-settings', 'PaymentSettingsController@index');
+
 // Change language - moved to controller to avoid Closure issues
 $router->add('POST', '/change-lang', 'SettingsController@changeLang');
 
