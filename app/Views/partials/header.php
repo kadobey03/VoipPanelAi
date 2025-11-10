@@ -26,9 +26,9 @@ function __($key) {
    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet">
    <?php if (isset($title) && strpos($title, 'Giriş') !== false): ?>
-   <link href="/VoipPanelAi/public/assets/css/login-animations.css" rel="stylesheet">
-   <script src="/VoipPanelAi/public/assets/js/login.js" defer></script>
-   <?php endif; ?>
+
+
+    <?php endif; ?>
   <script>
     try{
       // Login sayfası için her zaman dark mode
