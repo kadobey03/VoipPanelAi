@@ -165,7 +165,7 @@ class GroupController {
                 } else {
                     if ($isCrypto) {
                         // Create cryptocurrency payment
-                        $cryptoResult = $this->createCryptocurrencyPayment($id, (int)($_SESSION['user']['id'] ?? 0), $amount, $method);
+                        $cryptoResult = $this->createCryptocurrencyPayment($id, (int)($_SESSION['user']['id'] ?? 0), $amount, $method, $methodId);
                         if ($cryptoResult['success']) {
                             $cryptoPaymentData = $cryptoResult['data'];
                             $ok = 'Cryptocurrency ödeme sayfası hazırlandı. Lütfen gösterilen adrese ödeme yapın.';
@@ -217,7 +217,7 @@ class GroupController {
     /**
      * Create cryptocurrency payment request
      */
-    private function createCryptocurrencyPayment($groupId, $userId, $amount, $method) {
+    private function createCryptocurrencyPayment($groupId, $userId, $amount, $method, $methodId) {
         try {
             // Security checks
             $security = new CryptoSecurity();
@@ -238,52 +238,45 @@ class GroupController {
                 'method' => $method
             ]);
             
-            // Get wallet address from settings
-            $walletAddress = $this->getSetting('crypto_usdt_wallet');
-            if (!$walletAddress) {
-                return ['success' => false, 'error' => 'Crypto wallet adresi ayarlanmamış. Lütfen admin ile iletişime geçin.'];
+            $db = DB::conn();
+            
+            // Get payment method details (wallet address from payment_methods table)
+            $stmt = $db->prepare('SELECT details FROM payment_methods WHERE id = ? AND method_type = ? AND active = 1');
+            $methodType = 'cryptocurrency';
+            $stmt->bind_param('is', $methodId, $methodType);
+            $stmt->execute();
+            $paymentMethod = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            
+            if (!$paymentMethod || empty($paymentMethod['details'])) {
+                return ['success' => false, 'error' => 'Seçilen ödeme yönteminde wallet adresi bulunamadı'];
             }
+            
+            $walletAddress = trim($paymentMethod['details']);
             
             // Validate wallet address
             $addressCheck = $security->validateTronAddress($walletAddress);
             if (!$addressCheck['valid']) {
-                return ['success' => false, 'error' => 'Geçersiz wallet adresi ayarlanmış'];
+                return ['success' => false, 'error' => 'Ödeme yönteminde geçersiz wallet adresi'];
             }
             
-            $db = DB::conn();
             $db->begin_transaction();
             
             // Get timeout from settings (default 10 minutes)
             $timeout = $this->getSetting('crypto_payment_timeout') ?: 10;
             
-            // Create crypto payment record without wallet_id dependency
-            // First try with wallet_id = NULL (if column allows it)
-            try {
-                $stmt = $db->prepare(
-                    'INSERT INTO crypto_payments (group_id, user_id, wallet_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
-                     VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
-                );
-                
-                $currency = 'USDT';
-                $blockchain = 'TRON';
-                $network = 'TRC20';
-                $status = 'pending';
-                
-                $stmt->bind_param('iidsssssi', $groupId, $userId, $amount, $currency, $blockchain, $network, $walletAddress, $status, $timeout);
-            } catch (\Exception $e) {
-                // If NULL doesn't work, try with wallet_id = -1 as system wallet indicator
-                $stmt = $db->prepare(
-                    'INSERT INTO crypto_payments (group_id, user_id, wallet_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
-                     VALUES (?, ?, -1, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
-                );
-                
-                $currency = 'USDT';
-                $blockchain = 'TRON';
-                $network = 'TRC20';
-                $status = 'pending';
-                
-                $stmt->bind_param('iidsssssi', $groupId, $userId, $amount, $currency, $blockchain, $network, $walletAddress, $status, $timeout);
-            }
+            // Create crypto payment record with payment method ID as wallet_id
+            $stmt = $db->prepare(
+                'INSERT INTO crypto_payments (group_id, user_id, wallet_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
+            );
+            
+            $currency = 'USDT';
+            $blockchain = 'TRON';
+            $network = 'TRC20';
+            $status = 'pending';
+            
+            $stmt->bind_param('iiidsssssi', $groupId, $userId, $methodId, $amount, $currency, $blockchain, $network, $walletAddress, $status, $timeout);
             
             if ($stmt->execute()) {
                 $paymentId = $stmt->insert_id;
