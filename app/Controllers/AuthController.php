@@ -32,7 +32,7 @@ class AuthController {
                         'role' => $user['role'],
                         'group_id' => $user['group_id'] ? (int)$user['group_id'] : null,
                     ];
-                    Url::redirect('/');
+                    Url::redirect('/VoipPanelAi/');
                 } else {
                     $error = 'Geçersiz kullanıcı adı veya şifre';
                 }
@@ -54,6 +54,6 @@ class AuthController {
             );
         }
         session_destroy();
-        Url::redirect('/login');
+        Url::redirect('/VoipPanelAi/login');
     }
 }
