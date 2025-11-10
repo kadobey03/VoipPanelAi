@@ -448,7 +448,7 @@ class AgentsController {
         $agentNumber = $_POST['agent_number'] ?? '';
 
         if (!$exten || !$productId) {
-            $_SESSION['error'] = 'Eksik parametreler';
+            $_SESSION['error'] = 'Eksik parametreler - Extension ve Ürün seçimi gerekli';
             header('Location: ' . \App\Helpers\Url::to('/agents'));
             exit;
         }
@@ -481,26 +481,32 @@ class AgentsController {
                 throw new Exception('Ürün bulunamadı');
             }
 
-            // Grup bilgilerini al (agent'ın grup adından)
+            // Agent'ın grubunu bul ve o grubun adminini al
             $groupId = 0;
+            $userId = 0;
+            
             if ($agent['group_name']) {
+                // Grup ID'sini bul
                 $stmt = $db->prepare('SELECT id FROM groups WHERE name = ? OR api_group_name = ? LIMIT 1');
                 $stmt->bind_param('ss', $agent['group_name'], $agent['group_name']);
                 $stmt->execute();
                 $groupResult = $stmt->get_result()->fetch_assoc();
                 if ($groupResult) $groupId = $groupResult['id'];
                 $stmt->close();
+                
+                // Bu grubun adminini bul
+                if ($groupId) {
+                    $stmt = $db->prepare('SELECT id FROM users WHERE group_id = ? AND role = "groupadmin" LIMIT 1');
+                    $stmt->bind_param('i', $groupId);
+                    $stmt->execute();
+                    $adminResult = $stmt->get_result()->fetch_assoc();
+                    if ($adminResult) $userId = $adminResult['id'];
+                    $stmt->close();
+                }
             }
-
-            // Kullanıcı bul (agent login'den)
-            $userId = 0;
-            if ($agent['user_login']) {
-                $stmt = $db->prepare('SELECT id FROM users WHERE login = ? LIMIT 1');
-                $stmt->bind_param('s', $agent['user_login']);
-                $stmt->execute();
-                $userResult = $stmt->get_result()->fetch_assoc();
-                if ($userResult) $userId = $userResult['id'];
-                $stmt->close();
+            
+            if (!$userId) {
+                throw new Exception('Agent\'ın grubunun yöneticisi bulunamadı. Grup: ' . ($agent['group_name'] ?? 'bilinmeyen'));
             }
 
             // Agent numarası kullanıcıdan gelen veya otomatik oluştur

@@ -470,6 +470,20 @@
             <span class="text-slate-500 dark:text-slate-400 ml-2">- Extension: #<span id="subscriptionAgentExten"></span></span>
           </div>
         </div>
+<div class="mb-4">
+  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+    Abonelik Sahibi:
+  </label>
+  <div class="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+    <span class="text-slate-900 dark:text-white font-medium">
+      Agent'ın grubunun yöneticisine otomatik atanacak
+    </span>
+    <span class="text-slate-500 dark:text-slate-400 text-sm block mt-1">
+      Grup: <span id="subscriptionAgentGroup" class="font-medium">-</span>
+    </span>
+  </div>
+</div>
+
 
         <div class="mb-4">
           <label for="agentProductId" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -560,6 +574,15 @@ function openAddSubscriptionModal(exten, agentName) {
   document.getElementById('subscriptionExten').value = exten;
   document.getElementById('subscriptionAgentName').textContent = agentName;
   document.getElementById('subscriptionAgentExten').textContent = exten;
+  
+  // Agent kartından grup bilgisini al
+  const agentCard = event.target.closest('.bg-gradient-to-br');
+  if (agentCard) {
+    const groupSpan = agentCard.querySelector('[class*="text-slate-900 dark:text-white"]:not([class*="font-bold"])');
+    const groupName = groupSpan ? groupSpan.textContent : 'Bilinmeyen';
+    document.getElementById('subscriptionAgentGroup').textContent = groupName;
+  }
+  
   document.getElementById('addSubscriptionModal').classList.remove('hidden');
   document.getElementById('addSubscriptionModal').classList.add('flex');
 }
