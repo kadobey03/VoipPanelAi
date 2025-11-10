@@ -14,7 +14,18 @@ class AgentsController {
      */
     private function isGroupMatch($agentGroupName, $userGroupName, $userApiGroupName) {
         if (empty($agentGroupName) || (empty($userGroupName) && empty($userApiGroupName))) {
+            error_log("isGroupMatch FALSE - Empty params: agentGroup='$agentGroupName', userGroup='$userGroupName', apiGroup='$userApiGroupName'");
             return false;
+        }
+        
+        // Exact match first
+        if (strcasecmp($agentGroupName, $userGroupName) === 0) {
+            error_log("isGroupMatch TRUE - Exact match with userGroupName: '$agentGroupName' === '$userGroupName'");
+            return true;
+        }
+        if ($userApiGroupName && strcasecmp($agentGroupName, $userApiGroupName) === 0) {
+            error_log("isGroupMatch TRUE - Exact match with userApiGroupName: '$agentGroupName' === '$userApiGroupName'");
+            return true;
         }
         
         // Normalize function - case, underscore, spaces, numbers
@@ -28,26 +39,30 @@ class AgentsController {
         
         $normalizedAgent = $normalize($agentGroupName);
         
-        // Exact match first
-        if (strcasecmp($agentGroupName, $userGroupName) === 0) return true;
-        if ($userApiGroupName && strcasecmp($agentGroupName, $userApiGroupName) === 0) return true;
-        
         // Normalized match
         $normalizedUser = $normalize($userGroupName);
-        if ($normalizedAgent === $normalizedUser) return true;
+        if ($normalizedAgent === $normalizedUser) {
+            error_log("isGroupMatch TRUE - Normalized match: '$normalizedAgent' === '$normalizedUser'");
+            return true;
+        }
         
         if ($userApiGroupName) {
             $normalizedApi = $normalize($userApiGroupName);
-            if ($normalizedAgent === $normalizedApi) return true;
+            if ($normalizedAgent === $normalizedApi) {
+                error_log("isGroupMatch TRUE - Normalized API match: '$normalizedAgent' === '$normalizedApi'");
+                return true;
+            }
         }
         
         // Partial match (contains)
         if (!empty($normalizedAgent) && !empty($normalizedUser)) {
             if (strpos($normalizedAgent, $normalizedUser) !== false || strpos($normalizedUser, $normalizedAgent) !== false) {
+                error_log("isGroupMatch TRUE - Partial match: '$normalizedAgent' contains '$normalizedUser'");
                 return true;
             }
         }
         
+        error_log("isGroupMatch FALSE - No match found for: agentGroup='$agentGroupName', userGroup='$userGroupName', apiGroup='$userApiGroupName'");
         return false;
     }
 
