@@ -161,6 +161,18 @@ function __($key) {
                     </div>
                   </a>
                   <?php endif; ?>
+                  
+                  <?php if(isset($_SESSION['user']) && in_array($_SESSION['user']['role']??'', ['superadmin', 'groupadmin'])): ?>
+                  <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/agents/subscriptions') ?>">
+                    <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
+                      <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white">Aboneliklerim</div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400"><?php echo ($_SESSION['user']['role']??'') === 'superadmin' ? 'Tüm abonelikler' : 'Grup abonelikleri'; ?></div>
+                    </div>
+                  </a>
+                  <?php endif; ?>
                 </div>
               </div>
             </div>
@@ -416,6 +428,13 @@ function __($key) {
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents/subscriptions') ?>">
                 <i class="fa-solid fa-calendar-alt text-white"></i>
                 <span class="text-white font-medium">Abonelik Yönetimi</span>
+              </a>
+              <?php endif; ?>
+              
+              <?php if(isset($_SESSION['user']) && in_array($_SESSION['user']['role']??'', ['groupadmin'])): ?>
+              <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents/subscriptions') ?>">
+                <i class="fa-solid fa-calendar-check text-white"></i>
+                <span class="text-white font-medium">Aboneliklerim</span>
               </a>
               <?php endif; ?>
               <?php endif; ?>

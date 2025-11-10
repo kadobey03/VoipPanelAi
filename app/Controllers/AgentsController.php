@@ -446,11 +446,26 @@ class AgentsController {
         $exten = $_POST['agent_exten'] ?? '';
         $productId = (int)($_POST['agent_product_id'] ?? 0);
         $agentNumber = $_POST['agent_number'] ?? '';
+        $subscriptionStartDate = $_POST['subscription_start_date'] ?? '';
+        $subscriptionPaid = isset($_POST['subscription_paid']) ? 1 : 0;
 
         if (!$exten || !$productId) {
             $_SESSION['error'] = 'Eksik parametreler - Extension ve Ürün seçimi gerekli';
             header('Location: ' . \App\Helpers\Url::to('/agents'));
             exit;
+        }
+
+        // Başlangıç tarihi kontrolü ve düzenleme
+        if (empty($subscriptionStartDate)) {
+            $subscriptionStartDate = date('Y-m-d');
+        } else {
+            // Geçerli tarih formatında olduğundan emin ol
+            $dateCheck = DateTime::createFromFormat('Y-m-d', $subscriptionStartDate);
+            if (!$dateCheck || $dateCheck->format('Y-m-d') !== $subscriptionStartDate) {
+                $_SESSION['error'] = 'Geçersiz başlangıç tarihi formatı';
+                header('Location: ' . \App\Helpers\Url::to('/agents'));
+                exit;
+            }
         }
 
         $db = DB::conn();

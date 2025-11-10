@@ -523,6 +523,42 @@
                  placeholder="Örn: 05551234567">
         </div>
 
+        <!-- Başlangıç Tarihi -->
+        <div class="mb-4">
+          <label for="subscriptionStartDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <i class="fa-solid fa-calendar mr-1"></i>Abonelik Başlangıç Tarihi:
+          </label>
+          <input type="date" id="subscriptionStartDate" name="subscription_start_date"
+                 class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                 value="<?php echo date('Y-m-d'); ?>">
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Boş bırakılırsa bugünden itibaren başlar
+          </p>
+        </div>
+
+        <!-- Ödeme Durumu -->
+        <div class="mb-4">
+          <div class="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-lg p-4">
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="subscriptionPaid" name="subscription_paid" class="sr-only">
+              <div class="relative">
+                <input type="checkbox" id="subscriptionPaidCheckbox" name="subscription_paid"
+                       class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-emerald-600 dark:ring-offset-gray-800">
+              </div>
+              <div class="ml-3">
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <i class="fa-solid fa-credit-card mr-1 text-emerald-600"></i>
+                  Ödeme yapıldı / Manuel olarak işaretle
+                </span>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  ✅ <strong>İşaretli:</strong> Ödeme yapıldı olarak kaydedilir<br>
+                  ⚠️ <strong>İşaretsiz:</strong> Otomatik bakiyeden düşer
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <div id="priceInfo" class="mb-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg hidden">
           <h4 class="font-semibold text-purple-800 dark:text-purple-300 mb-2">Fiyat Bilgileri:</h4>
           <div class="space-y-1 text-sm">
