@@ -217,9 +217,20 @@
                         $bindTypes .= 'i';
                       }
                       
-                      // Agent'a özel abonelik filtresi ekle
+                      // Önce agent_exten sütununun var olup olmadığını kontrol et
+                      $hasAgentExtenColumn = false;
+                      try {
+                        $checkStmt = $db->prepare("SHOW COLUMNS FROM user_agents LIKE 'agent_exten'");
+                        $checkStmt->execute();
+                        $hasAgentExtenColumn = $checkStmt->get_result()->num_rows > 0;
+                        $checkStmt->close();
+                      } catch (\Throwable $e) {
+                        // Sütun kontrolü başarısız
+                      }
+                      
+                      // Agent'a özel abonelik filtresi ekle (sadece sütun varsa)
                       $agentFilter = '';
-                      if ($agentExten) {
+                      if ($hasAgentExtenColumn && $agentExten) {
                         $agentFilter = " AND (ua.agent_exten = ? OR ua.agent_exten IS NULL)";
                         $bindParams[] = $agentExten;
                         $bindTypes .= 's';
