@@ -582,25 +582,95 @@ class AgentsController {
                 throw new \Exception('Bu agent numarası zaten kullanımda');
             }
 
-            // User agent oluştur
-            $stmt = $db->prepare('INSERT INTO user_agents (user_id, group_id, agent_product_id, agent_number, status, is_lifetime, next_subscription_due) VALUES (?, ?, ?, ?, "active", ?, ?)');
+            // Başlangıç tarihine göre sonraki ödeme tarihini hesapla
+            $nextDue = null;
+            if ($product['is_subscription']) {
+                $startDate = new DateTime($subscriptionStartDate);
+                $nextDue = $startDate->add(new DateInterval('P1M'))->format('Y-m-d H:i:s');
+            }
+
+            // User agent oluştur - created_at başlangıç tarihi olacak
+            $stmt = $db->prepare('INSERT INTO user_agents (user_id, group_id, agent_product_id, agent_number, status, is_lifetime, next_subscription_due, created_at) VALUES (?, ?, ?, ?, "active", ?, ?, ?)');
             $isLifetime = $product['is_subscription'] ? 0 : 1;
-            $nextDue = $product['is_subscription'] ? date('Y-m-d H:i:s', strtotime('+1 month')) : null;
-            $stmt->bind_param('iiisis', $userId, $groupId, $productId, $agentNumber, $isLifetime, $nextDue);
+            $createdAt = $subscriptionStartDate . ' ' . date('H:i:s');
+            $stmt->bind_param('iiisisis', $userId, $groupId, $productId, $agentNumber, $isLifetime, $nextDue, $createdAt);
             $stmt->execute();
             $userAgentId = $db->insert_id;
             $stmt->close();
 
-            // Abonelik ödemesi planla (eğer abonelik ürünse)
+            // İlk ödeme işlemi
             if ($product['is_subscription'] && $product['subscription_monthly_fee'] > 0) {
-                $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status) VALUES (?, ?, ?, DATE_ADD(CURDATE(), INTERVAL 1 MONTH), "pending")');
-                $stmt->bind_param('iid', $userAgentId, $userId, $product['subscription_monthly_fee']);
-                $stmt->execute();
-                $stmt->close();
+                if ($subscriptionPaid) {
+                    // Manuel ödeme - ödendi olarak işaretle
+                    $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status, payment_date, payment_method) VALUES (?, ?, ?, ?, "paid", NOW(), "manual")');
+                    $nextPaymentDate = (new DateTime($subscriptionStartDate))->add(new DateInterval('P1M'))->format('Y-m-d');
+                    $stmt->bind_param('iids', $userAgentId, $userId, $product['subscription_monthly_fee'], $nextPaymentDate);
+                    $stmt->execute();
+                    $stmt->close();
+
+                    // Sonraki ay için ödemeyi planla
+                    $nextMonthDate = (new DateTime($subscriptionStartDate))->add(new DateInterval('P2M'))->format('Y-m-d');
+                    $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status) VALUES (?, ?, ?, ?, "pending")');
+                    $stmt->bind_param('iids', $userAgentId, $userId, $product['subscription_monthly_fee'], $nextMonthDate);
+                    $stmt->execute();
+                    $stmt->close();
+                } else {
+                    // Otomatik bakiyeden düş - kurulum ücreti
+                    $stmt = $db->prepare('SELECT balance FROM groups WHERE id = ?');
+                    $stmt->bind_param('i', $groupId);
+                    $stmt->execute();
+                    $groupResult = $stmt->get_result()->fetch_assoc();
+                    $currentBalance = $groupResult ? $groupResult['balance'] : 0;
+                    $stmt->close();
+
+                    if ($currentBalance < $product['price']) {
+                        throw new \Exception('Yetersiz bakiye. Kurulum ücreti için $' . number_format($product['price'], 2) . ' gerekli, mevcut: $' . number_format($currentBalance, 2));
+                    }
+
+                    // Bakiyeden kurulum ücretini düş
+                    $stmt = $db->prepare('UPDATE groups SET balance = balance - ? WHERE id = ?');
+                    $stmt->bind_param('di', $product['price'], $groupId);
+                    $stmt->execute();
+                    $stmt->close();
+
+                    // Kurulum ödemesi kaydı
+                    $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status, payment_date, payment_method) VALUES (?, ?, ?, ?, "paid", NOW(), "balance")');
+                    $setupDueDate = $subscriptionStartDate;
+                    $stmt->bind_param('iids', $userAgentId, $userId, $product['price'], $setupDueDate);
+                    $stmt->execute();
+                    $stmt->close();
+
+                    // İlk aylık ödemeyi planla
+                    $firstPaymentDate = (new DateTime($subscriptionStartDate))->add(new DateInterval('P1M'))->format('Y-m-d');
+                    $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status) VALUES (?, ?, ?, ?, "pending")');
+                    $stmt->bind_param('iids', $userAgentId, $userId, $product['subscription_monthly_fee'], $firstPaymentDate);
+                    $stmt->execute();
+                    $stmt->close();
+
+                    // Transaction kaydı oluştur
+                    $stmt = $db->prepare('INSERT INTO transactions (group_id, type, amount, reference, description) VALUES (?, "agent_setup", ?, ?, ?)');
+                    $reference = "AGS-" . $userAgentId;
+                    $description = "Agent kurulum ücreti: " . $product['name'] . " (#" . $agentNumber . ")";
+                    $stmt->bind_param('idss', $groupId, $product['price'], $reference, $description);
+                    $stmt->execute();
+                    $stmt->close();
+                }
             }
 
             $db->commit();
-            $_SESSION['success'] = 'Agent\'a başarıyla abonelik eklendi. Agent Numarası: ' . $agentNumber;
+            
+            $successMessage = 'Agent\'a başarıyla abonelik eklendi. Agent Numarası: ' . $agentNumber;
+            $successMessage .= ' Başlangıç Tarihi: ' . date('d.m.Y', strtotime($subscriptionStartDate));
+            
+            if ($subscriptionPaid) {
+                $successMessage .= ' (Manuel ödeme kaydedildi)';
+            } else if (!$product['is_subscription']) {
+                $successMessage .= ' (Lifetime ürün)';
+            } else {
+                $successMessage .= ' (Kurulum ücreti bakiyeden düşüldü)';
+            }
+            
+            $_SESSION['success'] = $successMessage;
 
         } catch (\Exception $e) {
             $db->rollback();
