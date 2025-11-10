@@ -190,8 +190,8 @@ try {
         $depositStatus = $recentDeposit['status'] ?? 0;
         $confirmations = $recentDeposit['confirmTimes'] ?? 0;
         
-        if ($depositStatus == 1) { // 1 = Success
-            if ($confirmations >= 19) {
+        if ($depositStatus == 1) { // 1 = Success - Binance'de success = onaylanmış demek
+            // Binance API'de status=1 ise zaten confirmed demektir, confirmation sayısına bakmaya gerek yok
                 // Payment confirmed! Update database
                 $db->begin_transaction();
                 try {
@@ -244,14 +244,6 @@ try {
                         'error' => 'Database update failed'
                     ]);
                 }
-            } else {
-                // Payment detected but waiting for confirmations
-                echo json_encode([
-                    'status' => 'pending',
-                    'confirmations' => $confirmations,
-                    'message' => "Transfer tespit edildi, onay bekleniyor ($confirmations/19)"
-                ]);
-            }
         } else {
             // Deposit found but not successful yet
             echo json_encode([
@@ -275,7 +267,6 @@ try {
         echo json_encode([
             'status' => 'waiting',
             'confirmations' => 0,
-            'balance' => $currentBalance,
             'expected' => $expectedAmount,
             'message' => 'Ödeme bekleniyor...'
         ]);
