@@ -460,7 +460,7 @@ class AgentsController {
             $subscriptionStartDate = date('Y-m-d');
         } else {
             // Geçerli tarih formatında olduğundan emin ol
-            $dateCheck = DateTime::createFromFormat('Y-m-d', $subscriptionStartDate);
+            $dateCheck = \DateTime::createFromFormat('Y-m-d', $subscriptionStartDate);
             if (!$dateCheck || $dateCheck->format('Y-m-d') !== $subscriptionStartDate) {
                 $_SESSION['error'] = 'Geçersiz başlangıç tarihi formatı';
                 header('Location: ' . \App\Helpers\Url::to('/agents'));
@@ -585,8 +585,8 @@ class AgentsController {
             // Başlangıç tarihine göre sonraki ödeme tarihini hesapla
             $nextDue = null;
             if ($product['is_subscription']) {
-                $startDate = new DateTime($subscriptionStartDate);
-                $nextDue = $startDate->add(new DateInterval('P1M'))->format('Y-m-d H:i:s');
+                $startDate = new \DateTime($subscriptionStartDate);
+                $nextDue = $startDate->add(new \DateInterval('P1M'))->format('Y-m-d H:i:s');
             }
 
             // User agent oluştur - created_at başlangıç tarihi olacak
@@ -609,7 +609,7 @@ class AgentsController {
                     $stmt->close();
 
                     // Sonraki ay için ödemeyi planla
-                    $nextMonthDate = (new DateTime($subscriptionStartDate))->add(new DateInterval('P2M'))->format('Y-m-d');
+                    $nextMonthDate = (new \DateTime($subscriptionStartDate))->add(new \DateInterval('P2M'))->format('Y-m-d');
                     $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status) VALUES (?, ?, ?, ?, "pending")');
                     $stmt->bind_param('iids', $userAgentId, $userId, $product['subscription_monthly_fee'], $nextMonthDate);
                     $stmt->execute();
@@ -641,7 +641,7 @@ class AgentsController {
                     $stmt->close();
 
                     // İlk aylık ödemeyi planla
-                    $firstPaymentDate = (new DateTime($subscriptionStartDate))->add(new DateInterval('P1M'))->format('Y-m-d');
+                    $firstPaymentDate = (new \DateTime($subscriptionStartDate))->add(new \DateInterval('P1M'))->format('Y-m-d');
                     $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status) VALUES (?, ?, ?, ?, "pending")');
                     $stmt->bind_param('iids', $userAgentId, $userId, $product['subscription_monthly_fee'], $firstPaymentDate);
                     $stmt->execute();
@@ -727,7 +727,7 @@ class AgentsController {
 
             // Başlangıç tarihi kontrolü
             if (!empty($subscriptionStartDate)) {
-                $dateCheck = DateTime::createFromFormat('Y-m-d', $subscriptionStartDate);
+                $dateCheck = \DateTime::createFromFormat('Y-m-d', $subscriptionStartDate);
                 if (!$dateCheck) {
                     throw new \Exception('Geçersiz başlangıç tarihi formatı');
                 }
@@ -742,7 +742,7 @@ class AgentsController {
 
             // Sonraki ödeme tarihi kontrolü
             if (!empty($nextPaymentDate)) {
-                $dateCheck = DateTime::createFromFormat('Y-m-d', $nextPaymentDate);
+                $dateCheck = \DateTime::createFromFormat('Y-m-d', $nextPaymentDate);
                 if (!$dateCheck) {
                     throw new \Exception('Geçersiz ödeme tarihi formatı');
                 }
