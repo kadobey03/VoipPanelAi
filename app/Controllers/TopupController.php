@@ -359,7 +359,6 @@ class TopupController {
             $groupId = $payment['group_id'];
             \App\Helpers\Url::redirect("/groups/topup?id={$groupId}&continue_payment={$paymentId}");
         }
-    }
     
     /**
      * Get setting value
