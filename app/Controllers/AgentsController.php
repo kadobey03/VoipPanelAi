@@ -683,6 +683,134 @@ class AgentsController {
     }
 
     /**
+     * Agent aboneliğini güncelle
+     */
+    public function updateSubscription() {
+        $this->requireAuth();
+        if (!$this->isSuper()) {
+            $_SESSION['error'] = 'Yetkisiz işlem';
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            die('Geçersiz istek');
+        }
+
+        $userAgentId = (int)($_POST['user_agent_id'] ?? 0);
+        $subscriptionStartDate = $_POST['subscription_start_date'] ?? '';
+        $nextPaymentDate = $_POST['next_payment_date'] ?? '';
+        $subscriptionStatus = $_POST['subscription_status'] ?? 'active';
+        $markPaid = isset($_POST['mark_paid']) ? 1 : 0;
+
+        if (!$userAgentId) {
+            $_SESSION['error'] = 'Eksik parametreler';
+            header('Location: ' . \App\Helpers\Url::to('/agents'));
+            exit;
+        }
+
+        $db = DB::conn();
+
+        try {
+            $db->begin_transaction();
+
+            // Mevcut abonelik bilgilerini al
+            $stmt = $db->prepare('SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee FROM user_agents ua JOIN agent_products ap ON ua.agent_product_id = ap.id WHERE ua.id = ?');
+            $stmt->bind_param('i', $userAgentId);
+            $stmt->execute();
+            $userAgent = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$userAgent) {
+                throw new \Exception('Abonelik bulunamadı');
+            }
+
+            // Başlangıç tarihi kontrolü
+            if (!empty($subscriptionStartDate)) {
+                $dateCheck = DateTime::createFromFormat('Y-m-d', $subscriptionStartDate);
+                if (!$dateCheck) {
+                    throw new \Exception('Geçersiz başlangıç tarihi formatı');
+                }
+                
+                // created_at'ı güncelle
+                $createdAt = $subscriptionStartDate . ' ' . date('H:i:s', strtotime($userAgent['created_at']));
+                $stmt = $db->prepare('UPDATE user_agents SET created_at = ? WHERE id = ?');
+                $stmt->bind_param('si', $createdAt, $userAgentId);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            // Sonraki ödeme tarihi kontrolü
+            if (!empty($nextPaymentDate)) {
+                $dateCheck = DateTime::createFromFormat('Y-m-d', $nextPaymentDate);
+                if (!$dateCheck) {
+                    throw new \Exception('Geçersiz ödeme tarihi formatı');
+                }
+                
+                $nextDue = $nextPaymentDate . ' ' . date('H:i:s');
+                $stmt = $db->prepare('UPDATE user_agents SET next_subscription_due = ? WHERE id = ?');
+                $stmt->bind_param('si', $nextDue, $userAgentId);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            // Abonelik durumunu güncelle
+            $stmt = $db->prepare('UPDATE user_agents SET status = ?, updated_at = NOW() WHERE id = ?');
+            $stmt->bind_param('si', $subscriptionStatus, $userAgentId);
+            $stmt->execute();
+            $stmt->close();
+
+            // Manuel ödeme işaretle
+            if ($markPaid && $userAgent['subscription_monthly_fee'] > 0) {
+                // Mevcut pending ödemeyi bul
+                $stmt = $db->prepare('SELECT id, due_date FROM agent_subscription_payments WHERE user_agent_id = ? AND status = "pending" ORDER BY due_date ASC LIMIT 1');
+                $stmt->bind_param('i', $userAgentId);
+                $stmt->execute();
+                $pendingPayment = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+
+                if ($pendingPayment) {
+                    // Mevcut ödemeyi paid yap
+                    $stmt = $db->prepare('UPDATE agent_subscription_payments SET status = "paid", payment_date = NOW(), payment_method = "manual" WHERE id = ?');
+                    $stmt->bind_param('i', $pendingPayment['id']);
+                    $stmt->execute();
+                    $stmt->close();
+
+                    // Sonraki ay için yeni ödeme planla
+                    $nextMonth = date('Y-m-d', strtotime($pendingPayment['due_date'] . ' +1 month'));
+                    $stmt = $db->prepare('INSERT INTO agent_subscription_payments (user_agent_id, user_id, amount, due_date, status) VALUES (?, ?, ?, ?, "pending")');
+                    $stmt->bind_param('iids', $userAgentId, $userAgent['user_id'], $userAgent['subscription_monthly_fee'], $nextMonth);
+                    $stmt->execute();
+                    $stmt->close();
+
+                    // user_agents tablosundaki sonraki ödeme tarihini de güncelle
+                    $stmt = $db->prepare('UPDATE user_agents SET next_subscription_due = ? WHERE id = ?');
+                    $nextDueTime = $nextMonth . ' ' . date('H:i:s');
+                    $stmt->bind_param('si', $nextDueTime, $userAgentId);
+                    $stmt->execute();
+                    $stmt->close();
+                }
+            }
+
+            $db->commit();
+            
+            $successMessage = 'Abonelik başarıyla güncellendi: ' . htmlspecialchars($userAgent['product_name']);
+            if ($markPaid) {
+                $successMessage .= ' (Manuel ödeme kaydedildi)';
+            }
+            $_SESSION['success'] = $successMessage;
+
+        } catch (\Exception $e) {
+            $db->rollback();
+            error_log('Update subscription error: ' . $e->getMessage());
+            $_SESSION['error'] = 'Abonelik güncellenirken hata oluştu: ' . $e->getMessage();
+        }
+
+        header('Location: ' . \App\Helpers\Url::to('/agents'));
+        exit;
+    }
+
+    /**
      * Agent aboneliğini sil/iptal et
      */
     public function removeSubscription() {

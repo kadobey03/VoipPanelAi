@@ -60,6 +60,7 @@ $router->add('POST', '/agents/toggle-active', 'AgentsController@toggleActive');
 // Agent Management
 $router->add('POST', '/agents/update-agent-name', 'AgentsController@updateAgentName');
 $router->add('POST', '/agents/add-subscription', 'AgentsController@addSubscription');
+$router->add('POST', '/agents/update-subscription', 'AgentsController@updateSubscription');
 $router->add('POST', '/agents/remove-subscription', 'AgentsController@removeSubscription');
 
 // Agent Purchase

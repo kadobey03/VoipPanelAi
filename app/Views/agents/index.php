@@ -284,12 +284,20 @@
                         Adını Değiştir
                       </button>
 
-                      <!-- Add Subscription Button -->
+                      <!-- Add/Edit Subscription Button -->
+                      <?php if (!empty($userAgents)): ?>
+                      <button onclick="openEditSubscriptionModal('<?php echo htmlspecialchars($a['exten']); ?>', '<?php echo htmlspecialchars($a['user_login'] ?? ''); ?>', <?php echo htmlspecialchars(json_encode($userAgents)); ?>)"
+                              class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+                        <i class="fa-solid fa-edit mr-2"></i>
+                        Abonelik Düzenle
+                      </button>
+                      <?php else: ?>
                       <button onclick="openAddSubscriptionModal('<?php echo htmlspecialchars($a['exten']); ?>', '<?php echo htmlspecialchars($a['user_login'] ?? ''); ?>')"
                               class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
                         <i class="fa-solid fa-plus mr-2"></i>
                         Abonelik Ekle
                       </button>
+                      <?php endif; ?>
                     </div>
                     <?php else: ?>
                     <div class="text-center">
@@ -588,6 +596,111 @@
   </div>
 </div>
 
+<!-- Abonelik Düzenleme Modali -->
+<div id="editSubscriptionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+          <i class="fa-solid fa-edit mr-2 text-amber-600"></i>Abonelik Düzenle
+        </h3>
+        <button onclick="closeEditSubscriptionModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="editSubscriptionForm" method="post" action="/VoipPanelAi/agents/update-subscription">
+        <input type="hidden" id="editSubscriptionId" name="user_agent_id" value="">
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Agent:
+          </label>
+          <div class="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+            <span id="editSubscriptionAgentName" class="text-slate-900 dark:text-white font-medium"></span>
+            <span class="text-slate-500 dark:text-slate-400 ml-2">- Extension: #<span id="editSubscriptionAgentExten"></span></span>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Mevcut Abonelik:
+          </label>
+          <div class="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
+            <div id="currentSubscriptionInfo">
+              <!-- Burada mevcut abonelik bilgileri gösterilecek -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Abonelik Başlangıç Tarihi -->
+        <div class="mb-4">
+          <label for="editSubscriptionStartDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <i class="fa-solid fa-calendar-start mr-1"></i>Abonelik Başlangıç Tarihi:
+          </label>
+          <input type="date" id="editSubscriptionStartDate" name="subscription_start_date"
+                 class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+        </div>
+
+        <!-- Sonraki Ödeme Tarihi -->
+        <div class="mb-4">
+          <label for="editNextPaymentDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <i class="fa-solid fa-calendar-check mr-1"></i>Sonraki Ödeme Tarihi:
+          </label>
+          <input type="date" id="editNextPaymentDate" name="next_payment_date"
+                 class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Bu tarihte otomatik ödeme alınacak
+          </p>
+        </div>
+
+        <!-- Abonelik Durumu -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <i class="fa-solid fa-toggle-on mr-1"></i>Abonelik Durumu:
+          </label>
+          <select id="editSubscriptionStatus" name="subscription_status"
+                  class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+            <option value="active">🟢 Aktif</option>
+            <option value="suspended">🟡 Askıya Alınmış</option>
+            <option value="cancelled">🔴 İptal Edilmiş</option>
+          </select>
+        </div>
+
+        <!-- Manuel Ödeme Seçeneği -->
+        <div class="mb-6">
+          <div class="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-lg p-4">
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="editManualPayment" name="mark_paid"
+                     class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-emerald-600 dark:ring-offset-gray-800">
+              <div class="ml-3">
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <i class="fa-solid fa-hand-holding-dollar mr-1 text-emerald-600"></i>
+                  Sonraki ödemeyi manuel ödendi işaretle
+                </span>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Sonraki ödeme tarihi 1 ay ileri alınır
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+        
+        <div class="flex gap-3">
+          <button type="button" onclick="closeEditSubscriptionModal()"
+                  class="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            İptal
+          </button>
+          <button type="submit"
+                  class="flex-1 px-4 py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-lg hover:from-amber-700 hover:to-amber-800 transition-colors font-semibold">
+            <i class="fa-solid fa-save mr-2"></i>Güncelle
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
 // Agent ad değiştirme modal fonksiyonları
 function openEditNameModal(exten, currentName) {
@@ -630,6 +743,60 @@ function closeAddSubscriptionModal() {
   document.getElementById('priceInfo').classList.add('hidden');
 }
 
+// Abonelik düzenleme modal fonksiyonları
+function openEditSubscriptionModal(exten, agentName, userAgents) {
+  document.getElementById('editSubscriptionAgentName').textContent = agentName;
+  document.getElementById('editSubscriptionAgentExten').textContent = exten;
+  
+  // İlk abonelik bilgilerini göster
+  if (userAgents && userAgents.length > 0) {
+    const subscription = userAgents[0]; // İlk aboneliği al
+    document.getElementById('editSubscriptionId').value = subscription.id;
+    
+    // Mevcut abonelik bilgilerini göster
+    const subscriptionInfo = document.getElementById('currentSubscriptionInfo');
+    let infoHTML = `
+      <div class="space-y-2">
+        <div class="flex justify-between">
+          <span class="text-purple-700 dark:text-purple-400">Ürün:</span>
+          <span class="font-medium text-purple-800 dark:text-purple-300">${subscription.product_name}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-purple-700 dark:text-purple-400">Agent Numarası:</span>
+          <span class="font-medium text-purple-800 dark:text-purple-300">#${subscription.agent_number}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-purple-700 dark:text-purple-400">Aylık Ücret:</span>
+          <span class="font-medium text-purple-800 dark:text-purple-300">$${parseFloat(subscription.subscription_monthly_fee || 0).toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+    subscriptionInfo.innerHTML = infoHTML;
+    
+    // Form alanlarını doldur
+    if (subscription.created_at) {
+      const startDate = new Date(subscription.created_at);
+      document.getElementById('editSubscriptionStartDate').value = startDate.toISOString().split('T')[0];
+    }
+    
+    if (subscription.next_subscription_due) {
+      const nextDate = new Date(subscription.next_subscription_due);
+      document.getElementById('editNextPaymentDate').value = nextDate.toISOString().split('T')[0];
+    }
+    
+    document.getElementById('editSubscriptionStatus').value = subscription.status || 'active';
+  }
+  
+  document.getElementById('editSubscriptionModal').classList.remove('hidden');
+  document.getElementById('editSubscriptionModal').classList.add('flex');
+}
+
+function closeEditSubscriptionModal() {
+  document.getElementById('editSubscriptionModal').classList.add('hidden');
+  document.getElementById('editSubscriptionModal').classList.remove('flex');
+  document.getElementById('editSubscriptionForm').reset();
+}
+
 // Ürün seçildiğinde fiyat bilgilerini göster
 document.getElementById('agentProductId').addEventListener('change', function() {
   const selectedOption = this.options[this.selectedIndex];
@@ -670,11 +837,18 @@ document.getElementById('addSubscriptionModal').addEventListener('click', functi
   }
 });
 
+document.getElementById('editSubscriptionModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeEditSubscriptionModal();
+  }
+});
+
 // Escape tuşu ile modal kapatma
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closeEditNameModal();
     closeAddSubscriptionModal();
+    closeEditSubscriptionModal();
   }
 });
 </script>
