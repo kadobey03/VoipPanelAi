@@ -422,8 +422,8 @@ class GroupController {
         
         // Create dummy wallet record for central wallet
         $stmt = $db->prepare(
-            'INSERT INTO crypto_wallets (address, private_key_encrypted, group_id, is_used, created_at)
-             VALUES (?, ?, NULL, 1, NOW())'
+            'INSERT INTO crypto_wallets (address, private_key_encrypted, group_id, created_at)
+             VALUES (?, ?, NULL, NOW())'
         );
         $encryptedDummy = 'central_wallet_dummy'; // Not a real private key
         $stmt->bind_param('ss', $walletAddress, $encryptedDummy);
