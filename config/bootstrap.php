@@ -5,7 +5,12 @@ ob_start();
 // Session start
 session_start();
 
-// Autoloading
+// Composer autoload (if available)
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}
+
+// Manual autoloading for App namespace
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
     $base_dir = __DIR__ . '/../app/';
