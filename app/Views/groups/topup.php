@@ -102,7 +102,7 @@
           </div>
           <div class="text-right text-sm">
             <div class="font-semibold">Son Geçerlilik:</div>
-            <div class="text-orange-100"><?= date('H:i', strtotime($cryptoPaymentData['expires_at'])) ?></div>
+            <div id="expiryTime" class="text-orange-100">--:--</div>
           </div>
         </div>
       </div>
@@ -360,6 +360,17 @@
       const timeoutMinutes = <?= $cryptoPaymentData['timeout_minutes'] ?? 10 ?>;
       const startTime = new Date().getTime(); // Client time when payment started
       const timeoutMs = timeoutMinutes * 60 * 1000; // Convert to milliseconds
+      
+      // Calculate and display expiry time (client time)
+      const expiryTime = new Date(startTime + timeoutMs);
+      const expiryTimeElement = document.getElementById('expiryTime');
+      if (expiryTimeElement) {
+        expiryTimeElement.innerHTML = expiryTime.toLocaleTimeString('tr-TR', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+      }
       
       countdownInterval = setInterval(function() {
         const now = new Date().getTime(); // Current client time
