@@ -280,47 +280,10 @@ class AgentsController {
                 }
                 foreach ($agents as $agent) {
                     $agentsByGroup[$displayGroupName]['agents'][] = $agent;
-                    error_log("Agent eklendi gruba: exten=" . ($agent['exten'] ?? 'null') . ", displayGroupName='$displayGroupName'");
                 }
             }
         }
 
-        // DEBUGGING İÇİN (production'da kaldırın):
-        error_log("=== AGENTS DEBUG ===");
-        error_log("UserGroupName: '" . $userGroupName . "'");
-        error_log("UserApiGroupName: '" . $userApiGroupName . "'");
-        error_log("GroupId: " . ($groupId ?? 'none'));
-        error_log("IsSuper: " . ($isSuper ? 'true' : 'false'));
-        error_log("Total agentsDb before filter: " . count($agentsDb));
-        
-        // Agent'ların grup isimlerini logla
-        foreach ($agentsDb as $i => $agent) {
-            error_log("Agent[$i]: exten=" . ($agent['exten'] ?? 'null') . ", group_name='" . ($agent['group_name'] ?? 'null') . "', active=" . ($agent['active'] ?? 'null'));
-            if (!$isSuper && !$isUser && !$isGroupMember) {
-                $isMatch = $this->isGroupMatch($agent['group_name'] ?? '', $userGroupName, $userApiGroupName);
-                error_log("  -> isGroupMatch: " . ($isMatch ? 'YES' : 'NO'));
-            }
-        }
-        
-        error_log("Agents count after filter: " . count($agents));
-        error_log("AgentsByGroup keys: " . implode(', ', array_keys($agentsByGroup)));
-        error_log("=== END DEBUG ===");
-
-        // Debug bilgilerini view'a geç
-        $debugInfo = [
-            'userGroupName' => $userGroupName,
-            'userApiGroupName' => $userApiGroupName,
-            'groupId' => $groupId ?? 'none',
-            'isSuper' => $isSuper,
-            'isGroupAdmin' => $isGroupAdmin ?? false,
-            'isUser' => $isUser ?? false,
-            'isGroupMember' => $isGroupMember ?? false,
-            'totalAgentsDbBeforeFilter' => count($db->query('SELECT * FROM agents')->fetch_all(MYSQLI_ASSOC)),
-            'agentsAfterFilter' => count($agents),
-            'agentsByGroupKeys' => array_keys($agentsByGroup),
-            'rawAgentsDb' => $agentsDb,
-            'filteredAgents' => $agents
-        ];
 
         require __DIR__.'/../Views/agents/index.php';
     }
