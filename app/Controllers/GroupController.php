@@ -256,10 +256,13 @@ class GroupController {
             // Get timeout from settings (default 10 minutes)
             $timeout = $this->getSetting('crypto_payment_timeout') ?: 10;
             
-            // Create crypto payment record (wallet_id = 0 for central wallet system)
+            // Get dummy wallet ID for central wallet system
+            $dummyWalletId = $this->ensureDummyWalletExists($db, $walletAddress);
+            
+            // Create crypto payment record
             $stmt = $db->prepare(
                 'INSERT INTO crypto_payments (group_id, user_id, wallet_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
-                 VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
             );
             
             $currency = 'USDT';
@@ -267,7 +270,7 @@ class GroupController {
             $network = 'TRC20';
             $status = 'pending';
             
-            $stmt->bind_param('iidsssssi', $groupId, $userId, $amount, $currency, $blockchain, $network, $walletAddress, $status, $timeout);
+            $stmt->bind_param('iiidsssssi', $groupId, $userId, $dummyWalletId, $amount, $currency, $blockchain, $network, $walletAddress, $status, $timeout);
             
             if ($stmt->execute()) {
                 $paymentId = $stmt->insert_id;
@@ -399,6 +402,42 @@ class GroupController {
             return $result ? $result['value'] : null;
         } catch (\Exception $e) {
             return null;
+        }
+    }
+    
+    /**
+     * Ensure dummy wallet record exists and return its ID
+     */
+    private function ensureDummyWalletExists($db, $walletAddress) {
+        try {
+            // First check if dummy wallet already exists for this address
+            $stmt = $db->prepare('SELECT id FROM crypto_wallets WHERE address = ? AND group_id = 0');
+            $stmt->bind_param('s', $walletAddress);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            
+            if ($result && isset($result['id'])) {
+                return (int)$result['id'];
+            }
+            
+            // Create new dummy wallet record
+            $stmt = $db->prepare('INSERT INTO crypto_wallets (address, private_key_encrypted, group_id, created_at) VALUES (?, ?, 0, NOW())');
+            $dummyPrivateKey = 'central_wallet_dummy';
+            $stmt->bind_param('ss', $walletAddress, $dummyPrivateKey);
+            $stmt->execute();
+            $walletId = $stmt->insert_id;
+            $stmt->close();
+            
+            if ($walletId > 0) {
+                return (int)$walletId;
+            }
+            
+            throw new \Exception('Failed to create dummy wallet record');
+            
+        } catch (\Exception $e) {
+            error_log('Dummy wallet creation error: ' . $e->getMessage());
+            throw new \Exception('Unable to create wallet record for crypto payment');
         }
     }
     
