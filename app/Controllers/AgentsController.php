@@ -507,19 +507,42 @@ class AgentsController {
                 
                 // Eğer hala admin bulunamazsa, superadmin kullan
                 if (!$userId) {
-                    $stmt = $db->prepare('SELECT id FROM users WHERE role = "superadmin" LIMIT 1');
+                    $stmt = $db->prepare('SELECT id, group_id FROM users WHERE role = "superadmin" LIMIT 1');
                     $stmt->execute();
                     $superAdminResult = $stmt->get_result()->fetch_assoc();
                     if ($superAdminResult) {
                         $userId = $superAdminResult['id'];
-                        // Superadmin'in grup ID'sini al veya 0 olarak bırak
-                        $stmt2 = $db->prepare('SELECT group_id FROM users WHERE id = ?');
-                        $stmt2->bind_param('i', $userId);
-                        $stmt2->execute();
-                        $userGroupResult = $stmt2->get_result()->fetch_assoc();
-                        $groupId = $userGroupResult['group_id'] ?? 0;
-                        $stmt2->close();
+                        $groupId = $superAdminResult['group_id'] ?? null;
+                        
+                        // Eğer superadmin'in group_id'si yok veya geçersizse, mevcut bir grup bul
+                        if (!$groupId) {
+                            $stmt2 = $db->prepare('SELECT id FROM groups ORDER BY id ASC LIMIT 1');
+                            $stmt2->execute();
+                            $firstGroupResult = $stmt2->get_result()->fetch_assoc();
+                            if ($firstGroupResult) {
+                                $groupId = $firstGroupResult['id'];
+                            }
+                            $stmt2->close();
+                        }
                     }
+                    $stmt->close();
+                }
+            }
+            
+            // group_id doğrulaması yap
+            if ($groupId) {
+                $stmt = $db->prepare('SELECT id FROM groups WHERE id = ?');
+                $stmt->bind_param('i', $groupId);
+                $stmt->execute();
+                $groupCheck = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                
+                if (!$groupCheck) {
+                    // Geçersiz group_id, ilk mevcut grubu al
+                    $stmt = $db->prepare('SELECT id FROM groups ORDER BY id ASC LIMIT 1');
+                    $stmt->execute();
+                    $firstGroupResult = $stmt->get_result()->fetch_assoc();
+                    $groupId = $firstGroupResult ? $firstGroupResult['id'] : null;
                     $stmt->close();
                 }
             }
