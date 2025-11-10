@@ -254,10 +254,16 @@ class GroupController {
             
             $walletAddress = trim($paymentMethod['details']);
             
+            // Debug: Log the wallet address
+            error_log("Debug - Wallet address from payment method: '" . $walletAddress . "'");
+            error_log("Debug - Wallet address length: " . strlen($walletAddress));
+            
             // Validate wallet address
             $addressCheck = $security->validateTronAddress($walletAddress);
+            error_log("Debug - Validation result: " . json_encode($addressCheck));
+            
             if (!$addressCheck['valid']) {
-                return ['success' => false, 'error' => 'Ödeme yönteminde geçersiz wallet adresi'];
+                return ['success' => false, 'error' => 'Debug: Wallet adresi: "' . $walletAddress . '" - Validation: ' . json_encode($addressCheck)];
             }
             
             $db->begin_transaction();
@@ -265,10 +271,10 @@ class GroupController {
             // Get timeout from settings (default 10 minutes)
             $timeout = $this->getSetting('crypto_payment_timeout') ?: 10;
             
-            // Create crypto payment record with payment method ID as wallet_id
+            // Create crypto payment record without wallet_id (use only wallet_address)
             $stmt = $db->prepare(
-                'INSERT INTO crypto_payments (group_id, user_id, wallet_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
+                'INSERT INTO crypto_payments (group_id, user_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
             );
             
             $currency = 'USDT';
@@ -276,7 +282,7 @@ class GroupController {
             $network = 'TRC20';
             $status = 'pending';
             
-            $stmt->bind_param('iiidsssssi', $groupId, $userId, $methodId, $amount, $currency, $blockchain, $network, $walletAddress, $status, $timeout);
+            $stmt->bind_param('iidsssssi', $groupId, $userId, $amount, $currency, $blockchain, $network, $walletAddress, $status, $timeout);
             
             if ($stmt->execute()) {
                 $paymentId = $stmt->insert_id;

@@ -22,7 +22,6 @@ CREATE TABLE crypto_payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     group_id INT NOT NULL,
     user_id INT NOT NULL,
-    wallet_id INT NOT NULL,
     amount_requested DECIMAL(18,6) NOT NULL,
     amount_received DECIMAL(18,6) DEFAULT 0.000000,
     currency VARCHAR(10) DEFAULT 'USDT',
@@ -42,8 +41,7 @@ CREATE TABLE crypto_payments (
     INDEX idx_transaction_hash (transaction_hash),
     INDEX idx_group_user (group_id, user_id),
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (wallet_id) REFERENCES crypto_wallets(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Ödeme yöntemlerine cryptocurrency ekle (eğer yoksa)
