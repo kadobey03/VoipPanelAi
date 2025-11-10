@@ -56,7 +56,14 @@ try {
 
 // Language setup
 include __DIR__.'/../app/Helpers/Lang.php';
-if (isset($_GET['lang']) && in_array($_GET['lang'], ['tr', 'en'])) {
+
+// Set language priority: URL param > Session > Browser detection > Default (en)
+if (isset($_GET['lang']) && in_array($_GET['lang'], ['tr', 'en', 'ru'])) {
     \App\Helpers\Lang::set($_GET['lang']);
+} elseif (!isset($_SESSION['lang'])) {
+    // Auto-detect browser language only if no session language is set
+    $detectedLang = \App\Helpers\Lang::detectBrowserLanguage();
+    \App\Helpers\Lang::set($detectedLang);
 }
+
 \App\Helpers\Lang::load(\App\Helpers\Lang::current());

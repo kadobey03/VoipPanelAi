@@ -36,8 +36,8 @@ class SettingsController {
 
     public function changeLang() {
         if (session_status() === PHP_SESSION_NONE) session_start();
-        $lang = $_POST['lang'] ?? 'tr';
-        if (in_array($lang, ['tr', 'en'])) {
+        $lang = $_POST['lang'] ?? 'en';
+        if (in_array($lang, ['tr', 'en', 'ru'])) {
             \App\Helpers\Lang::set($lang);
         }
         header('Location: ' . (\App\Helpers\Url::to('/')));

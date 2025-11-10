@@ -56,9 +56,9 @@
                 id="languageSelect"
                 onchange="changeLanguage(this.value)"
                 class="appearance-none bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl px-4 py-2 pr-8 text-white text-sm font-medium hover:bg-white/15 hover:border-white/30 focus:bg-white/20 focus:border-cyan-300 focus:outline-none transition-all duration-300 cursor-pointer">
-                <option value="tr" <?= ($_SESSION['lang'] ?? 'tr') == 'tr' ? 'selected' : '' ?> class="bg-gray-800 text-white">🇹🇷 <?= __('turkish') ?></option>
-                <option value="en" <?= ($_SESSION['lang'] ?? 'tr') == 'en' ? 'selected' : '' ?> class="bg-gray-800 text-white">🇺🇸 <?= __('english') ?></option>
-                <option value="ru" <?= ($_SESSION['lang'] ?? 'tr') == 'ru' ? 'selected' : '' ?> class="bg-gray-800 text-white">🇷🇺 <?= __('russian') ?></option>
+                <option value="tr" <?= ($_SESSION['lang'] ?? 'en') == 'tr' ? 'selected' : '' ?> class="bg-gray-800 text-white">🇹🇷 <?= __('turkish') ?></option>
+                <option value="en" <?= ($_SESSION['lang'] ?? 'en') == 'en' ? 'selected' : '' ?> class="bg-gray-800 text-white">🇺🇸 <?= __('english') ?></option>
+                <option value="ru" <?= ($_SESSION['lang'] ?? 'en') == 'ru' ? 'selected' : '' ?> class="bg-gray-800 text-white">🇷🇺 <?= __('russian') ?></option>
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                 <i class="fa-solid fa-chevron-down text-white/70 text-xs"></i>
