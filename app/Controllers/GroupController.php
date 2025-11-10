@@ -499,32 +499,55 @@ class GroupController {
      * Cancel crypto payment
      */
     public function cancelCryptoPayment() {
-        $this->requireSuperOrGroupAdmin();
-        
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'error' => 'Method not allowed']);
-            return;
-        }
-        
-        $input = json_decode(file_get_contents('php://input'), true);
-        $paymentId = (int)($input['payment_id'] ?? 0);
-        $groupId = (int)($input['group_id'] ?? 0);
-        
-        if (!$paymentId || !$groupId) {
-            echo json_encode(['success' => false, 'error' => 'Eksik parametreler']);
-            return;
-        }
-        
-        // Permission check
-        if (!$this->isSuper() && $this->currentGroupId() !== $groupId) {
-            echo json_encode(['success' => false, 'error' => 'Yetkisiz işlem']);
-            return;
-        }
+        // Set JSON content type header first
+        header('Content-Type: application/json; charset=utf-8');
         
         try {
+            $this->startSession(); // Make sure session is started
+            
+            // Check authentication
+            if (!isset($_SESSION['user'])) {
+                echo json_encode(['success' => false, 'error' => 'Oturum gerekli']);
+                return;
+            }
+            
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+                return;
+            }
+            
+            // Read and decode input
+            $inputData = file_get_contents('php://input');
+            error_log('GroupController::cancelCryptoPayment - Raw input: ' . $inputData);
+            
+            $input = json_decode($inputData, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                error_log('GroupController::cancelCryptoPayment - JSON decode error: ' . json_last_error_msg());
+                echo json_encode(['success' => false, 'error' => 'JSON parse hatası']);
+                return;
+            }
+            
+            $paymentId = (int)($input['payment_id'] ?? 0);
+            $groupId = (int)($input['group_id'] ?? 0);
+            
+            error_log('GroupController::cancelCryptoPayment - Parsed: paymentId=' . $paymentId . ', groupId=' . $groupId);
+            
+            if (!$paymentId || !$groupId) {
+                echo json_encode(['success' => false, 'error' => 'Eksik parametreler']);
+                return;
+            }
+            
+            // Permission check
+            if (!$this->isSuper() && $this->currentGroupId() !== $groupId) {
+                echo json_encode(['success' => false, 'error' => 'Yetkisiz işlem']);
+                return;
+            }
+            
             $db = DB::conn();
             $userId = (int)($_SESSION['user']['id'] ?? 0);
+            
+            error_log('GroupController::cancelCryptoPayment - userId=' . $userId);
             
             $db->begin_transaction();
             
@@ -542,6 +565,8 @@ class GroupController {
             $payment = $stmt->get_result()->fetch_assoc();
             $stmt->close();
             
+            error_log('GroupController::cancelCryptoPayment - Found payment: ' . json_encode($payment));
+            
             if (!$payment) {
                 $db->rollback();
                 echo json_encode(['success' => false, 'error' => 'Ödeme bulunamadı veya iptal edilemez']);
@@ -552,23 +577,30 @@ class GroupController {
             $stmt = $db->prepare('UPDATE crypto_payments SET status = ? WHERE id = ?');
             $cancelledStatus = 'cancelled';
             $stmt->bind_param('si', $cancelledStatus, $paymentId);
-            $stmt->execute();
+            $executeResult1 = $stmt->execute();
             $stmt->close();
             
             // Cancel topup request
             $stmt = $db->prepare('UPDATE topup_requests SET status = ? WHERE crypto_payment_id = ?');
             $stmt->bind_param('si', $cancelledStatus, $paymentId);
-            $stmt->execute();
+            $executeResult2 = $stmt->execute();
             $stmt->close();
+            
+            error_log('GroupController::cancelCryptoPayment - Update results: ' . $executeResult1 . ', ' . $executeResult2);
             
             $db->commit();
             
+            error_log('GroupController::cancelCryptoPayment - Success');
             echo json_encode(['success' => true, 'message' => 'Ödeme başarıyla iptal edildi']);
             
         } catch (\Exception $e) {
             if (isset($db)) $db->rollback();
-            error_log('GroupController::cancelCryptoPayment Error: ' . $e->getMessage());
-            echo json_encode(['success' => false, 'error' => 'Sistem hatası']);
+            error_log('GroupController::cancelCryptoPayment Exception: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
+            echo json_encode(['success' => false, 'error' => 'Sistem hatası: ' . $e->getMessage()]);
+        } catch (\Error $e) {
+            if (isset($db)) $db->rollback();
+            error_log('GroupController::cancelCryptoPayment Fatal Error: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
+            echo json_encode(['success' => false, 'error' => 'Kritik sistem hatası']);
         }
     }
 }

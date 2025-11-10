@@ -454,36 +454,83 @@
       const paymentId = <?= $cryptoPaymentData['payment_id'] ?? 0 ?>;
       const groupId = <?= $group['id'] ?? 0 ?>;
       
+      console.log('Confirming cancel for paymentId:', paymentId, 'groupId:', groupId);
+      
       // Hide cancel modal
       hideCancelModal();
+      
+      // Show loading state
+      const statusElement = document.getElementById('paymentStatus');
+      statusElement.innerHTML = '⏳ İptal ediliyor...';
+      statusElement.className = 'px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 border border-gray-300';
       
       // Send cancel request
       fetch('/groups/cancel-crypto-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           payment_id: paymentId,
           group_id: groupId
         })
       })
-      .then(response => response.json())
+      .then(response => {
+        console.log('Cancel response status:', response.status);
+        console.log('Cancel response headers:', response.headers);
+        
+        // Check if response is ok
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        // Check content type
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          return response.text().then(text => {
+            console.error('Non-JSON response:', text);
+            throw new Error('Server yanıtı JSON formatında değil');
+          });
+        }
+        
+        return response.json();
+      })
       .then(data => {
+        console.log('Cancel response data:', data);
+        
         if (data.success) {
           // Stop timers
           clearInterval(paymentCheckInterval);
           clearInterval(countdownInterval);
           
+          // Update status
+          statusElement.innerHTML = '❌ İptal Edildi';
+          statusElement.className = 'px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 border border-gray-300 text-gray-700';
+          
           // Show success modal
           document.getElementById('cancelSuccessModal').classList.remove('hidden');
         } else {
+          // Show error
+          statusElement.innerHTML = '🔄 Ödeme Bekleniyor';
+          statusElement.className = 'px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 border border-yellow-300';
+          
           alert('İptal işlemi başarısız: ' + (data.error || 'Bilinmeyen hata'));
         }
       })
       .catch(error => {
         console.error('Cancel error:', error);
-        alert('İptal işlemi sırasında hata oluştu');
+        
+        // Restore status
+        statusElement.innerHTML = '🔄 Ödeme Bekleniyor';
+        statusElement.className = 'px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 border border-yellow-300';
+        
+        // Show detailed error message
+        let errorMessage = 'İptal işlemi sırasında hata oluştu';
+        if (error.message) {
+          errorMessage += ': ' + error.message;
+        }
+        alert(errorMessage);
       });
     }
   </script>
