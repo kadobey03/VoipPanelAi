@@ -4,5 +4,9 @@
             "App\\": "app/"
         }
     },
-    "require": {}
+    "require": {
+        "guzzlehttp/guzzle": "^7.0",
+        "phpseclib/phpseclib": "^3.0",
+        "kornrunner/secp256k1-php": "^2.0"
+    }
 }

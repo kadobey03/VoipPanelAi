@@ -70,6 +70,11 @@ $router->add('POST', '/topups/approve', 'TopupController@approve');
 $router->add('POST', '/topups/reject', 'TopupController@reject');
 $router->add('GET', '/topups/receipt', 'TopupController@receipt');
 
+// Cryptocurrency topup requests
+$router->add('GET', '/topups/crypto/status', 'TopupController@checkCryptoStatus');
+$router->add('GET', '/topups/crypto/transaction', 'TopupController@getCryptoTransactionDetails');
+$router->add('POST', '/topups/crypto/approve', 'TopupController@approveCrypto');
+
 // Profile
 $router->add('GET', '/profile', 'ProfileController@index');
 $router->add('POST', '/profile', 'ProfileController@index');
@@ -88,6 +93,8 @@ $router->add('POST', '/payment-methods/delete', 'PaymentMethodsController@delete
 
 // Transactions (balance history)
 $router->add('GET', '/transactions', 'TransactionsController@index');
+$router->add('GET', '/transactions/crypto', 'TransactionsController@cryptoDetails');
+$router->add('GET', '/transactions/export', 'TransactionsController@export');
 
 // Settings
 $router->add('GET', '/settings', 'SettingsController@index');
