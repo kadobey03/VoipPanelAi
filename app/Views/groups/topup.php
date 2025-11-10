@@ -355,13 +355,16 @@
       }
     }
     
-    // Start countdown timer
+    // Start countdown timer (using client time)
     function startCountdown() {
-      const expiryTime = new Date('<?= $cryptoPaymentData['expires_at'] ?>').getTime();
+      const timeoutMinutes = <?= $cryptoPaymentData['timeout_minutes'] ?? 10 ?>;
+      const startTime = new Date().getTime(); // Client time when payment started
+      const timeoutMs = timeoutMinutes * 60 * 1000; // Convert to milliseconds
       
       countdownInterval = setInterval(function() {
-        const now = new Date().getTime();
-        const timeLeft = expiryTime - now;
+        const now = new Date().getTime(); // Current client time
+        const elapsed = now - startTime; // Time elapsed since payment started
+        const timeLeft = Math.max(0, timeoutMs - elapsed); // Remaining time
         
         if (timeLeft > 0) {
           const minutes = Math.floor(timeLeft / (1000 * 60));
