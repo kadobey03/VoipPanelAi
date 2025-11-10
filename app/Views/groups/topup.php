@@ -157,7 +157,7 @@
           <div class="text-6xl mb-4">✅</div>
           <h3 class="text-xl font-bold text-green-600 mb-2">İptal Edildi</h3>
           <p class="text-gray-600 dark:text-gray-400 mb-4">Ödeme talebiniz başarıyla iptal edildi.</p>
-          <button onclick="location.href='/groups/topup?id=<?= $group['id'] ?>'"
+          <button onclick="location.href='<?= \App\Helpers\Url::to('/groups/topup?id=' . $group['id']) ?>'"
                   class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
             Tamam
           </button>
