@@ -271,11 +271,25 @@ class AgentsController {
         }
 
         // DEBUGGING İÇİN (production'da kaldırın):
-        // error_log("UserGroupName: " . $userGroupName);
-        // error_log("Agents count: " . count($agents));
-        // error_log("AgentsByGroup keys: " . implode(', ', array_keys($agentsByGroup)));
-        // error_log("IsSuper: " . ($isSuper ? 'true' : 'false'));
-        // error_log("AgentsByGroup structure: " . json_encode($agentsByGroup));
+        error_log("=== AGENTS DEBUG ===");
+        error_log("UserGroupName: '" . $userGroupName . "'");
+        error_log("UserApiGroupName: '" . $userApiGroupName . "'");
+        error_log("GroupId: " . ($groupId ?? 'none'));
+        error_log("IsSuper: " . ($isSuper ? 'true' : 'false'));
+        error_log("Total agentsDb before filter: " . count($agentsDb));
+        
+        // Agent'ların grup isimlerini logla
+        foreach ($agentsDb as $i => $agent) {
+            error_log("Agent[$i]: exten=" . ($agent['exten'] ?? 'null') . ", group_name='" . ($agent['group_name'] ?? 'null') . "', active=" . ($agent['active'] ?? 'null'));
+            if (!$isSuper && !$isUser && !$isGroupMember) {
+                $isMatch = $this->isGroupMatch($agent['group_name'] ?? '', $userGroupName, $userApiGroupName);
+                error_log("  -> isGroupMatch: " . ($isMatch ? 'YES' : 'NO'));
+            }
+        }
+        
+        error_log("Agents count after filter: " . count($agents));
+        error_log("AgentsByGroup keys: " . implode(', ', array_keys($agentsByGroup)));
+        error_log("=== END DEBUG ===");
 
         require __DIR__.'/../Views/agents/index.php';
     }
