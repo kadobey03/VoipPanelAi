@@ -317,6 +317,9 @@ class GroupController {
                 
                 $db->commit();
                 
+                $createdAt = date('Y-m-d H:i:s');
+                $expiresAt = date('Y-m-d H:i:s', strtotime("+{$timeout} minutes"));
+                
                 return [
                     'success' => true,
                     'data' => [
@@ -325,7 +328,9 @@ class GroupController {
                         'amount' => $amount,
                         'currency' => $currency,
                         'network' => $network,
-                        'expires_at' => date('Y-m-d H:i:s', strtotime("+{$timeout} minutes"))
+                        'created_at' => $createdAt,
+                        'expires_at' => $expiresAt,
+                        'timeout_minutes' => $timeout
                     ]
                 ];
             }
@@ -380,13 +385,20 @@ class GroupController {
                 return null;
             }
             
+            // Calculate timeout from creation time to expiry
+            $createdAt = strtotime($payment['created_at']);
+            $expiryAt = strtotime($payment['expired_at']);
+            $timeoutMinutes = ($expiryAt - $createdAt) / 60;
+            
             return [
                 'payment_id' => $payment['id'],
                 'wallet_address' => $payment['wallet_address'],
                 'amount' => $payment['amount_requested'],
                 'currency' => $payment['currency'],
                 'network' => $payment['network'],
-                'expires_at' => $payment['expired_at']
+                'created_at' => $payment['created_at'],
+                'expires_at' => $payment['expired_at'],
+                'timeout_minutes' => (int)$timeoutMinutes
             ];
             
         } catch (\Exception $e) {

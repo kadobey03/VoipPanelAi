@@ -398,14 +398,23 @@
       }
     }
     
-    // Start countdown timer (using client time)
+    // Start countdown timer (using real payment creation time)
     function startCountdown() {
+      const createdAtStr = '<?= $cryptoPaymentData['created_at'] ?? '' ?>';
       const timeoutMinutes = <?= $cryptoPaymentData['timeout_minutes'] ?? 10 ?>;
-      const startTime = new Date().getTime(); // Client time when payment started
-      const timeoutMs = timeoutMinutes * 60 * 1000; // Convert to milliseconds
       
-      // Calculate and display expiry time (client time)
-      const expiryTime = new Date(startTime + timeoutMs);
+      if (!createdAtStr) {
+        console.error('Payment creation time not available');
+        return;
+      }
+      
+      // Parse payment creation time (server time)
+      const paymentCreatedAt = new Date(createdAtStr).getTime();
+      const timeoutMs = timeoutMinutes * 60 * 1000; // Convert to milliseconds
+      const paymentExpiryTime = paymentCreatedAt + timeoutMs;
+      
+      // Calculate and display expiry time
+      const expiryTime = new Date(paymentExpiryTime);
       const expiryTimeElement = document.getElementById('expiryTime');
       if (expiryTimeElement) {
         expiryTimeElement.innerHTML = expiryTime.toLocaleTimeString('tr-TR', {
@@ -417,8 +426,7 @@
       
       countdownInterval = setInterval(function() {
         const now = new Date().getTime(); // Current client time
-        const elapsed = now - startTime; // Time elapsed since payment started
-        const timeLeft = Math.max(0, timeoutMs - elapsed); // Remaining time
+        const timeLeft = Math.max(0, paymentExpiryTime - now); // Remaining time from expiry
         
         if (timeLeft > 0) {
           const minutes = Math.floor(timeLeft / (1000 * 60));
