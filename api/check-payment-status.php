@@ -28,19 +28,38 @@ if (!$paymentId || !$walletAddress) {
 }
 
 try {
-    $db = DB::conn();
+    // Try to get DB connection first
+    try {
+        $db = DB::conn();
+    } catch (\Exception $e) {
+        error_log('DB connection error in check-payment-status: ' . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Veritabanı bağlantı hatası'
+        ]);
+        exit;
+    }
     
-    // Get payment info
-    $stmt = $db->prepare(
-        'SELECT cp.*, cw.group_id 
-         FROM crypto_payments cp 
-         JOIN crypto_wallets cw ON cp.wallet_id = cw.id 
-         WHERE cp.id = ? AND cp.wallet_address = ?'
-    );
-    $stmt->bind_param('is', $paymentId, $walletAddress);
-    $stmt->execute();
-    $payment = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
+    // Get payment info with better error handling
+    try {
+        $stmt = $db->prepare(
+            'SELECT cp.*, cw.group_id
+             FROM crypto_payments cp
+             JOIN crypto_wallets cw ON cp.wallet_id = cw.id
+             WHERE cp.id = ? AND cp.wallet_address = ?'
+        );
+        $stmt->bind_param('is', $paymentId, $walletAddress);
+        $stmt->execute();
+        $payment = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+    } catch (\Exception $e) {
+        error_log('DB query error in check-payment-status: ' . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Ödeme bilgisi alınamadı'
+        ]);
+        exit;
+    }
     
     if (!$payment) {
         echo json_encode(['error' => 'Payment not found']);
@@ -57,8 +76,17 @@ try {
         exit;
     }
     
-    // Initialize TRON client for blockchain check
-    $tronClient = new TronClient();
+    // Initialize TRON client for blockchain check with error handling
+    try {
+        $tronClient = new TronClient();
+    } catch (\Exception $e) {
+        error_log('TronClient initialization error: ' . $e->getMessage());
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Blockchain bağlantı hatası'
+        ]);
+        exit;
+    }
     
     // Get USDT TRC20 balance for the wallet
     $balance = $tronClient->getTRC20Balance($walletAddress);
@@ -174,10 +202,18 @@ try {
     }
     
 } catch (\Exception $e) {
-    error_log('Payment status check error: ' . $e->getMessage());
+    error_log('Payment status check error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     echo json_encode([
         'status' => 'error',
-        'message' => 'Sistem hatası, lütfen tekrar deneyin'
+        'message' => 'Sistem hatası, lütfen tekrar deneyin',
+        'debug' => 'Error: ' . $e->getMessage()
+    ]);
+} catch (\Error $e) {
+    error_log('Payment status check fatal error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Kritik sistem hatası',
+        'debug' => 'Fatal Error: ' . $e->getMessage()
     ]);
 }
 ?>
