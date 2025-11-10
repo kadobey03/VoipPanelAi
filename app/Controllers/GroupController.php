@@ -256,10 +256,10 @@ class GroupController {
             // Get timeout from settings (default 10 minutes)
             $timeout = $this->getSetting('crypto_payment_timeout') ?: 10;
             
-            // Create crypto payment record (wallet_id can be NULL for central wallet system)
+            // Create crypto payment record (wallet_id = 0 for central wallet system)
             $stmt = $db->prepare(
                 'INSERT INTO crypto_payments (group_id, user_id, wallet_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
-                 VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
+                 VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
             );
             
             $currency = 'USDT';
