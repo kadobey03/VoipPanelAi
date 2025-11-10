@@ -122,54 +122,54 @@
       </div>
       <?php else: ?>
       
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <?php foreach ($products as $product): ?>
-        <div class="bg-gradient-to-br from-white to-slate-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl border border-slate-200 dark:border-slate-600 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
+        <div class="bg-gradient-to-br from-white to-slate-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl border border-slate-200 dark:border-slate-600 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] flex flex-col h-full min-h-[580px]">
           <!-- Header -->
-          <div class="bg-gradient-to-r from-emerald-500 to-green-600 p-6 text-white">
-            <h3 class="text-2xl font-bold mb-2"><?php echo htmlspecialchars($product['name']); ?></h3>
-            <p class="text-emerald-100 leading-relaxed"><?php echo htmlspecialchars($product['description']); ?></p>
+          <div class="bg-gradient-to-r from-emerald-500 to-green-600 p-4 text-white flex-shrink-0">
+            <h3 class="text-xl font-bold mb-2 line-clamp-2"><?php echo htmlspecialchars($product['name']); ?></h3>
+            <p class="text-emerald-100 text-sm leading-relaxed line-clamp-3"><?php echo htmlspecialchars($product['description']); ?></p>
           </div>
 
           <!-- Content -->
-          <div class="p-6">
+          <div class="p-4 flex flex-col flex-grow">
             <!-- Features -->
-            <div class="space-y-4 mb-6">
-              <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 w-5 h-5 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center">
+            <div class="space-y-3 mb-4 flex-grow">
+              <div class="flex items-center gap-2">
+                <div class="flex-shrink-0 w-4 h-4 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center">
                   <i class="fa-solid fa-phone text-emerald-600 dark:text-emerald-400 text-xs"></i>
                 </div>
-                <div>
+                <div class="text-sm">
                   <span class="text-slate-900 dark:text-white font-medium"><?php echo htmlspecialchars($product['phone_prefix']); ?></span>
                   <span class="text-slate-600 dark:text-slate-400"> li numara</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 w-5 h-5 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+              <div class="flex items-center gap-2">
+                <div class="flex-shrink-0 w-4 h-4 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
                   <i class="fa-solid fa-clock text-blue-600 dark:text-blue-400 text-xs"></i>
                 </div>
-                <div>
+                <div class="text-sm">
                   <span class="text-slate-900 dark:text-white font-medium">$<?php echo number_format($product['per_minute_cost'], 4); ?></span>
-                  <span class="text-slate-600 dark:text-slate-400"> dakika başı ücret</span>
+                  <span class="text-slate-600 dark:text-slate-400"> dakika başı</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 w-5 h-5 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
+              <div class="flex items-center gap-2">
+                <div class="flex-shrink-0 w-4 h-4 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
                   <i class="fa-solid fa-user text-purple-600 dark:text-purple-400 text-xs"></i>
                 </div>
-                <div>
+                <div class="text-sm">
                   <span class="text-slate-900 dark:text-white font-medium"><?php echo $product['is_single_user'] ? 'Tek kullanıcı' : 'Çoklu kullanıcı'; ?></span>
                 </div>
               </div>
 
               <?php if ($product['is_callback_enabled']): ?>
-              <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 w-5 h-5 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center">
+              <div class="flex items-center gap-2">
+                <div class="flex-shrink-0 w-4 h-4 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center">
                   <i class="fa-solid fa-phone-flip text-orange-600 dark:text-orange-400 text-xs"></i>
                 </div>
-                <div>
+                <div class="text-sm">
                   <span class="text-slate-900 dark:text-white font-medium">Geri aranabilir</span>
                 </div>
               </div>
@@ -177,49 +177,51 @@
             </div>
 
             <!-- Pricing -->
-            <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-4 mb-6">
+            <div class="bg-slate-50 dark:bg-slate-700 rounded-xl p-3 mb-4 mt-auto">
               <div class="text-center">
-                <div class="text-3xl font-bold text-slate-900 dark:text-white mb-1">
+                <div class="text-2xl font-bold text-slate-900 dark:text-white mb-1">
                   $<?php echo number_format($product['price'], 2); ?>
                 </div>
                 <?php if ($product['is_subscription']): ?>
-                <div class="text-sm text-slate-600 dark:text-slate-400 mb-2">Kurulum Ücreti</div>
-                <div class="text-lg font-semibold text-orange-600 dark:text-orange-400">
+                <div class="text-xs text-slate-600 dark:text-slate-400 mb-1">Kurulum Ücreti</div>
+                <div class="text-sm font-semibold text-orange-600 dark:text-orange-400">
                   + $<?php echo number_format($product['subscription_monthly_fee'], 2); ?>/ay
                 </div>
-                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Aylık abonelik ücreti</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">Aylık abonelik</div>
                 <?php else: ?>
-                <div class="text-sm text-green-600 dark:text-green-400 font-medium">Tek Satın Alma - Ömür Boyu</div>
+                <div class="text-xs text-green-600 dark:text-green-400 font-medium">Tek Satın Alma - Ömür Boyu</div>
                 <?php endif; ?>
               </div>
             </div>
 
             <!-- Purchase Button -->
-            <form method="post" action="/VoipPanelAi/agents/purchase" class="mb-0">
-              <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
-              <button type="submit" 
-                      class="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 <?php echo ($balance < $product['price']) ? 'opacity-50 cursor-not-allowed' : ''; ?>"
-                      <?php echo ($balance < $product['price']) ? 'disabled' : ''; ?>>
-                <div class="flex items-center justify-center gap-2">
-                  <?php if ($balance < $product['price']): ?>
-                    <i class="fa-solid fa-wallet text-lg"></i>
-                    <span>Yetersiz Bakiye</span>
-                  <?php else: ?>
-                    <i class="fa-solid fa-shopping-cart text-lg"></i>
-                    <span>Satın Al</span>
-                  <?php endif; ?>
-                </div>
-              </button>
-            </form>
+            <div class="mt-auto">
+              <form method="post" action="/VoipPanelAi/agents/purchase" class="mb-0">
+                <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                <button type="submit"
+                        class="w-full px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 <?php echo ($balance < $product['price']) ? 'opacity-50 cursor-not-allowed' : ''; ?>"
+                        <?php echo ($balance < $product['price']) ? 'disabled' : ''; ?>>
+                  <div class="flex items-center justify-center gap-2">
+                    <?php if ($balance < $product['price']): ?>
+                      <i class="fa-solid fa-wallet text-sm"></i>
+                      <span class="text-sm">Yetersiz Bakiye</span>
+                    <?php else: ?>
+                      <i class="fa-solid fa-shopping-cart text-sm"></i>
+                      <span class="text-sm">Satın Al</span>
+                    <?php endif; ?>
+                  </div>
+                </button>
+              </form>
 
-            <?php if ($balance < $product['price']): ?>
-            <div class="mt-3 text-center">
-              <a href="/VoipPanelAi/balance/topup" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-sm font-medium">
-                <i class="fa-solid fa-plus-circle mr-1"></i>
-                Bakiye Yükle
-              </a>
+              <?php if ($balance < $product['price']): ?>
+              <div class="mt-2 text-center">
+                <a href="/VoipPanelAi/balance/topup" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-xs font-medium">
+                  <i class="fa-solid fa-plus-circle mr-1"></i>
+                  Bakiye Yükle
+                </a>
+              </div>
+              <?php endif; ?>
             </div>
-            <?php endif; ?>
           </div>
         </div>
         <?php endforeach; ?>
