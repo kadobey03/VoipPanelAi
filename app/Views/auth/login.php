@@ -59,7 +59,7 @@
         <?php endif; ?>
 
         <!-- Login Form -->
-        <form method="post" class="space-y-6" id="loginForm">
+        <form method="post" action="/VoipPanelAi/login" class="space-y-6" id="loginForm">
           <!-- Username Field -->
           <div class="input-group animate-scale-in" style="animation-delay: 0.1s;">
             <label class="block label-text text-base font-semibold mb-3 flex items-center gap-2">
