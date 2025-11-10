@@ -9,6 +9,7 @@ require_once '../config/bootstrap.php';
 
 use App\Helpers\DB;
 use App\Helpers\TronClient;
+use App\Helpers\TelegramNotifier;
 
 // Check if user is authenticated
 if (!isset($_SESSION['user'])) {
@@ -195,6 +196,21 @@ try {
                 // Payment confirmed! Update database
                 $db->begin_transaction();
                 try {
+                    // Get group info and current balance for Telegram notification
+                    $groupName = 'Bilinmeyen Grup';
+                    $balanceBefore = 0;
+                    if ($payment['group_id']) {
+                        $stmt = $db->prepare('SELECT name, balance FROM groups WHERE id = ?');
+                        $stmt->bind_param('i', $payment['group_id']);
+                        $stmt->execute();
+                        $groupResult = $stmt->get_result()->fetch_assoc();
+                        if ($groupResult) {
+                            $groupName = $groupResult['name'];
+                            $balanceBefore = (float)$groupResult['balance'];
+                        }
+                        $stmt->close();
+                    }
+                    
                     // Update crypto payment status
                     $stmt = $db->prepare('UPDATE crypto_payments SET status = ?, confirmed_at = NOW() WHERE id = ?');
                     $confirmedStatus = 'confirmed';
@@ -210,7 +226,7 @@ try {
                     
                     // Create transaction record
                     $stmt = $db->prepare(
-                        'INSERT INTO transactions (group_id, type, amount, reference, description) 
+                        'INSERT INTO transactions (group_id, type, amount, reference, description)
                          VALUES (?, ?, ?, ?, ?)'
                     );
                     $type = 'topup';
@@ -218,6 +234,7 @@ try {
                     $description = 'USDT TRC20 cryptocurrency payment';
                     $stmt->bind_param('isdss', $payment['group_id'], $type, $expectedAmount, $reference, $description);
                     $stmt->execute();
+                    $transactionId = $db->insert_id;
                     $stmt->close();
                     
                     // Update topup request status
@@ -228,6 +245,17 @@ try {
                     $stmt->close();
                     
                     $db->commit();
+                    
+                    // Send Telegram notification
+                    try {
+                        $balanceAfter = $balanceBefore + $expectedAmount;
+                        $telegram = new TelegramNotifier();
+                        $telegram->sendPaymentNotification($groupName, $expectedAmount, $paymentId, $transactionId, $balanceBefore, $balanceAfter);
+                        error_log("Telegram notification sent for payment ID: $paymentId");
+                    } catch (\Exception $e) {
+                        error_log('Telegram notification failed: ' . $e->getMessage());
+                        // Don't fail the payment if Telegram fails
+                    }
                     
                     echo json_encode([
                         'status' => 'confirmed',

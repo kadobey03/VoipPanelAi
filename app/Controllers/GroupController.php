@@ -6,6 +6,7 @@ use App\Helpers\ApiClient;
 use App\Helpers\TronWallet;
 use App\Helpers\TronClient;
 use App\Helpers\CryptoSecurity;
+use App\Helpers\TelegramNotifier;
 
 class GroupController {
     private function startSession() { if (session_status()===PHP_SESSION_NONE) session_start(); }
@@ -316,6 +317,29 @@ class GroupController {
                 $stmt->close();
                 
                 $db->commit();
+                
+                // Send Telegram notification for new payment request
+                try {
+                    // Get group name and current balance for notification
+                    $groupName = 'Bilinmeyen Grup';
+                    $currentBalance = 0;
+                    $stmt = $db->prepare('SELECT name, balance FROM groups WHERE id = ?');
+                    $stmt->bind_param('i', $groupId);
+                    $stmt->execute();
+                    $groupResult = $stmt->get_result()->fetch_assoc();
+                    if ($groupResult) {
+                        $groupName = $groupResult['name'];
+                        $currentBalance = (float)$groupResult['balance'];
+                    }
+                    $stmt->close();
+                    
+                    $telegram = new TelegramNotifier();
+                    $telegram->sendPaymentRequestNotification($groupName, $amount, $paymentId, $currentBalance);
+                    error_log("Telegram payment request notification sent for payment ID: $paymentId");
+                } catch (\Exception $e) {
+                    error_log('Telegram payment request notification failed: ' . $e->getMessage());
+                    // Don't fail the payment creation if Telegram fails
+                }
                 
                 $createdAt = date('Y-m-d H:i:s');
                 $expiresAt = date('Y-m-d H:i:s', strtotime("+{$timeout} minutes"));
