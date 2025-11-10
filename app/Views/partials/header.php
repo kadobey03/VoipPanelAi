@@ -9,7 +9,7 @@ function __($key) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="<?= Lang::current() ?>">
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,8 +67,8 @@ function __($key) {
 
               <!-- Brand Text -->
               <div class="relative">
-                <span class="text-white font-bold text-base lg:text-lg tracking-wide">PapaM VoIP Panel</span>
-                <div class="text-white/70 text-xs font-medium hidden sm:block">Modern İletişim Çözümleri</div>
+                <span class="text-white font-bold text-base lg:text-lg tracking-wide"><?= __('papam_voip_panel') ?></span>
+                <div class="text-white/70 text-xs font-medium hidden sm:block"><?= __('modern_communication_solutions') ?></div>
               </div>
             </a>
           </div>
@@ -79,21 +79,21 @@ function __($key) {
               <!-- Dashboard/Home -->
               <a href="<?= Url::to('/') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
                 <i class="fa-solid fa-house text-base"></i>
-                <span class="font-medium text-sm">Anasayfa</span>
+                <span class="font-medium text-sm"><?= __('dashboard') ?></span>
                 <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </a>
   
               <!-- Users -->
               <a href="<?= Url::to('/users') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
                 <i class="fa-solid fa-users text-base"></i>
-                <span class="font-medium text-sm">Kullanıcılar</span>
+                <span class="font-medium text-sm"><?= __('users') ?></span>
                 <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </a>
   
               <!-- Groups -->
               <a href="<?= Url::to('/groups') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
                 <i class="fa-solid fa-layer-group text-base"></i>
-                <span class="font-medium text-sm">Gruplar</span>
+                <span class="font-medium text-sm"><?= __('groups') ?></span>
                 <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </a>
             <?php endif; ?>
@@ -101,14 +101,14 @@ function __($key) {
             <!-- Calls -->
             <a href="<?= Url::to('/calls/history') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
               <i class="fa-solid fa-phone text-base"></i>
-              <span class="font-medium text-sm">Çağrılar</span>
+              <span class="font-medium text-sm"><?= __('calls') ?></span>
               <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
 
             <!-- Reports -->
             <a href="<?= Url::to('/reports') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
               <i class="fa-solid fa-chart-line text-base"></i>
-              <span class="font-medium text-sm">Raporlar</span>
+              <span class="font-medium text-sm"><?= __('reports') ?></span>
               <div class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
 
@@ -117,7 +117,7 @@ function __($key) {
             <div class="relative" id="agent-menu-container">
               <button id="agent-menu-btn" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
                 <i class="fa-solid fa-user-nurse text-base"></i>
-                <span class="font-medium text-sm">Agent</span>
+                <span class="font-medium text-sm"><?= __('agents') ?></span>
                 <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300 group-hover:rotate-180"></i>
                 <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
@@ -125,7 +125,7 @@ function __($key) {
               <!-- Agent Dropdown Menu -->
               <div id="agent-menu" class="absolute hidden right-0 mt-2 w-64 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/20 py-3 z-50">
                 <div class="px-4 py-2 border-b border-slate-200/50 dark:border-slate-700/50">
-                  <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Agent Yönetimi</h3>
+                  <h3 class="text-sm font-semibold text-slate-800 dark:text-white"><?= __('agents') ?> <?= __('settings') ?></h3>
                 </div>
                 <div class="py-2">
                   <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/agents') ?>">
@@ -133,8 +133,8 @@ function __($key) {
                       <i class="fa-solid fa-headset text-cyan-600 dark:text-cyan-400"></i>
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-slate-800 dark:text-white">Agentler</div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">Agent durumlarını görüntüle</div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('agents') ?></div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('agent_status') ?></div>
                     </div>
                   </a>
                   <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/agents/purchase') ?>">
@@ -142,8 +142,8 @@ function __($key) {
                       <i class="fa-solid fa-shopping-cart text-green-600 dark:text-green-400"></i>
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-slate-800 dark:text-white">Agent Satın Al</div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">Yeni agent satın alın</div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('agents') ?> <?= __('topup') ?></div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('agents') ?> <?= __('create') ?></div>
                     </div>
                   </a>
                   <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
@@ -152,8 +152,8 @@ function __($key) {
                       <i class="fa-solid fa-cogs text-purple-600 dark:text-purple-400"></i>
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-slate-800 dark:text-white">Ürün Yönetimi</div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">Agent ürünlerini yönet</div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('settings') ?></div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('agents') ?> <?= __('settings') ?></div>
                     </div>
                   </a>
                   <?php endif; ?>
@@ -164,8 +164,8 @@ function __($key) {
                       <i class="fa-solid fa-calendar-alt text-indigo-600 dark:text-indigo-400"></i>
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-slate-800 dark:text-white">Abonelik Yönetimi</div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400"><?php echo ($_SESSION['user']['role']??'') === 'superadmin' ? 'Tüm abonelikler' : 'Grup abonelikleri'; ?></div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('agents') ?> <?= __('settings') ?></div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400"><?php echo ($_SESSION['user']['role']??'') === 'superadmin' ? __('all') : __('groups'); ?></div>
                     </div>
                   </a>
                   <?php endif; ?>
@@ -179,7 +179,7 @@ function __($key) {
             <div class="relative" id="balance-menu-container">
               <button id="balance-menu-btn" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
                 <i class="fa-solid fa-wallet text-base"></i>
-                <span class="font-medium text-sm">Bakiye</span>
+                <span class="font-medium text-sm"><?= __('balance') ?></span>
                 <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300 group-hover:rotate-180"></i>
                 <div class="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
@@ -187,7 +187,7 @@ function __($key) {
               <!-- Dropdown Menu -->
               <div id="balance-menu" class="absolute hidden right-0 mt-2 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/20 py-3 z-50">
                 <div class="px-4 py-2 border-b border-slate-200/50 dark:border-slate-700/50">
-                  <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Bakiye Yönetimi</h3>
+                  <h3 class="text-sm font-semibold text-slate-800 dark:text-white"><?= __('balance') ?> <?= __('settings') ?></h3>
                 </div>
                 <div class="py-2">
                   <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/topups') ?>">
@@ -195,8 +195,8 @@ function __($key) {
                       <i class="fa-solid fa-inbox text-indigo-600 dark:text-indigo-400"></i>
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-slate-800 dark:text-white">Yükleme Talepleri</div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">Bekleyen talepleri yönet</div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('topup_requests') ?></div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('settings') ?></div>
                     </div>
                   </a>
                   <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/balance/topup') ?>">
@@ -204,8 +204,8 @@ function __($key) {
                       <i class="fa-solid fa-circle-plus text-emerald-600 dark:text-emerald-400"></i>
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-slate-800 dark:text-white">Bakiye Yükle</div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">Hesabınıza bakiye ekleyin</div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('topup') ?></div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('balance') ?> <?= __('topup') ?></div>
                     </div>
                   </a>
                   <a class="flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200" href="<?= Url::to('/transactions') ?>">
@@ -213,8 +213,8 @@ function __($key) {
                       <i class="fa-solid fa-clock-rotate-left text-blue-600 dark:text-blue-400"></i>
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-slate-800 dark:text-white">Bakiye Geçmişi</div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">İşlem geçmişinizi görüntüleyin</div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('balance_history') ?></div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('balance_history') ?></div>
                     </div>
                   </a>
                   <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
@@ -224,8 +224,8 @@ function __($key) {
                       <i class="fa-solid fa-money-bill-transfer text-purple-600 dark:text-purple-400"></i>
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-slate-800 dark:text-white">Ödeme Yöntemleri</div>
-                      <div class="text-xs text-slate-500 dark:text-slate-400">Ödeme yöntemlerini yönet</div>
+                      <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('payment_methods') ?></div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('payment_methods') ?> <?= __('settings') ?></div>
                     </div>
                   </a>
                   <?php endif; ?>
@@ -238,14 +238,14 @@ function __($key) {
             <!-- Settings -->
             <a href="<?= Url::to('/settings') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
               <i class="fa-solid fa-cogs text-base"></i>
-              <span class="font-medium text-sm">Ayarlar</span>
+              <span class="font-medium text-sm"><?= __('settings') ?></span>
               <div class="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
             
             <!-- Payment Settings -->
             <a href="<?= Url::to('/payment-settings') ?>" class="relative group flex items-center space-x-1.5 px-3 py-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
               <i class="fa-solid fa-credit-card text-base"></i>
-              <span class="font-medium text-sm">Ödeme Ayarları</span>
+              <span class="font-medium text-sm"><?= __('payment_methods') ?> <?= __('settings') ?></span>
               <div class="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
             <?php endif; ?>
@@ -258,6 +258,8 @@ function __($key) {
               <button id="lang-menu-btn" class="relative group flex items-center space-x-1 px-2 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 transform hover:scale-105">
                 <?php if(Lang::current() === 'tr'): ?>
                   <span class="text-base">🇹🇷</span>
+                <?php elseif(Lang::current() === 'ru'): ?>
+                  <span class="text-base">🇷🇺</span>
                 <?php else: ?>
                   <span class="text-base">🇺🇸</span>
                 <?php endif; ?>
@@ -266,7 +268,7 @@ function __($key) {
               </button>
 
               <!-- Language Dropdown -->
-              <div id="lang-menu" class="absolute hidden right-0 mt-2 w-32 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/20 py-2 z-50">
+              <div id="lang-menu" class="absolute hidden right-0 mt-2 w-36 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/20 py-2 z-50">
                 <form method="post" action="/VoipPanelAi/change-lang">
                   <button type="submit" name="lang" value="tr" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
                     <span class="text-lg">🇹🇷</span>
@@ -275,6 +277,10 @@ function __($key) {
                   <button type="submit" name="lang" value="en" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
                     <span class="text-lg">🇺🇸</span>
                     <span class="text-sm font-medium text-slate-800 dark:text-white"><?= __('english') ?: 'English' ?></span>
+                  </button>
+                  <button type="submit" name="lang" value="ru" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
+                    <span class="text-lg">🇷🇺</span>
+                    <span class="text-sm font-medium text-slate-800 dark:text-white"><?= __('russian') ?: 'Русский' ?></span>
                   </button>
                 </form>
               </div>
@@ -323,8 +329,8 @@ function __($key) {
                         <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-sm"></i>
                       </div>
                       <div>
-                        <div class="text-sm font-medium text-slate-800 dark:text-white">Profil</div>
-                        <div class="text-xs text-slate-500 dark:text-slate-400">Hesap ayarları</div>
+                        <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('profile') ?></div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('settings') ?></div>
                       </div>
                     </a>
 
@@ -333,8 +339,8 @@ function __($key) {
                         <i class="fa-solid fa-gear text-blue-600 dark:text-blue-400 text-sm"></i>
                       </div>
                       <div>
-                        <div class="text-sm font-medium text-slate-800 dark:text-white">Ayarlar</div>
-                        <div class="text-xs text-slate-500 dark:text-slate-400">Tercihler</div>
+                        <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('settings') ?></div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('settings') ?></div>
                       </div>
                     </a>
                   </div>
@@ -345,8 +351,8 @@ function __($key) {
                         <i class="fa-solid fa-right-from-bracket text-red-600 dark:text-red-400 text-sm"></i>
                       </div>
                       <div>
-                        <div class="text-sm font-medium text-slate-800 dark:text-white">Çıkış Yap</div>
-                        <div class="text-xs text-slate-500 dark:text-slate-400">Oturumu kapat</div>
+                        <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('logout') ?></div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('logout') ?></div>
                       </div>
                     </a>
                   </div>
@@ -386,47 +392,47 @@ function __($key) {
               <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/') ?>">
                 <i class="fa-solid fa-house text-white"></i>
-                <span class="text-white font-medium">Anasayfa</span>
+                <span class="text-white font-medium"><?= __('dashboard') ?></span>
               </a>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/users') ?>">
                 <i class="fa-solid fa-users text-white"></i>
-                <span class="text-white font-medium">Kullanıcılar</span>
+                <span class="text-white font-medium"><?= __('users') ?></span>
               </a>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/groups') ?>">
                 <i class="fa-solid fa-layer-group text-white"></i>
-                <span class="text-white font-medium">Gruplar</span>
+                <span class="text-white font-medium"><?= __('groups') ?></span>
               </a>
               <?php endif; ?>
 
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/calls/history') ?>">
                 <i class="fa-solid fa-phone text-white"></i>
-                <span class="text-white font-medium">Çağrılar</span>
+                <span class="text-white font-medium"><?= __('calls') ?></span>
               </a>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/reports') ?>">
                 <i class="fa-solid fa-chart-line text-white"></i>
-                <span class="text-white font-medium">Raporlar</span>
+                <span class="text-white font-medium"><?= __('reports') ?></span>
               </a>
 
               <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role']??'', ['user','groupmember'])): ?>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents') ?>">
                 <i class="fa-solid fa-headset text-white"></i>
-                <span class="text-white font-medium">Agentler</span>
+                <span class="text-white font-medium"><?= __('agents') ?></span>
               </a>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents/purchase') ?>">
                 <i class="fa-solid fa-shopping-cart text-white"></i>
-                <span class="text-white font-medium">Agent Satın Al</span>
+                <span class="text-white font-medium"><?= __('agents') ?> <?= __('topup') ?></span>
               </a>
               <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents/manage-products') ?>">
                 <i class="fa-solid fa-cogs text-white"></i>
-                <span class="text-white font-medium">Ürün Yönetimi</span>
+                <span class="text-white font-medium"><?= __('settings') ?></span>
               </a>
               <?php endif; ?>
               
               <?php if(isset($_SESSION['user']) && in_array($_SESSION['user']['role']??'', ['superadmin', 'groupadmin'])): ?>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/agents/subscriptions') ?>">
                 <i class="fa-solid fa-calendar-alt text-white"></i>
-                <span class="text-white font-medium">Abonelik Yönetimi</span>
+                <span class="text-white font-medium"><?= __('agents') ?> <?= __('settings') ?></span>
               </a>
               <?php endif; ?>
               <?php endif; ?>
@@ -434,31 +440,31 @@ function __($key) {
               <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')!=='groupmember'): ?>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/topups') ?>">
                 <i class="fa-solid fa-inbox text-white"></i>
-                <span class="text-white font-medium">Yükleme Talepleri</span>
+                <span class="text-white font-medium"><?= __('topup_requests') ?></span>
               </a>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/balance/topup') ?>">
                 <i class="fa-solid fa-circle-plus text-white"></i>
-                <span class="text-white font-medium">Bakiye Yükle</span>
+                <span class="text-white font-medium"><?= __('topup') ?></span>
               </a>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/transactions') ?>">
                 <i class="fa-solid fa-clock-rotate-left text-white"></i>
-                <span class="text-white font-medium">Bakiye Geçmişi</span>
+                <span class="text-white font-medium"><?= __('balance_history') ?></span>
               </a>
               <?php endif; ?>
 
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/profile') ?>">
                 <i class="fa-solid fa-user-gear text-white"></i>
-                <span class="text-white font-medium">Profil</span>
+                <span class="text-white font-medium"><?= __('profile') ?></span>
               </a>
 
               <?php if(isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'): ?>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/settings') ?>">
                 <i class="fa-solid fa-cogs text-white"></i>
-                <span class="text-white font-medium">Ayarlar</span>
+                <span class="text-white font-medium"><?= __('settings') ?></span>
               </a>
               <a class="flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200" href="<?= Url::to('/payment-settings') ?>">
                 <i class="fa-solid fa-credit-card text-white"></i>
-                <span class="text-white font-medium">Ödeme Ayarları</span>
+                <span class="text-white font-medium"><?= __('payment_methods') ?> <?= __('settings') ?></span>
               </a>
               <?php endif; ?>
             </div>
@@ -467,7 +473,7 @@ function __($key) {
             <div class="pt-4 border-t border-white/10">
               <a class="flex items-center space-x-3 p-3 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-colors duration-200 w-full" href="<?= Url::to('/logout') ?>">
                 <i class="fa-solid fa-right-from-bracket text-red-400"></i>
-                <span class="text-white font-medium">Çıkış Yap</span>
+                <span class="text-white font-medium"><?= __('logout') ?></span>
               </a>
             </div>
           </div>
@@ -744,10 +750,10 @@ function __($key) {
         <i class="fa-solid fa-arrow-left text-lg"></i>
       </div>
       <div class="text-left">
-        <div class="text-sm opacity-90">Şu anda giriş yaptığınız:</div>
+        <div class="text-sm opacity-90"><?= __('login_required') ?>:</div>
         <div class="text-base font-bold"><?= htmlspecialchars($_SESSION['user']['login'] ?? '') ?></div>
       </div>
-      <div class="text-sm font-medium">Admin'e Geri Dön</div>
+      <div class="text-sm font-medium"><?= __('logout') ?></div>
     </a>
   </div>
   <?php endif; ?>
