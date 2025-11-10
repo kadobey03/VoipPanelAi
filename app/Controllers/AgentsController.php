@@ -254,33 +254,33 @@ class AgentsController {
             }
         } else {
             // Diğer kullanıcılar için gruplama
-            foreach ($agents as $agent) {
-                if ($isUser) {
-                    // User sadece kendi agent'ını görür
-                    $group = 'Kendi Agentınız';
-                    if (!isset($agentsByGroup[$group])) {
-                        $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
-                    }
+            if ($isUser) {
+                // User sadece kendi agent'ını görür
+                $group = 'Kendi Agentınız';
+                if (!isset($agentsByGroup[$group])) {
+                    $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
+                }
+                foreach ($agents as $agent) {
                     $agentsByGroup[$group]['agents'][] = $agent;
-                } elseif ($isGroupMember) {
-                    // Groupmember sadece kendi agent'ını görür
-                    $group = 'Kendi Agentınız';
-                    if (!isset($agentsByGroup[$group])) {
-                        $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
-                    }
+                }
+            } elseif ($isGroupMember) {
+                // Groupmember sadece kendi agent'ını görür
+                $group = 'Kendi Agentınız';
+                if (!isset($agentsByGroup[$group])) {
+                    $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
+                }
+                foreach ($agents as $agent) {
                     $agentsByGroup[$group]['agents'][] = $agent;
-                } else {
-                    // Grup admini kendi grubu agentlerini görür
-                    $group = $agent['group'] ?? $agent['group_name'] ?? '';
-                    
-                    if ($this->isGroupMatch($group, $userGroupName, $userApiGroupName)) {
-                        // Grup adı olarak local grup adını kullan
-                        $displayGroupName = $userGroupName ?: $group;
-                        if (!isset($agentsByGroup[$displayGroupName])) {
-                            $agentsByGroup[$displayGroupName] = ['groupName' => $displayGroupName, 'agents' => []];
-                        }
-                        $agentsByGroup[$displayGroupName]['agents'][] = $agent;
-                    }
+                }
+            } else {
+                // Grup admini - zaten filtrelenmiş agentları direkt gruplara ekle
+                $displayGroupName = $userGroupName ?: 'Kendi Grubunuz';
+                if (!isset($agentsByGroup[$displayGroupName])) {
+                    $agentsByGroup[$displayGroupName] = ['groupName' => $displayGroupName, 'agents' => []];
+                }
+                foreach ($agents as $agent) {
+                    $agentsByGroup[$displayGroupName]['agents'][] = $agent;
+                    error_log("Agent eklendi gruba: exten=" . ($agent['exten'] ?? 'null') . ", displayGroupName='$displayGroupName'");
                 }
             }
         }

@@ -56,15 +56,23 @@
             }
           }
         } else {
+          // Debug için agentsByGroup içeriğini kontrol et
+          error_log("View Stats Calculation - agentsByGroup keys: " . implode(', ', array_keys($agentsByGroup ?? [])));
+          
           $groupKey = key($agentsByGroup ?? []);
           $agents = ($agentsByGroup[$groupKey]['agents'] ?? []) ?: [];
           $totalAgents = count($agents);
+          
+          error_log("View Stats - groupKey: '$groupKey', totalAgents: $totalAgents");
+          
           foreach ($agents as $agent) {
             $status = strtolower($agent['status'] ?? '');
             if ($status === 'online' || $status === 'up') $onlineAgents++;
             if ($status === 'ring') $ringingAgents++;
             if ($agent['active'] ?? 1) $activeAgents++;
           }
+          
+          error_log("View Stats - online: $onlineAgents, ringing: $ringingAgents, active: $activeAgents");
         }
         ?>
 
@@ -296,7 +304,9 @@
                 <div class="space-y-3 mb-4">
                   <div class="flex justify-between text-sm">
                     <span class="text-slate-600 dark:text-slate-400">Durum:</span>
-                    <span class="font-medium text-emerald-600 dark:text-emerald-400">Aktif</span>
+                    <span class="font-medium <?php echo ($a['active'] ?? 1) ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'; ?>">
+                      <?php echo ($a['active'] ?? 1) ? 'Aktif' : 'Pasif'; ?>
+                    </span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-slate-600 dark:text-slate-400">Son Çağrı:</span>
