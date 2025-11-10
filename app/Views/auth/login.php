@@ -1,4 +1,9 @@
 <?php $hideNav=true; $title='Giriş - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+  <script>
+    // Login sayfası için dark mode'u zorla
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
+  </script>
   <!-- Particle Background -->
   <div class="particles" id="particles"></div>
 

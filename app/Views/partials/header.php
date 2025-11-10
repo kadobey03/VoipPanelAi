@@ -31,8 +31,13 @@ function __($key) {
    <?php endif; ?>
   <script>
     try{
+      // Login sayfası için her zaman dark mode
+      <?php if (isset($title) && strpos($title, 'Giriş') !== false): ?>
+      document.documentElement.classList.add('dark');
+      <?php else: ?>
       const t=localStorage.getItem('theme');
       if(t==='dark'){document.documentElement.classList.add('dark')}
+      <?php endif; ?>
     }catch(e){}
   </script>
 </head>
