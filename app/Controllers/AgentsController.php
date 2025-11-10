@@ -301,4 +301,81 @@ class AgentsController {
         }
         exit;
     }
+
+    public function syncCron() {
+        $token = $_GET['token'] ?? ($_POST['token'] ?? '');
+        $expected = getenv('CRON_TOKEN') ?: '';
+        if (!$expected || $token !== $expected) {
+            http_response_code(403);
+            echo 'Forbidden';
+            return;
+        }
+
+        $api = new ApiClient();
+        $agentsApi = [];
+        $imported = 0;
+        $updated = 0;
+        $errors = [];
+
+        try {
+            $agentsApi = $api->getAgentsStatus();
+            $db = DB::conn();
+            
+            foreach ($agentsApi as $agent) {
+                $exten = $agent['exten'];
+                $login = $agent['user_login'] ?? '';
+                $apiGroup = $agent['group'] ?? '';
+                $localGroup = '';
+                
+                if ($apiGroup) {
+                    $stmt = $db->prepare('SELECT name FROM groups WHERE api_group_name=?');
+                    $stmt->bind_param('s', $apiGroup);
+                    $stmt->execute();
+                    $r = $stmt->get_result()->fetch_assoc();
+                    if ($r) $localGroup = $r['name'];
+                    $stmt->close();
+                    // Eğer local eşleşme yoksa, API'deki adı kullan
+                    if (!$localGroup) {
+                        $localGroup = $apiGroup;
+                    }
+                }
+
+                // Check if agent exists
+                $stmt = $db->prepare('SELECT id FROM agents WHERE exten=?');
+                $stmt->bind_param('s', $exten);
+                $stmt->execute();
+                $stmt->store_result();
+                
+                if ($stmt->num_rows > 0) {
+                    // Update existing
+                    $stmt->close();
+                    $stmt = $db->prepare('UPDATE agents SET user_login=?, group_name=?, updated_at=NOW() WHERE exten=?');
+                    $stmt->bind_param('sss', $login, $localGroup, $exten);
+                    $stmt->execute();
+                    $stmt->close();
+                    $updated++;
+                } else {
+                    // Insert new
+                    $stmt->close();
+                    $stmt = $db->prepare('INSERT INTO agents (exten, user_login, group_name) VALUES (?, ?, ?)');
+                    $stmt->bind_param('sss', $exten, $login, $localGroup);
+                    $stmt->execute();
+                    $stmt->close();
+                    $imported++;
+                }
+            }
+        } catch (\Throwable $e) {
+            $errors[] = $e->getMessage();
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'agents_imported' => $imported,
+            'agents_updated' => $updated,
+            'total_agents' => count($agentsApi),
+            'errors' => $errors,
+            'timestamp' => date('Y-m-d H:i:s')
+        ], JSON_UNESCAPED_UNICODE);
+    }
 }

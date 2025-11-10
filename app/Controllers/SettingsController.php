@@ -33,4 +33,14 @@ class SettingsController {
 
         require __DIR__.'/../Views/settings/index.php';
     }
+
+    public function changeLang() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        $lang = $_POST['lang'] ?? 'tr';
+        if (in_array($lang, ['tr', 'en'])) {
+            \App\Helpers\Lang::set($lang);
+        }
+        header('Location: ' . (\App\Helpers\Url::to('/')));
+        exit;
+    }
 }

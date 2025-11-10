@@ -43,6 +43,7 @@ $router->add('GET', '/calls/record', 'CallsController@record');
 
 // Cron endpoints (token required)
 $router->add('GET', '/cron/calls/sync', 'CallsController@syncCron');
+$router->add('GET', '/cron/agents/sync', 'AgentsController@syncCron');
 
 // Reports
 $router->add('GET', '/reports', 'ReportsController@index');
@@ -50,6 +51,7 @@ $router->add('GET', '/reports', 'ReportsController@index');
 // Agents
 $router->add('GET', '/agents', 'AgentsController@index');
 $router->add('POST', '/agents/toggle-hidden', 'AgentsController@toggleHidden');
+$router->add('GET', '/agents/sync', 'AgentsController@syncAgents');
 $router->add('POST', '/agents/sync', 'AgentsController@syncAgents');
 $router->add('POST', '/agents/toggle-active', 'AgentsController@toggleActive');
 
@@ -90,16 +92,8 @@ $router->add('GET', '/transactions', 'TransactionsController@index');
 $router->add('GET', '/settings', 'SettingsController@index');
 $router->add('POST', '/settings', 'SettingsController@index');
 
-// Change language
-$router->add('POST', '/change-lang', function() {
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    $lang = $_POST['lang'] ?? 'tr';
-    if (in_array($lang, ['tr', 'en'])) {
-        \App\Helpers\Lang::set($lang);
-    }
-    header('Location: ' . (\App\Helpers\Url::to('/')));
-    exit;
-});
+// Change language - moved to controller to avoid Closure issues
+$router->add('POST', '/change-lang', 'SettingsController@changeLang');
 
 // Balance helper (topup select)
 $router->add('GET', '/balance/topup', 'BalanceMenuController@topupSelect');
