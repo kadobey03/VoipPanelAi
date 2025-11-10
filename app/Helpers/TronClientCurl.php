@@ -65,7 +65,7 @@ class TronClientCurl {
      */
     public function getAccountInfo($address) {
         try {
-            $data = $this->makeRequest('/v1/accounts/' . $address, 'POST');
+            $data = $this->makeRequest('/v1/accounts/' . $address, 'GET');
             return $data['data'][0] ?? null;
         } catch (\Exception $e) {
             error_log('TronClientCurl::getAccountInfo Error: ' . $e->getMessage());
@@ -78,7 +78,9 @@ class TronClientCurl {
      */
     public function getTRC20Balance($address, $contractAddress = self::USDT_CONTRACT) {
         try {
-            $data = $this->makeRequest('/v1/accounts/' . $address . '/trc20/' . $contractAddress, 'POST');
+            // Correct TRON API endpoint for TRC20 balance
+            $endpoint = "/v1/accounts/{$address}/trc20/{$contractAddress}";
+            $data = $this->makeRequest($endpoint, 'GET');
             
             if (isset($data['data'][0]['balance'])) {
                 // USDT has 6 decimal places

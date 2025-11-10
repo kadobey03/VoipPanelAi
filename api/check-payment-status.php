@@ -141,74 +141,53 @@ try {
         exit;
     }
     
-    // Initialize TRON client for blockchain check with error handling
+    // Initialize Binance client for deposit checking
     try {
-        // Try to use GuzzleHttp version first, fallback to curl version
-        if (class_exists('GuzzleHttp\Client')) {
-            error_log('Debug - Using GuzzleHttp TronClient');
-            $tronClient = new TronClient();
-        } else {
-            error_log('Debug - Using cURL TronClient as fallback');
-            $tronClient = new \App\Helpers\TronClientCurl();
+        error_log('Debug - Using Binance API for payment checking');
+        
+        // Get Binance API credentials from settings (if available)
+        $apiKey = null;
+        $apiSecret = null;
+        
+        try {
+            $stmt = $db->prepare('SELECT name, value FROM settings WHERE name IN (?, ?)');
+            $keyName = 'binance_api_key';
+            $secretName = 'binance_api_secret';
+            $stmt->bind_param('ss', $keyName, $secretName);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            while ($row = $result->fetch_assoc()) {
+                if ($row['name'] === 'binance_api_key') $apiKey = $row['value'];
+                if ($row['name'] === 'binance_api_secret') $apiSecret = $row['value'];
+            }
+            $stmt->close();
+        } catch (\Exception $e) {
+            error_log('Could not get Binance API settings: ' . $e->getMessage());
         }
+        
+        $binanceClient = new \App\Helpers\BinanceClient($apiKey, $apiSecret);
     } catch (\Exception $e) {
-        error_log('TronClient initialization error: ' . $e->getMessage());
+        error_log('BinanceClient initialization error: ' . $e->getMessage());
         echo json_encode([
             'status' => 'error',
-            'message' => 'Blockchain bağlantı hatası'
+            'message' => 'Ödeme servisi bağlantı hatası'
         ]);
         exit;
-    } catch (\Error $e) {
-        error_log('TronClient fatal error: ' . $e->getMessage());
-        
-        // Try cURL version as last resort
-        try {
-            error_log('Debug - Trying cURL TronClient as last resort');
-            $tronClient = new \App\Helpers\TronClientCurl();
-        } catch (\Throwable $e2) {
-            error_log('cURL TronClient also failed: ' . $e2->getMessage());
-            echo json_encode([
-                'status' => 'waiting',
-                'confirmations' => 0,
-                'message' => 'Blockchain servisi geçici olarak kullanılamıyor'
-            ]);
-            exit;
-        }
     }
     
-    // Get USDT TRC20 balance for the wallet
-    $balance = $tronClient->getTRC20Balance($walletAddress);
     $expectedAmount = (float)$payment['amount_requested'];
     
-    // Check if payment received
-    if ($balance >= $expectedAmount) {
-        // Get recent transactions to find the specific payment
-        $transactions = $tronClient->getTRC20Transactions($walletAddress, TronClient::USDT_CONTRACT, 20);
+    // Check recent Binance deposits for this amount
+    $recentDeposit = $binanceClient->checkRecentDeposits($expectedAmount, 'TRX', 1800); // Son 30 dakika
+    
+    if ($recentDeposit && $recentDeposit['found']) {
+        error_log("Debug - Found matching deposit: " . json_encode($recentDeposit));
         
-        $confirmations = 0;
-        $foundPayment = false;
+        // Check deposit status and confirmations
+        $depositStatus = $recentDeposit['status'] ?? 0;
+        $confirmations = $recentDeposit['confirmTimes'] ?? 0;
         
-        foreach ($transactions as $tx) {
-            $txAmount = (float)($tx['value'] ?? 0) / 1000000; // USDT has 6 decimals
-            $txTime = ($tx['block_timestamp'] ?? 0) / 1000; // Convert to seconds
-            $paymentTime = strtotime($payment['created_at']);
-            
-            // Check if this transaction matches our payment
-            if ($txAmount >= $expectedAmount && $txTime >= $paymentTime) {
-                $foundPayment = true;
-                
-                // Get transaction confirmations (simplified)
-                $currentBlock = $tronClient->getCurrentBlock();
-                if ($currentBlock && isset($currentBlock['block_header']['raw_data']['number'])) {
-                    $currentBlockNumber = $currentBlock['block_header']['raw_data']['number'];
-                    $txBlockNumber = $tx['block'] ?? $currentBlockNumber;
-                    $confirmations = max(0, $currentBlockNumber - $txBlockNumber);
-                }
-                break;
-            }
-        }
-        
-        if ($foundPayment) {
+        if ($depositStatus == 1) { // 1 = Success
             if ($confirmations >= 19) {
                 // Payment confirmed! Update database
                 $db->begin_transaction();
@@ -271,19 +250,29 @@ try {
                 ]);
             }
         } else {
-            // Balance detected but no matching transaction found
+            // Deposit found but not successful yet
             echo json_encode([
                 'status' => 'detected',
-                'confirmations' => 0,
-                'message' => 'Bakiye tespit edildi, işlem kontrol ediliyor...'
+                'confirmations' => $confirmations,
+                'message' => 'Ödeme işleniyor, lütfen bekleyin...'
             ]);
         }
     } else {
-        // No payment detected yet
+        // No matching payment found in recent deposits
+        error_log("Debug - No matching deposit found for amount: $expectedAmount");
+        
+        // Try to get current USDT balance for reference
+        $currentBalance = 0;
+        try {
+            $currentBalance = $binanceClient->getUSDTBalance();
+        } catch (\Exception $e) {
+            error_log('Could not get current balance: ' . $e->getMessage());
+        }
+        
         echo json_encode([
             'status' => 'waiting',
             'confirmations' => 0,
-            'balance' => $balance,
+            'balance' => $currentBalance,
             'expected' => $expectedAmount,
             'message' => 'Ödeme bekleniyor...'
         ]);
