@@ -173,7 +173,7 @@ class GroupController {
                         $existingPayment = $this->getExistingPendingPayment($id);
                         if ($existingPayment) {
                             // Redirect to continue existing payment (PRG pattern)
-                            $redirectUrl = '/groups/topup?id=' . $id . '&continue_payment=' . $existingPayment['payment_id'];
+                            $redirectUrl = \App\Helpers\Url::to('/groups/topup?id=' . $id . '&continue_payment=' . $existingPayment['payment_id']);
                             header('Location: ' . $redirectUrl);
                             exit;
                         }
@@ -182,7 +182,7 @@ class GroupController {
                         $cryptoResult = $this->createCryptocurrencyPayment($id, (int)($_SESSION['user']['id'] ?? 0), $amount, $method, $methodId);
                         if ($cryptoResult['success']) {
                             // Redirect to continue payment (PRG pattern)
-                            $redirectUrl = '/groups/topup?id=' . $id . '&continue_payment=' . $cryptoResult['data']['payment_id'];
+                            $redirectUrl = \App\Helpers\Url::to('/groups/topup?id=' . $id . '&continue_payment=' . $cryptoResult['data']['payment_id']);
                             header('Location: ' . $redirectUrl);
                             exit;
                         } else {
