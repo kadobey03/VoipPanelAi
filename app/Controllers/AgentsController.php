@@ -443,8 +443,9 @@ class AgentsController {
             die('Geçersiz istek');
         }
 
-        $exten = $_POST['exten'] ?? '';
-        $productId = (int)($_POST['product_id'] ?? 0);
+        $exten = $_POST['agent_exten'] ?? '';
+        $productId = (int)($_POST['agent_product_id'] ?? 0);
+        $agentNumber = $_POST['agent_number'] ?? '';
 
         if (!$exten || !$productId) {
             $_SESSION['error'] = 'Eksik parametreler';
@@ -502,8 +503,21 @@ class AgentsController {
                 $stmt->close();
             }
 
-            // Agent numarası oluştur
-            $agentNumber = $this->generateAgentNumber($product['phone_prefix']);
+            // Agent numarası kullanıcıdan gelen veya otomatik oluştur
+            if (!$agentNumber) {
+                $agentNumber = $this->generateAgentNumber($product['phone_prefix']);
+            }
+            
+            // Agent numarası benzersizlik kontrolü
+            $stmt = $db->prepare('SELECT COUNT(*) as count FROM user_agents WHERE agent_number = ?');
+            $stmt->bind_param('s', $agentNumber);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            
+            if ($result['count'] > 0) {
+                throw new Exception('Bu agent numarası zaten kullanımda');
+            }
 
             // User agent oluştur
             $stmt = $db->prepare('INSERT INTO user_agents (user_id, group_id, agent_product_id, agent_number, status, is_lifetime, next_subscription_due) VALUES (?, ?, ?, ?, "active", ?, ?)');

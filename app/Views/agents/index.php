@@ -146,12 +146,29 @@
                 // Agent'ın abonelik durumunu kontrol et
                 $userAgents = [];
                 if ($isSuper) {
-                  $stmt = $db->prepare('SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee FROM user_agents ua JOIN agent_products ap ON ua.agent_product_id = ap.id WHERE ua.agent_number LIKE ? AND ua.status = "active"');
-                  $searchPattern = '%' . ($a['exten'] ?? '') . '%';
-                  $stmt->bind_param('s', $searchPattern);
-                  $stmt->execute();
-                  $userAgents = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-                  $stmt->close();
+                  // Önce agent'ın user_login'i ile users tablosundaki kullanıcıyı bul
+                  $agentLogin = $a['user_login'] ?? '';
+                  if ($agentLogin) {
+                    $stmt = $db->prepare('SELECT u.id as user_id FROM users u WHERE u.login = ?');
+                    $stmt->bind_param('s', $agentLogin);
+                    $stmt->execute();
+                    $userResult = $stmt->get_result()->fetch_assoc();
+                    $stmt->close();
+                    
+                    if ($userResult) {
+                      // Bu kullanıcının aktif agent aboneliklerini bul
+                      $stmt = $db->prepare('
+                        SELECT ua.*, ap.name as product_name, ap.subscription_monthly_fee, ap.phone_prefix
+                        FROM user_agents ua
+                        JOIN agent_products ap ON ua.agent_product_id = ap.id
+                        WHERE ua.user_id = ? AND ua.status = "active"
+                      ');
+                      $stmt->bind_param('i', $userResult['user_id']);
+                      $stmt->execute();
+                      $userAgents = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                      $stmt->close();
+                    }
+                  }
                 }
                 ?>
                 <div class="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-600/50 overflow-hidden">
