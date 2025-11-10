@@ -405,6 +405,30 @@ class GroupController {
                     $stmt->bind_param('si', $expiredStatus, $paymentId);
                     $stmt->execute();
                     $stmt->close();
+                    
+                    // Send Telegram notification for payment expiration
+                    try {
+                        $groupName = 'Bilinmeyen Grup';
+                        $currentBalance = 0;
+                        $amount = (float)$payment['amount_requested'];
+                        
+                        $stmt = $db->prepare('SELECT name, balance FROM groups WHERE id = ?');
+                        $stmt->bind_param('i', $groupId);
+                        $stmt->execute();
+                        $result = $stmt->get_result()->fetch_assoc();
+                        if ($result) {
+                            $groupName = $result['name'];
+                            $currentBalance = (float)$result['balance'];
+                        }
+                        $stmt->close();
+                        
+                        $telegram = new TelegramNotifier();
+                        $telegram->sendPaymentExpiredNotification($groupName, $amount, $paymentId, $currentBalance);
+                        error_log("Telegram payment expiration notification sent for payment ID: $paymentId");
+                    } catch (\Exception $e) {
+                        error_log('Telegram payment expiration notification failed: ' . $e->getMessage());
+                        // Don't fail the expiration if Telegram fails
+                    }
                 }
                 return null;
             }
@@ -613,6 +637,37 @@ class GroupController {
             error_log('GroupController::cancelCryptoPayment - Update results: ' . $executeResult1 . ', ' . $executeResult2);
             
             $db->commit();
+            
+            // Send Telegram notification for payment cancellation
+            try {
+                // Get group name and current balance
+                $groupName = 'Bilinmeyen Grup';
+                $currentBalance = 0;
+                $amount = 0;
+                
+                $stmt = $db->prepare('
+                    SELECT g.name, g.balance, cp.amount_requested
+                    FROM groups g
+                    JOIN crypto_payments cp ON cp.group_id = g.id
+                    WHERE g.id = ? AND cp.id = ?
+                ');
+                $stmt->bind_param('ii', $groupId, $paymentId);
+                $stmt->execute();
+                $result = $stmt->get_result()->fetch_assoc();
+                if ($result) {
+                    $groupName = $result['name'];
+                    $currentBalance = (float)$result['balance'];
+                    $amount = (float)$result['amount_requested'];
+                }
+                $stmt->close();
+                
+                $telegram = new TelegramNotifier();
+                $telegram->sendPaymentCancelledNotification($groupName, $amount, $paymentId, $currentBalance);
+                error_log("Telegram payment cancellation notification sent for payment ID: $paymentId");
+            } catch (\Exception $e) {
+                error_log('Telegram payment cancellation notification failed: ' . $e->getMessage());
+                // Don't fail the cancellation if Telegram fails
+            }
             
             error_log('GroupController::cancelCryptoPayment - Success');
             echo json_encode(['success' => true, 'message' => 'Ödeme başarıyla iptal edildi']);

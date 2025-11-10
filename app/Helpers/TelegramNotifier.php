@@ -59,6 +59,48 @@ class TelegramNotifier
     }
     
     /**
+     * Ödeme iptal edildiğinde bildirim gönder
+     */
+    public function sendPaymentCancelledNotification($groupName, $amount, $paymentId, $currentBalance = null)
+    {
+        $message = "❌ *ÖDEME İPTAL EDİLDİ*\n\n";
+        $message .= "💰 *Tutar:* {$amount} USDT\n";
+        $message .= "👥 *Grup:* {$groupName}\n";
+        $message .= "🆔 *Payment ID:* {$paymentId}\n";
+        
+        if ($currentBalance !== null) {
+            $message .= "📊 *Mevcut Bakiye:* " . number_format($currentBalance, 2) . " USDT\n";
+        }
+        
+        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
+        $message .= "🚫 *Durum:* Kullanıcı tarafından iptal edildi\n";
+        $message .= "📞 *Aksiyon:* Müşteriyi arayarak iptal sebebini öğrenin\n";
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
+     * Ödeme süresi dolduğunda bildirim gönder
+     */
+    public function sendPaymentExpiredNotification($groupName, $amount, $paymentId, $currentBalance = null)
+    {
+        $message = "⏰ *ÖDEME SÜRESİ DOLDU*\n\n";
+        $message .= "💰 *Tutar:* {$amount} USDT\n";
+        $message .= "👥 *Grup:* {$groupName}\n";
+        $message .= "🆔 *Payment ID:* {$paymentId}\n";
+        
+        if ($currentBalance !== null) {
+            $message .= "📊 *Mevcut Bakiye:* " . number_format($currentBalance, 2) . " USDT\n";
+        }
+        
+        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
+        $message .= "⌛ *Durum:* Ödeme süresi doldu (10 dakika)\n";
+        $message .= "📞 *Aksiyon:* Müşteriyi arayarak durumu kontrol edin\n";
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
      * Telegram'a mesaj gönder
      */
     private function sendMessage($message)
