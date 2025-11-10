@@ -9,6 +9,48 @@ class AgentsController {
     private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ \App\Helpers\Url::redirect('/login'); } }
     private function isSuper(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='superadmin'; }
 
+    /**
+     * Grup adlarını akıllıca karşılaştır
+     */
+    private function isGroupMatch($agentGroupName, $userGroupName, $userApiGroupName) {
+        if (empty($agentGroupName) || (empty($userGroupName) && empty($userApiGroupName))) {
+            return false;
+        }
+        
+        // Normalize function - case, underscore, spaces, numbers
+        $normalize = function($name) {
+            $name = strtolower(trim($name));
+            $name = str_replace(['_', '-'], ' ', $name); // Replace underscores and dashes with spaces
+            $name = preg_replace('/\s+/', ' ', $name); // Multiple spaces to single space
+            $name = preg_replace('/\s*\d+$/', '', $name); // Remove trailing numbers (like "_2")
+            return trim($name);
+        };
+        
+        $normalizedAgent = $normalize($agentGroupName);
+        
+        // Exact match first
+        if (strcasecmp($agentGroupName, $userGroupName) === 0) return true;
+        if ($userApiGroupName && strcasecmp($agentGroupName, $userApiGroupName) === 0) return true;
+        
+        // Normalized match
+        $normalizedUser = $normalize($userGroupName);
+        if ($normalizedAgent === $normalizedUser) return true;
+        
+        if ($userApiGroupName) {
+            $normalizedApi = $normalize($userApiGroupName);
+            if ($normalizedAgent === $normalizedApi) return true;
+        }
+        
+        // Partial match (contains)
+        if (!empty($normalizedAgent) && !empty($normalizedUser)) {
+            if (strpos($normalizedAgent, $normalizedUser) !== false || strpos($normalizedUser, $normalizedAgent) !== false) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     public function index(){
         $this->requireAuth();
 
@@ -56,16 +98,29 @@ class AgentsController {
             $stmt->close();
         }
         $userGroupName = '';
+        $userApiGroupName = '';
         $userAgentId = 0;
         $userExten = '';
         if (!$isSuper) {
             $groupId = (int)($_SESSION['user']['group_id'] ?? 0);
-            $stmt = $db->prepare('SELECT name FROM groups WHERE id=?');
-            $stmt->bind_param('i', $groupId);
-            $stmt->execute();
-            $r = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
-            if ($r) $userGroupName = $r['name'];
+            try {
+                $stmt = $db->prepare('SELECT name, api_group_name FROM groups WHERE id=?');
+                $stmt->bind_param('i', $groupId);
+                $stmt->execute();
+                $r = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                if ($r) {
+                    $userGroupName = $r['name'] ?? '';
+                    $userApiGroupName = $r['api_group_name'] ?? '';
+                }
+            } catch (\Throwable $e) {
+                $stmt = $db->prepare('SELECT name FROM groups WHERE id=?');
+                $stmt->bind_param('i', $groupId);
+                $stmt->execute();
+                $r = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                if ($r) $userGroupName = $r['name'];
+            }
 
             if ($isUser) {
                 // User için agent_id çek
@@ -152,8 +207,10 @@ class AgentsController {
                 });
             } else {
                 // Grup admini kendi grubu agentlerini görür
-                $agentsDb = array_filter($agentsDb, function($a) use ($userGroupName) {
-                    return ($a['active'] ?? 1) == 1 && strtolower($a['group_name']) === strtolower($userGroupName);
+                $agentsDb = array_filter($agentsDb, function($a) use ($userGroupName, $userApiGroupName) {
+                    if (($a['active'] ?? 1) != 1) return false;
+                    $agentGroupName = $a['group_name'] ?? '';
+                    return $this->isGroupMatch($agentGroupName, $userGroupName, $userApiGroupName);
                 });
             }
         }
@@ -200,11 +257,14 @@ class AgentsController {
                 } else {
                     // Grup admini kendi grubu agentlerini görür
                     $group = $agent['group'] ?? $agent['group_name'] ?? '';
-                    if (strtolower($group) === strtolower($userGroupName)) {
-                        if (!isset($agentsByGroup[$group])) {
-                            $agentsByGroup[$group] = ['groupName' => $group, 'agents' => []];
+                    
+                    if ($this->isGroupMatch($group, $userGroupName, $userApiGroupName)) {
+                        // Grup adı olarak local grup adını kullan
+                        $displayGroupName = $userGroupName ?: $group;
+                        if (!isset($agentsByGroup[$displayGroupName])) {
+                            $agentsByGroup[$displayGroupName] = ['groupName' => $displayGroupName, 'agents' => []];
                         }
-                        $agentsByGroup[$group]['agents'][] = $agent;
+                        $agentsByGroup[$displayGroupName]['agents'][] = $agent;
                     }
                 }
             }
