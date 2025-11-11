@@ -223,7 +223,7 @@
           <div class="text-center animate-fade-in-up" style="animation-delay: 0.4s;">
             <p class="label-text text-base">
               <?= __('already_have_account') ?> 
-              <a href="/panel/login" class="text-emerald-300 hover:text-emerald-200 font-semibold underline transition-colors duration-300">
+              <a href="/VoipPanelAi/" class="text-emerald-300 hover:text-emerald-200 font-semibold underline transition-colors duration-300">
                 <?= __('login_here') ?>
               </a>
             </p>
@@ -235,7 +235,7 @@
             // Create form and submit
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '/panel/change-lang';
+            form.action = '/VoipPanelAi/change-lang';
             
             const langInput = document.createElement('input');
             langInput.type = 'hidden';

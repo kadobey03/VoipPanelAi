@@ -70,7 +70,7 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
                 <div class="hidden lg:flex items-center space-x-8">
                     <a href="#features" class="nav-link hover:text-purple-300 transition-colors duration-300"><?= __('Özellikler') ?></a>
                     <a href="#pricing" class="nav-link hover:text-purple-300 transition-colors duration-300"><?= __('Fiyatlandırma') ?></a>
-                    <a href="/panel/" class="nav-link hover:text-purple-300 transition-colors duration-300"><?= __('Panel Girişi') ?></a>
+                    <a href="/VoipPanelAi/" class="nav-link hover:text-purple-300 transition-colors duration-300"><?= __('Panel Girişi') ?></a>
                 </div>
                 
                 <!-- Language & Login Section -->
@@ -116,11 +116,11 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
                     
                     <!-- Login & Register Buttons -->
                     <div class="flex items-center space-x-2">
-                        <a href="/panel/" class="btn-outline text-sm px-3 py-2">
+                        <a href="/VoipPanelAi/" class="btn-outline text-sm px-3 py-2">
                             <i class="fas fa-sign-in-alt"></i>
                             <span class="hidden sm:inline ml-2"><?= __('Giriş') ?></span>
                         </a>
-                        <a href="/panel/register" class="btn-primary flex items-center space-x-2 px-4 py-2 text-sm">
+                        <a href="/VoipPanelAi/register" class="btn-primary flex items-center space-x-2 px-4 py-2 text-sm">
                             <i class="fas fa-user-plus"></i>
                             <span class="hidden sm:inline"><?= __('Kayıt Ol') ?></span>
                         </a>
@@ -138,8 +138,8 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
                 <div class="flex flex-col space-y-2">
                     <a href="#features" class="mobile-nav-link"><?= __('Özellikler') ?></a>
                     <a href="#pricing" class="mobile-nav-link"><?= __('Fiyatlandırma') ?></a>
-                    <a href="/panel/" class="mobile-nav-link"><?= __('Panel Girişi') ?></a>
-                    <a href="/panel/register" class="mobile-nav-link"><?= __('Kayıt Ol') ?></a>
+                    <a href="/VoipPanelAi/" class="mobile-nav-link"><?= __('Panel Girişi') ?></a>
+                    <a href="/VoipPanelAi/register" class="mobile-nav-link"><?= __('Kayıt Ol') ?></a>
                 </div>
             </div>
         </div>
@@ -176,11 +176,11 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
             </div>
             
             <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mt-12" data-animate="slide-up" data-delay="800">
-                <a href="/panel/register" class="btn-primary flex items-center space-x-3 text-lg px-10 py-5">
+                <a href="/VoipPanelAi/register" class="btn-primary flex items-center space-x-3 text-lg px-10 py-5">
                     <i class="fas fa-user-plus text-xl"></i>
                     <span><?= __('Ücretsiz Kayıt Ol') ?></span>
                 </a>
-                <a href="/panel/" class="btn-outline flex items-center space-x-3 text-lg px-8 py-4">
+                <a href="/VoipPanelAi/" class="btn-outline flex items-center space-x-3 text-lg px-8 py-4">
                     <i class="fas fa-sign-in-alt text-xl"></i>
                     <span><?= __('Panel Girişi') ?></span>
                 </a>
