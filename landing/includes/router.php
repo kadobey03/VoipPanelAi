@@ -22,18 +22,18 @@ class SimpleRouter {
         }
         
         // Check URL parameter first
-        if (isset($_GET['lang']) && in_array($_GET['lang'], ['tr', 'en'])) {
+        if (isset($_GET['lang']) && in_array($_GET['lang'], ['tr', 'en', 'ru'])) {
             $this->lang = $_GET['lang'];
             $_SESSION['lang'] = $this->lang;
         }
         // Check session
-        elseif (isset($_SESSION['lang']) && in_array($_SESSION['lang'], ['tr', 'en'])) {
+        elseif (isset($_SESSION['lang']) && in_array($_SESSION['lang'], ['tr', 'en', 'ru'])) {
             $this->lang = $_SESSION['lang'];
         }
         // Check browser language
         else {
             $browserLang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '', 0, 2);
-            if (in_array($browserLang, ['tr', 'en'])) {
+            if (in_array($browserLang, ['tr', 'en', 'ru'])) {
                 $this->lang = $browserLang;
                 $_SESSION['lang'] = $this->lang;
             }
@@ -49,7 +49,8 @@ class SimpleRouter {
             '/index' => 'index.php',
             '/home' => 'index.php',
             '/tr' => 'index.php?lang=tr',
-            '/en' => 'index.php?lang=en'
+            '/en' => 'index.php?lang=en',
+            '/ru' => 'index.php?lang=ru'
         ];
     }
     

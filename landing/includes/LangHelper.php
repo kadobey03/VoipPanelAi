@@ -11,7 +11,7 @@ class LangHelper {
      * Set current language
      */
     public static function setLang($lang) {
-        if (in_array($lang, ['tr', 'en'])) {
+        if (in_array($lang, ['tr', 'en', 'ru'])) {
             self::$currentLang = $lang;
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
@@ -31,7 +31,7 @@ class LangHelper {
         
         if (isset($_SESSION['lang'])) {
             self::$currentLang = $_SESSION['lang'];
-        } elseif (isset($_GET['lang']) && in_array($_GET['lang'], ['tr', 'en'])) {
+        } elseif (isset($_GET['lang']) && in_array($_GET['lang'], ['tr', 'en', 'ru'])) {
             self::$currentLang = $_GET['lang'];
             $_SESSION['lang'] = self::$currentLang;
         }

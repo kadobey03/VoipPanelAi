@@ -8,7 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/includes/LangHelper.php';
 
 // Handle language changes
-if (isset($_POST['lang']) && in_array($_POST['lang'], ['tr', 'en'])) {
+if (isset($_POST['lang']) && in_array($_POST['lang'], ['tr', 'en', 'ru'])) {
     LangHelper::setLang($_POST['lang']);
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
@@ -87,6 +87,10 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
                             <form method="POST" action="">
                                 <input type="hidden" name="lang" value="en">
                                 <button type="submit" class="w-full text-left px-4 py-2 hover:bg-white/10 text-white">English</button>
+                            </form>
+                            <form method="POST" action="">
+                                <input type="hidden" name="lang" value="ru">
+                                <button type="submit" class="w-full text-left px-4 py-2 hover:bg-white/10 text-white">Русский</button>
                             </form>
                         </div>
                     </div>
