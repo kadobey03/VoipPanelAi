@@ -118,6 +118,7 @@ try {
                 $message .= "Answered Calls: *{$answeredCalls}*\n";
                 $message .= "Talk Time: *{$talkedMinutes} min*\n";
                 $message .= "Amount Spent: *" . number_format($totalSpending, 2) . " USD*\n\n";
+                $message .= "🌐 You can make online payments through our website to automatically top up your balance and purchase new numbers.\n\n";
                 $message .= "Thank you for choosing us! 🙏";
                 
                 // Düşük bakiye uyarısı
@@ -127,6 +128,7 @@ try {
                     $warnMessage .= "Current Balance: *" . number_format($balance, 2) . " USD*\n\n";
                     $warnMessage .= "Please top up your balance as soon as possible. 💳\n\n";
                     $warnMessage .= "[💰 Top Up Balance](https://crm.akkocbilisim.com/VoipPanelAi/balance/topup)\n\n";
+                    $warnMessage .= "🌐 You can make online payments through our website to automatically top up your balance and purchase new numbers.\n\n";
                     $warnMessage .= "Thank you for choosing us! 🙏";
                 }
                 
@@ -140,6 +142,7 @@ try {
                 $message .= "Отвеченных звонков: *{$answeredCalls}*\n";
                 $message .= "Время разговора: *{$talkedMinutes} мин*\n";
                 $message .= "Потрачено: *" . number_format($totalSpending, 2) . " USD*\n\n";
+                $message .= "🌐 Вы можете совершать онлайн-платежи через наш сайт, чтобы автоматически пополнить баланс и купить новые номера.\n\n";
                 $message .= "Спасибо, что выбрали нас! 🙏";
                 
                 // Предупреждение о низком балансе
@@ -149,6 +152,7 @@ try {
                     $warnMessage .= "Текущий баланс: *" . number_format($balance, 2) . " USD*\n\n";
                     $warnMessage .= "Пожалуйста, пополните баланс как можно скорее. 💳\n\n";
                     $warnMessage .= "[💰 Пополнить Баланс](https://crm.akkocbilisim.com/VoipPanelAi/balance/topup)\n\n";
+                    $warnMessage .= "🌐 Вы можете совершать онлайн-платежи через наш сайт, чтобы автоматически пополнить баланс и купить новые номера.\n\n";
                     $warnMessage .= "Спасибо, что выбрали нас! 🙏";
                 }
                 
@@ -162,6 +166,7 @@ try {
                 $message .= "Cevaplanan Arama: *{$answeredCalls}*\n";
                 $message .= "Konuşma Süresi: *{$talkedMinutes} dk*\n";
                 $message .= "Harcanan Tutar: *" . number_format($totalSpending, 2) . " USD*\n\n";
+                $message .= "🌐 Sitemiz üzerinden Online Ödeme Yaparak Otomatik bakiye yükleyebilir, Yeni Numara Satın alabilirsiniz.\n\n";
                 $message .= "Bizi tercih ettiğiniz için teşekkürler! 🙏";
                 
                 // Düşük bakiye uyarısı
@@ -171,6 +176,7 @@ try {
                     $warnMessage .= "Kalan Bakiye: *" . number_format($balance, 2) . " USD*\n\n";
                     $warnMessage .= "Lütfen en kısa sürede bakiye yükleyin. 💳\n\n";
                     $warnMessage .= "[💰 Bakiye Yükle](https://crm.akkocbilisim.com/VoipPanelAi/balance/topup)\n\n";
+                    $warnMessage .= "🌐 Sitemiz üzerinden Online Ödeme Yaparak Otomatik bakiye yükleyebilir, Yeni Numara Satın alabilirsiniz.\n\n";
                     $warnMessage .= "Bizi tercih ettiğiniz için teşekkürler! 🙏";
                 }
             }
