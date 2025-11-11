@@ -38,7 +38,7 @@
               <i class="fa-solid fa-magnifying-glass"></i>
               <span><?= __('apply') ?></span>
             </button>
-            <?php if(isset($_GET['group_id'])): ?>
+            <?php if(isset($_GET['group_id']) || (isset($_GET['type']) && $_GET['type'] !== 'credit')): ?>
             <a href="<?= \App\Helpers\Url::to('/transactions') ?>" class="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
               <i class="fa-solid fa-xmark"></i>
               <span><?= __('clear') ?></span>
@@ -48,6 +48,49 @@
         </form>
       </div>
       <?php endif; ?>
+
+      <!-- Transaction Type Tabs -->
+      <div class="mb-6">
+        <div class="flex flex-wrap gap-2">
+          <?php
+          $currentType = $_GET['type'] ?? 'credit';
+          $baseQuery = $_GET;
+          ?>
+          
+          <!-- Bakiye Yükleme Tab -->
+          <?php
+          $creditQuery = array_merge($baseQuery, ['type' => 'credit']);
+          unset($creditQuery['page']); // Reset pagination
+          ?>
+          <a href="<?= \App\Helpers\Url::to('/transactions') . '?' . http_build_query($creditQuery) ?>"
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors <?= $currentType === 'credit' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700' ?>">
+            <i class="fa-solid fa-plus"></i>
+            <span><?= __('balance_topup_requests') ?></span>
+          </a>
+
+          <!-- Çağrı Tutar Güncelleme Tab -->
+          <?php
+          $debitQuery = array_merge($baseQuery, ['type' => 'debit']);
+          unset($debitQuery['page']);
+          ?>
+          <a href="<?= \App\Helpers\Url::to('/transactions') . '?' . http_build_query($debitQuery) ?>"
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors <?= $currentType === 'debit' ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700' ?>">
+            <i class="fa-solid fa-minus"></i>
+            <span><?= __('call_charge_updates') ?></span>
+          </a>
+
+          <!-- Tüm İşlemler Tab -->
+          <?php
+          $allQuery = array_merge($baseQuery, ['type' => 'all']);
+          unset($allQuery['page']);
+          ?>
+          <a href="<?= \App\Helpers\Url::to('/transactions') . '?' . http_build_query($allQuery) ?>"
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors <?= $currentType === 'all' ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700' ?>">
+            <i class="fa-solid fa-list"></i>
+            <span><?= __('all_transactions') ?></span>
+          </a>
+        </div>
+      </div>
 
       <!-- Records Info -->
       <?php if (!empty($items ?? [])): ?>

@@ -17,6 +17,9 @@ class TransactionsController {
         $limit = max(1, min(100, (int)($_GET['limit'] ?? 10))); // Default 10, max 100
         $offset = ($page - 1) * $limit;
         
+        // Transaction type filter - default to 'credit' (bakiye yükleme)
+        $transactionType = $_GET['type'] ?? 'credit';
+        
         // Build base WHERE clause
         $whereClause = '';
         $params = [];
@@ -34,6 +37,17 @@ class TransactionsController {
             $whereClause = 'WHERE t.group_id = ?';
             $params[] = $groupId;
             $paramTypes .= 'i';
+        }
+        
+        // Add transaction type filter
+        if ($transactionType !== 'all') {
+            if ($whereClause) {
+                $whereClause .= ' AND t.type = ?';
+            } else {
+                $whereClause = 'WHERE t.type = ?';
+            }
+            $params[] = $transactionType;
+            $paramTypes .= 's';
         }
         
         // Get total count

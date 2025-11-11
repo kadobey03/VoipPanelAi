@@ -710,6 +710,8 @@ return [
     'tron_address_example' => 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t (Example TRON address)',
     'trongrid_api_key_placeholder' => 'TronGrid API key (for blockchain monitoring)',
     'balance_topup_requests' => 'Balance Top-up Requests',
+    'call_charge_updates' => 'Call Charge Updates',
+    'all_transactions' => 'All Transactions',
     
     // Controller Messages
     'invalid_credentials' => 'Invalid username or password',

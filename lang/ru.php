@@ -710,6 +710,8 @@ return [
     'tron_address_example' => 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t (Пример TRON адреса)',
     'trongrid_api_key_placeholder' => 'TronGrid API ключ (для мониторинга блокчейна)',
     'balance_topup_requests' => 'Запросы пополнения баланса',
+    'call_charge_updates' => 'Обновления стоимости звонков',
+    'all_transactions' => 'Все транзакции',
     
     // Controller Messages
     'invalid_credentials' => 'Неверное имя пользователя или пароль',

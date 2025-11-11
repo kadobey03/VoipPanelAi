@@ -710,6 +710,8 @@ return [
     'tron_address_example' => 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t (Örnek TRON adresi)',
     'trongrid_api_key_placeholder' => 'TronGrid API anahtarı (blockchain monitoring için)',
     'balance_topup_requests' => 'Bakiye Yükleme Talepleri',
+    'call_charge_updates' => 'Çağrı Tutar Güncellemeleri',
+    'all_transactions' => 'Tüm İşlemler',
     
     // Controller Messages
     'invalid_credentials' => 'Geçersiz kullanıcı adı veya şifre',
