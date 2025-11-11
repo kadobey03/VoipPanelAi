@@ -1,6 +1,6 @@
 {
-  "name": "PapaM VoIP Panel",
-  "short_name": "PapaM Panel",
+  "name": "VoIP Panel",
+  "short_name": "VoIP Panel",
   "description": "VoIP Panel Uygulaması",
   "start_url": "/",
   "scope": "/",

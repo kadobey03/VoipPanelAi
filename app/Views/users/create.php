@@ -1,4 +1,4 @@
-<?php $title=__('new_user') . ' - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('new_user') . ' - ' . __('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
   <div class="container mx-auto p-4 max-w-lg">
     <div class="mb-4 flex items-center justify-between">
       <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-user-plus text-indigo-600"></i> <?= __('new_user') ?></h1>

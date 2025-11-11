@@ -1,4 +1,4 @@
-<?php $title=__('edit_group_title') . ' - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('edit_group_title') . ' - ' . __('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
   <div class="mb-4 flex items-center justify-between">
     <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-indigo-600"></i> <?= __('edit_group') ?></h1>
     <a href="<?= \App\Helpers\Url::to('/groups') ?>" class="px-3 py-2 rounded bg-slate-200 dark:bg-slate-700"><?= __('back') ?></a>

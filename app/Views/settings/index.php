@@ -6,7 +6,7 @@
     <div class="grid md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium mb-1"><?= __('site_title_label') ?></label>
-        <input type="text" name="site_title" value="<?= htmlspecialchars($settings['site_title'] ?? 'PapaM VoIP Panel') ?>" class="w-full border rounded p-2 bg-white dark:bg-slate-900">
+        <input type="text" name="site_title" value="<?= htmlspecialchars($settings['site_title'] ?? __('papam_voip_panel')) ?>" class="w-full border rounded p-2 bg-white dark:bg-slate-900">
       </div>
       <div>
         <label class="block text-sm font-medium mb-1"><?= __('description_label') ?></label>

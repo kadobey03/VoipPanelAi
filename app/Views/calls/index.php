@@ -1,4 +1,4 @@
-<?php $title=__('calls') . ' - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('calls') . ' - ' . __('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-phone text-rose-600"></i> <?= __('calls') ?></h1>
   </div>

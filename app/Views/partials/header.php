@@ -12,13 +12,13 @@ Lang::load(Lang::current());
    <meta name="theme-color" content="#3b82f6">
    <link rel="manifest" href="/VoipPanelAi/manifest.json">
    <link rel="icon" href="/VoipPanelAi/favicon.ico" type="image/x-icon">
-   <meta name="description" content="PapaM VoIP Panel - VoIP çağrı yönetimi ve raporlama sistemi">
+   <meta name="description" content="<?= __('papam_voip_panel') ?> - VoIP çağrı yönetimi ve raporlama sistemi">
    <meta name="keywords" content="voip, çağrı, panel, rapor, telefon, iletişim, voip panel, çağrı merkezi">
-   <meta property="og:title" content="PapaM VoIP Panel">
+   <meta property="og:title" content="<?= __('papam_voip_panel') ?>">
    <meta property="og:description" content="VoIP çağrı yönetimi ve raporlama sistemi">
    <meta property="og:image" content="/VoipPanelAi/public/assets/images/seo-image.png">
    <meta property="og:type" content="website">
-   <title><?= isset($title) ? htmlspecialchars($title) : 'PapaM VoIP Panel' ?></title>
+   <title><?= isset($title) ? htmlspecialchars($title) : __('papam_voip_panel') ?></title>
    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet">
    <?php if (isset($title) && strpos($title, 'Giriş') !== false): ?>

@@ -1,5 +1,5 @@
 <?php
-$title='Dashboard - PapaM VoIP Panel';
+$title=__('dashboard_title').' - '.__('papam_voip_panel');
 require __DIR__.'/partials/header.php';
 
 $isSuper = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '')==='superadmin');

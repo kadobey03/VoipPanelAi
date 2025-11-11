@@ -727,4 +727,11 @@ return [
     'save_failed' => 'Kaydedilemedi',
     'updated' => 'Güncellendi',
     'update_failed_short' => 'Güncellenemedi',
+    
+    // Page Titles
+    'dashboard_title' => 'Dashboard',
+    'login_title' => 'Giriş',
+    'agent_product_management_title' => 'Agent Ürün Yönetimi',
+    'agent_purchase_title' => 'Agent Satın Al',
+    'subscription_management_title' => 'Abonelik Yönetimi',
 ];

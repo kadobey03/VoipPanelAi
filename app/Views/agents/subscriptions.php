@@ -1,4 +1,4 @@
-<?php $title='Abonelik Yönetimi - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('subscription_management_title').' - '.__('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
 
 <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -1,4 +1,4 @@
-<?php $title=__('group_detail') . ' - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('group_detail') . ' - ' . __('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-layer-group text-indigo-600"></i> <?= __('group') ?>: <?= htmlspecialchars($group['name']) ?></h1>
     <div class="space-x-2">

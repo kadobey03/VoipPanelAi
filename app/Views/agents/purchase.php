@@ -1,4 +1,4 @@
-<?php $title='Agent Satın Al - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('agent_purchase_title').' - '.__('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
 <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
 
 <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">

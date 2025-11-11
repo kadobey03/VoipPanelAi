@@ -1,4 +1,4 @@
-<?php $title=__('cdr_history') . ' - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('cdr_history') . ' - ' . __('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
 <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
 <?php $isGroupAdmin = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='groupadmin'; ?>
 <?php $isGroupMember = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='groupmember'; ?>
@@ -71,7 +71,7 @@
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
         <i class="fa-solid fa-hashtag mr-2 text-orange-500"></i><?= __('count_per_page') ?>
       </label>
-      <input type="number" min="10" max="200" name="per" value="<?= (int)($_GET['per'] ?? 100) ?>"
+      <input type="number" min="10" max="200" name="per" value="<?= (int)($_GET['per'] ?? 50) ?>"
              class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
     </div>
 
@@ -103,50 +103,50 @@
       <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
         <thead class="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50">
           <tr>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i><?= __('date') ?>
             </th>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-phone mr-2 text-emerald-500"></i><?= __('src') ?>
             </th>
             <?php if ($isSuper): ?>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-users mr-2 text-blue-500"></i><?= __('group') ?>
             </th>
             <?php endif; ?>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-phone mr-2 text-purple-500"></i><?= __('dst') ?>
             </th>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-info-circle mr-2 text-orange-500"></i><?= __('disposition') ?>
             </th>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-clock mr-2 text-gray-500"></i><?= __('duration') ?>
             </th>
             <?php if (!$isGroupMember): ?>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-stopwatch mr-2 text-red-500"></i><?= __('billsec') ?>
             </th>
             <?php endif; ?>
             <?php if ($isSuper): ?>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-dollar-sign mr-2 text-green-500"></i><?= __('cost_api') ?>
             </th>
             <?php endif; ?>
             <?php if ($isSuper): ?>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-percentage mr-2 text-yellow-500"></i><?= __('margin_percent') ?>
             </th>
             <?php endif; ?>
             <?php if ($isSuper || $isGroupAdmin): ?>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-coins mr-2 text-cyan-500"></i><?= __('charged_amount') ?>
             </th>
             <?php endif; ?>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-headphones mr-2 text-pink-500"></i><?= __('record') ?>
             </th>
-            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-3 py-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-eye mr-2 text-violet-500"></i><?= __('detail') ?>
             </th>
           </tr>
@@ -155,7 +155,7 @@
           <?php if (!empty($calls ?? [])): ?>
             <?php foreach ($calls as $index => $c): ?>
             <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-900/50 transition-all duration-200 group">
-              <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-900 dark:text-white">
+              <td class="px-3 py-2 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                 <div class="flex items-center">
                   <div class="text-sm font-medium">
                     <?= date('d.m.Y', strtotime($c['start'])) ?>
@@ -165,21 +165,21 @@
                   </div>
                 </div>
               </td>
-              <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+              <td class="px-3 py-2 whitespace-nowrap text-sm font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
                 <?= htmlspecialchars($c['src']) ?>
               </td>
               <?php if ($isSuper): ?>
                 <?php $gid=(int)$c['group_id']; $gn = isset($groupNamesById[$gid]) ? $groupNamesById[$gid] : (isset($groupNamesByApi[$gid]) ? $groupNamesByApi[$gid] : ('#'.$gid)); ?>
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-900 dark:text-white">
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
                     <?= htmlspecialchars($gn) ?>
                   </span>
                 </td>
               <?php endif; ?>
-              <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-purple-600 dark:text-purple-400 font-semibold">
+              <td class="px-3 py-2 whitespace-nowrap text-sm font-mono text-purple-600 dark:text-purple-400 font-semibold">
                 <?= htmlspecialchars($c['dst']) ?>
               </td>
-              <td class="px-4 py-3 whitespace-nowrap">
+              <td class="px-3 py-2 whitespace-nowrap">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                   <?php
                   $disp = strtoupper($c['disposition']);
@@ -197,14 +197,14 @@
                   <?= htmlspecialchars($c['disposition']) ?>
                 </span>
               </td>
-              <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-900 dark:text-white">
+              <td class="px-3 py-2 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                 <div class="flex items-center">
                   <i class="fa-solid fa-clock text-gray-400 mr-2"></i>
                   <?= gmdate('i:s', (int)$c['duration']) ?>
                 </div>
               </td>
               <?php if (!$isGroupMember): ?>
-              <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-900 dark:text-white">
+              <td class="px-3 py-2 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                 <div class="flex items-center">
                   <i class="fa-solid fa-stopwatch text-red-400 mr-2"></i>
                   <?= gmdate('i:s', (int)$c['billsec']) ?>
@@ -212,12 +212,12 @@
               </td>
               <?php endif; ?>
               <?php if ($isSuper): ?>
-              <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-green-600 dark:text-green-400">
+              <td class="px-3 py-2 whitespace-nowrap text-sm font-mono text-green-600 dark:text-green-400">
                 $<?= number_format((float)$c['cost_api'], 6) ?>
               </td>
               <?php endif; ?>
               <?php if ($isSuper): ?>
-              <td class="px-4 py-3 whitespace-nowrap text-sm">
+              <td class="px-3 py-2 whitespace-nowrap text-sm">
                 <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium
                   <?php
                   $margin = (float)$c['margin_percent'];
@@ -234,11 +234,11 @@
               </td>
               <?php endif; ?>
               <?php if ($isSuper || $isGroupAdmin): ?>
-              <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-cyan-600 dark:text-cyan-400">
+              <td class="px-3 py-2 whitespace-nowrap text-sm font-mono text-cyan-600 dark:text-cyan-400">
                 $<?= number_format((float)$c['amount_charged'], 6) ?>
               </td>
               <?php endif; ?>
-              <td class="px-4 py-3 whitespace-nowrap text-sm">
+              <td class="px-3 py-2 whitespace-nowrap text-sm">
                 <?php if (!empty($c['call_id']) && strtoupper($c['disposition'])==='ANSWERED'): ?>
                   <button onclick="playAudio('<?= htmlspecialchars($c['call_id']) ?>')"
                           class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-pink-100 text-pink-800 hover:bg-pink-200 dark:bg-pink-900/50 dark:text-pink-300 dark:hover:bg-pink-900/70 transition-colors duration-200">
@@ -248,7 +248,7 @@
                   <span class="text-slate-400 dark:text-slate-600 text-xs">-</span>
                 <?php endif; ?>
               </td>
-              <td class="px-4 py-3 whitespace-nowrap text-sm">
+              <td class="px-3 py-2 whitespace-nowrap text-sm">
                 <button onclick="showCallDetails(<?= $index ?>)"
                         class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-violet-100 text-violet-800 hover:bg-violet-200 dark:bg-violet-900/50 dark:text-violet-300 dark:hover:bg-violet-900/70 transition-colors duration-200">
                   <i class="fa-solid fa-eye mr-1"></i><span class="hidden sm:inline"><?= __('detail') ?></span>
@@ -258,7 +258,7 @@
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="<?= $isSuper ? 12 : ($isGroupAdmin ? 10 : 9) ?>" class="px-4 py-12 text-center">
+              <td colspan="<?= $isSuper ? 12 : ($isGroupAdmin ? 10 : 9) ?>" class="px-3 py-8 text-center">
                 <div class="flex flex-col items-center justify-center">
                   <i class="fa-solid fa-inbox text-3xl text-slate-400 dark:text-slate-600 mb-3"></i>
                   <h3 class="text-base font-medium text-slate-900 dark:text-white mb-1"><?= __('no_records_found') ?></h3>
@@ -272,7 +272,7 @@
     </div>
   </div>
   <!-- Pagination -->
-  <?php $page = (int)($_GET['page'] ?? 1); $per=(int)($_GET['per'] ?? 100); $totalPages = $totalPages ?? 1; ?>
+  <?php $page = (int)($_GET['page'] ?? 1); $per=(int)($_GET['per'] ?? 50); $totalPages = $totalPages ?? 1; ?>
   <?php if ($totalPages > 1): ?>
   <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
     <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
