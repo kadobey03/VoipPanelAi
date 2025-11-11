@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Helpers\DB;
 use App\Helpers\Security;
 use App\Helpers\Url;
+use App\Helpers\Lang;
 
 class AuthController {
     private function startSession() {
@@ -34,10 +35,10 @@ class AuthController {
                     ];
                     Url::redirect('/');
                 } else {
-                    $error = 'Geçersiz kullanıcı adı veya şifre';
+                    $error = Lang::get('invalid_credentials');
                 }
             } catch (\Throwable $e) {
-                $error = 'Giriş sırasında hata: '.$e->getMessage();
+                $error = Lang::get('login_error').$e->getMessage();
             }
         }
         require __DIR__.'/../Views/auth/login.php';

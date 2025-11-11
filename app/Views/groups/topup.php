@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="<?= \App\Helpers\Lang::current() ?>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grup Bakiye Yükle - PapaM VoIP Panel</title>
+  <title><?= __('load_balance_title') ?> - PapaM VoIP Panel</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
   <div class="container mx-auto p-4 max-w-lg">
     <div class="mb-4 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Bakiye Yükle - <?= htmlspecialchars($group['name']) ?></h1>
-      <a href="<?= \App\Helpers\Url::to('/topups') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700">Geri</a>
+      <h1 class="text-2xl font-bold"><?= __('load_balance_title') ?> - <?= htmlspecialchars($group['name']) ?></h1>
+      <a href="<?= \App\Helpers\Url::to('/topups') ?>" class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700"><?= __('back') ?></a>
     </div>
     <?php if (!empty($error)): ?>
       <div class="mb-3 p-2 rounded bg-red-100 text-red-700"><?= htmlspecialchars($error) ?></div>
@@ -25,12 +25,12 @@
       <!-- Payment Header -->
       <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-lg">
         <div class="flex items-center justify-between mb-2">
-          <h2 class="text-xl font-bold">💎 USDT TRC20 Ödeme</h2>
+          <h2 class="text-xl font-bold"><?= __('usdt_trc20_payment') ?></h2>
           <div id="paymentStatus" class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 border border-yellow-300">
-            🔄 Ödeme Bekleniyor
+            <?= __('payment_waiting') ?>
           </div>
         </div>
-        <p class="text-blue-100 text-sm">Güvenli blockchain ödeme sistemi</p>
+        <p class="text-blue-100 text-sm"><?= __('secure_blockchain_payment') ?></p>
       </div>
 
       <!-- Payment Amount -->
@@ -45,7 +45,7 @@
         <!-- Wallet Address -->
         <div class="mb-6">
           <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            📱 Wallet Adresi
+            <?= __('wallet_address') ?>
           </label>
           <div class="flex gap-2">
             <input type="text"
@@ -55,18 +55,18 @@
                    readonly>
             <button onclick="copyAddress()"
                     class="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
-              📋 Kopyala
+              <?= __('copy_button') ?>
             </button>
           </div>
         </div>
 
         <!-- QR Code Section -->
         <div class="text-center mb-6">
-          <div class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">📱 QR Kod ile Ödeme</div>
+          <div class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300"><?= __('qr_payment') ?></div>
           <div class="inline-block p-4 bg-white rounded-lg shadow-lg border">
             <div id="qrcode"></div>
           </div>
-          <div class="mt-2 text-xs text-gray-500">QR kodu okutarak kolayca ödeme yapın</div>
+          <div class="mt-2 text-xs text-gray-500"><?= __('qr_instruction') ?></div>
         </div>
       </div>
 
@@ -80,15 +80,15 @@
         <div class="space-y-3 text-sm text-gray-600 dark:text-gray-400">
           <div class="flex items-start gap-2">
             <span class="text-green-500 mt-1">✅</span>
-            <span>Sadece USDT TRC20 gönderin</span>
+            <span><?= __('usdt_only_instruction') ?></span>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-blue-500 mt-1">⏱</span>
-            <span>19+ onay gerekli (~1-3 dakika)</span>
+            <span><?= __('confirmation_required') ?></span>
           </div>
           <div class="flex items-start gap-2">
             <span class="text-purple-500 mt-1">⚡</span>
-            <span>Otomatik bakiye yükleme</span>
+            <span><?= __('auto_balance_loading') ?></span>
           </div>
         </div>
       </div>
@@ -97,11 +97,11 @@
       <div class="bg-gradient-to-r from-orange-400 to-red-500 text-white p-4 rounded-b-lg">
         <div class="flex items-center justify-between">
           <div class="text-sm">
-            <div class="font-semibold">Kalan Süre:</div>
+            <div class="font-semibold"><?= __('remaining_time') ?></div>
             <div id="countdown" class="text-orange-100 font-mono"></div>
           </div>
           <div class="text-right text-sm">
-            <div class="font-semibold">Son Geçerlilik:</div>
+            <div class="font-semibold"><?= __('last_validity') ?></div>
             <div id="expiryTime" class="text-orange-100">--:--</div>
           </div>
         </div>
@@ -110,7 +110,7 @@
         <div class="bg-white dark:bg-gray-800 p-4 rounded-b-lg border-t border-gray-200 dark:border-gray-700">
           <button onclick="showCancelModal()"
                   class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
-            ❌ Ödemeyi İptal Et
+            <?= __('cancel_payment') ?>
           </button>
         </div>
       </div>
@@ -120,10 +120,10 @@
       <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
         <div class="text-center">
           <div class="text-6xl mb-4">🎉</div>
-          <h3 class="text-2xl font-bold text-green-600 mb-2">Ödeme Alındı!</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4">USDT transferiniz başarıyla onaylandı ve bakiyeniz güncellendi.</p>
+          <h3 class="text-2xl font-bold text-green-600 mb-2"><?= __('payment_received') ?></h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4"><?= __('usdt_transfer_confirmed') ?></p>
           <button onclick="location.reload()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            Devam Et
+            <?= __('continue_button') ?>
           </button>
         </div>
       </div>
@@ -134,16 +134,16 @@
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
         <div class="text-center">
           <div class="text-6xl mb-4">⚠️</div>
-          <h3 class="text-xl font-bold text-red-600 mb-2">Ödemeyi İptal Et</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-6">Bu ödeme talebini iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+          <h3 class="text-xl font-bold text-red-600 mb-2"><?= __('cancel_payment_title') ?></h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6"><?= __('cancel_payment_confirmation') ?></p>
           <div class="flex gap-3">
             <button onclick="hideCancelModal()"
                     class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium">
-              İptal
+              <?= __('cancel') ?>
             </button>
             <button onclick="confirmCancel()"
                     class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">
-              Evet, İptal Et
+              <?= __('yes_cancel') ?>
             </button>
           </div>
         </div>
@@ -155,18 +155,18 @@
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
         <div class="text-center">
           <div class="text-6xl mb-4">✅</div>
-          <h3 class="text-xl font-bold text-green-600 mb-2">İptal Edildi</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4">Ödeme talebiniz başarıyla iptal edildi.</p>
+          <h3 class="text-xl font-bold text-green-600 mb-2"><?= __('canceled') ?></h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4"><?= __('payment_request_canceled') ?></p>
           <button onclick="location.href='<?= \App\Helpers\Url::to('/groups/topup?id=' . $group['id']) ?>'"
                   class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            Tamam
+            <?= __('ok_button') ?>
           </button>
         </div>
       </div>
     </div>
     <?php endif; ?>
     
-    <div class="mb-3">Mevcut Bakiye: <strong><?= number_format((float)$group['balance'],2) ?></strong></div>
+    <div class="mb-3"><?= __('current_balance') ?> <strong><?= number_format((float)$group['balance'],2) ?></strong></div>
     
     <?php if (!isset($cryptoPaymentData) || !$cryptoPaymentData): ?>
     <form method="post" enctype="multipart/form-data" class="space-y-3 bg-white dark:bg-gray-800 p-4 rounded shadow">

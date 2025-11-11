@@ -1,13 +1,13 @@
-<?php $title='Ana Bakiye - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('main_balance').' - '.__('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header Section -->
       <div class="text-center mb-8 animate-fade-in">
         <h1 class="text-4xl font-bold bg-gradient-to-r from-fuchsia-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-center gap-3 mb-2">
           <i class="fa-solid fa-wallet text-3xl"></i>
-          Ana Bakiye
+          <?= __('main_balance') ?>
         </h1>
-        <p class="text-slate-600 dark:text-slate-400">Sistem bakiye bilgilerinizi ve yönetim araçlarını görüntüleyin</p>
+        <p class="text-slate-600 dark:text-slate-400"><?= __('balance_management_description') ?></p>
       </div>
 
       <!-- Balance Cards Grid -->
@@ -21,8 +21,8 @@
                 <i class="fa-solid fa-coins text-fuchsia-600 text-xl"></i>
               </div>
               <div>
-                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200">Mevcut Ana Bakiye</h3>
-                <p class="text-sm text-slate-600 dark:text-slate-400">API üzerinden güncel bakiye</p>
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200"><?= __('current_main_balance') ?></h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('current_balance_via_api') ?></p>
               </div>
             </div>
 
@@ -32,7 +32,7 @@
 
             <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
               <i class="fa-solid fa-info-circle"></i>
-              <span>Ana bakiye API üzerinden görüntülenir ve otomatik güncellenir</span>
+              <span><?= __('main_balance_auto_update') ?></span>
             </div>
           </div>
         </div>
@@ -46,27 +46,27 @@
                 <i class="fa-solid fa-users-gear text-emerald-600 text-xl"></i>
               </div>
               <div>
-                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200">Grup Bakiye Yönetimi</h3>
-                <p class="text-sm text-slate-600 dark:text-slate-400">Gruplar için bakiye işlemleri</p>
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200"><?= __('group_balance_management') ?></h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('group_balance_operations') ?></p>
               </div>
             </div>
 
             <div class="space-y-4">
               <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
-                Gruplara bakiye eklemek ve yönetmek için gruplar sayfasını kullanabilirsiniz.
+                <?= __('group_balance_explanation') ?>
               </p>
 
               <div class="flex flex-col sm:flex-row gap-3">
                 <a href="<?= \App\Helpers\Url::to('/groups') ?>"
                    class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                   <i class="fa-solid fa-users"></i>
-                  <span>Grupları Görüntüle</span>
+                  <span><?= __('view_groups') ?></span>
                 </a>
 
                 <a href="<?= \App\Helpers\Url::to('/balance/topup') ?>"
                    class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                   <i class="fa-solid fa-circle-plus"></i>
-                  <span>Bakiye Yükle</span>
+                  <span><?= __('load_balance') ?></span>
                 </a>
               </div>
             </div>
@@ -83,8 +83,8 @@
               <i class="fa-solid fa-clock-rotate-left text-slate-600 dark:text-slate-400"></i>
             </div>
             <div>
-              <div class="font-semibold text-slate-800 dark:text-slate-200">Bakiye Geçmişi</div>
-              <div class="text-sm text-slate-600 dark:text-slate-400">İşlem kayıtlarını görüntüle</div>
+              <div class="font-semibold text-slate-800 dark:text-slate-200"><?= __('balance_history') ?></div>
+              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('view_transaction_records') ?></div>
             </div>
           </div>
         </a>
@@ -96,8 +96,8 @@
               <i class="fa-solid fa-money-bill-transfer text-slate-600 dark:text-slate-400"></i>
             </div>
             <div>
-              <div class="font-semibold text-slate-800 dark:text-slate-200">Ödeme Yöntemleri</div>
-              <div class="text-sm text-slate-600 dark:text-slate-400">Ödeme seçeneklerini yönet</div>
+              <div class="font-semibold text-slate-800 dark:text-slate-200"><?= __('payment_methods') ?></div>
+              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('manage_payment_options') ?></div>
             </div>
           </div>
         </a>
@@ -109,8 +109,8 @@
               <i class="fa-solid fa-chart-line text-slate-600 dark:text-slate-400"></i>
             </div>
             <div>
-              <div class="font-semibold text-slate-800 dark:text-slate-200">Raporlar</div>
-              <div class="text-sm text-slate-600 dark:text-slate-400">Detaylı analiz görüntüle</div>
+              <div class="font-semibold text-slate-800 dark:text-slate-200"><?= __('reports') ?></div>
+              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('view_detailed_analysis') ?></div>
             </div>
           </div>
         </a>

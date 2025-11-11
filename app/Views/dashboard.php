@@ -6,7 +6,7 @@ $isSuper = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '')==='sup
 $isGroupMember = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '')==='groupmember');
 $user = $_SESSION['user'] ?? [];
 $currentHour = (int)date('H');
-$greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günler' : 'İyi akşamlar');
+$greeting = $currentHour < 12 ? __('good_morning') : ($currentHour < 18 ? __('good_afternoon') : __('good_evening'));
 ?>
 
 <!-- Hero Section -->
@@ -31,7 +31,7 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
       </h1>
 
       <p class="text-xl lg:text-2xl text-white/80 mb-8 font-light">
-        PapaM VoIP Panel kontrol paneline hoş geldiniz
+        <?= __('welcome_to_panel') ?>
       </p>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
@@ -55,6 +55,54 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
   <div class="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
 </section>
 
+<!-- Low Balance Warning for Group Admins -->
+<?php if (!$isSuper && !$isGroupMember && isset($ownGroupBalance) && $ownGroupBalance !== null && $ownGroupBalance < 50): ?>
+<section class="mb-8">
+  <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 p-8 text-white shadow-2xl animate-pulse">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 bg-black/20"></div>
+    <div class="absolute inset-0 opacity-20">
+      <div class="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full blur-xl"></div>
+      <div class="absolute bottom-4 left-4 w-20 h-20 bg-white/20 rounded-full blur-2xl"></div>
+    </div>
+
+    <!-- Warning Content -->
+    <div class="relative z-10 text-center">
+      <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-6 animate-bounce">
+        <i class="fa-solid fa-exclamation-triangle text-4xl text-yellow-300"></i>
+      </div>
+      
+      <h2 class="text-3xl lg:text-4xl font-bold mb-4">
+        ⚠️ <?= __('low_balance') ?>!
+      </h2>
+      
+      <p class="text-xl lg:text-2xl mb-6 font-medium opacity-90">
+        <?= __('low_balance_warning') ?>
+      </p>
+      
+      <div class="flex items-center justify-center gap-4 mb-6">
+        <div class="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3">
+          <span class="text-lg font-bold"><?= __('current') ?>: $<?= number_format((float)$ownGroupBalance, 2) ?></span>
+        </div>
+        <div class="bg-yellow-500/30 backdrop-blur-sm rounded-full px-6 py-3">
+          <span class="text-lg font-bold"><?= __('minimum_balance') ?>: $50.00</span>
+        </div>
+      </div>
+      
+      <a href="<?= \App\Helpers\Url::to('/balance/topup') ?>"
+         class="inline-flex items-center gap-3 px-8 py-4 bg-white text-red-600 font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:bg-red-50 transition-all duration-300 transform hover:scale-105">
+        <i class="fa-solid fa-plus-circle text-xl"></i>
+        <span><?= __('topup') ?></span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <!-- Decorative Elements -->
+    <div class="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+  </div>
+</section>
+<?php endif; ?>
+
 <!-- Stats Cards -->
 <section class="mb-8">
   <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -68,16 +116,16 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
             <i class="fa-solid fa-wallet text-2xl"></i>
           </div>
           <div class="text-right">
-            <div class="text-sm opacity-80">Ana Bakiye (API)</div>
+            <div class="text-sm opacity-80"><?= __('main_balance_api') ?></div>
             <div class="text-2xl font-bold" id="balance">
               <?= isset($balanceValue) && $balanceValue!==null ? '$' . number_format((float)$balanceValue, 2) : '...' ?>
             </div>
           </div>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80">Güncel Durum</span>
+          <span class="text-sm opacity-80"><?= __('current_status') ?></span>
           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-circle text-green-400 mr-1 text-xs"></i>Aktif
+            <i class="fa-solid fa-circle text-green-400 mr-1 text-xs"></i><?= __('active') ?>
           </span>
         </div>
       </div>
@@ -92,14 +140,14 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
             <i class="fa-solid fa-layer-group text-2xl"></i>
           </div>
           <div class="text-right">
-            <div class="text-sm opacity-80">Gruplar Toplam</div>
+            <div class="text-sm opacity-80"><?= __('groups_total') ?></div>
             <div class="text-2xl font-bold">$<?= number_format((float)($groupsTotal ?? 0), 2) ?></div>
           </div>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80">Tüm Gruplar</span>
+          <span class="text-sm opacity-80"><?= __('all_groups') ?></span>
           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-users text-blue-300 mr-1 text-xs"></i>Toplam
+            <i class="fa-solid fa-users text-blue-300 mr-1 text-xs"></i><?= __('total') ?>
           </span>
         </div>
       </div>
@@ -114,16 +162,16 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
             <i class="fa-solid fa-scale-balanced text-2xl"></i>
           </div>
           <div class="text-right">
-            <div class="text-sm opacity-80">Fark (Ana - Gruplar)</div>
+            <div class="text-sm opacity-80"><?= __('difference_main_groups') ?></div>
             <div class="text-2xl font-bold">
               <?= isset($diff) && $diff!==null ? '$' . number_format((float)$diff, 2) : '...' ?>
             </div>
           </div>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80">Bakiye Farkı</span>
+          <span class="text-sm opacity-80"><?= __('balance_difference') ?></span>
           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-chart-line text-orange-300 mr-1 text-xs"></i>Analiz
+            <i class="fa-solid fa-chart-line text-orange-300 mr-1 text-xs"></i><?= __('analysis') ?>
           </span>
         </div>
       </div>
@@ -138,14 +186,14 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
             <i class="fa-solid fa-chart-trend-up text-2xl"></i>
           </div>
           <div class="text-right">
-            <div class="text-sm opacity-80">Haftalık Kâr</div>
+            <div class="text-sm opacity-80"><?= __('weekly_profit') ?></div>
             <div class="text-2xl font-bold">$<?= number_format((float)($weeklyProfit ?? 0), 2) ?></div>
           </div>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80">Son 7 Gün</span>
+          <span class="text-sm opacity-80"><?= __('last_7_days') ?></span>
           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-arrow-trend-up text-green-300 mr-1 text-xs"></i>Yükseliş
+            <i class="fa-solid fa-arrow-trend-up text-green-300 mr-1 text-xs"></i><?= __('rising') ?>
           </span>
         </div>
       </div>
@@ -161,14 +209,14 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
             <i class="fa-solid fa-piggy-bank text-2xl"></i>
           </div>
           <div class="text-right">
-            <div class="text-sm opacity-80">Grup Bakiyesi</div>
+            <div class="text-sm opacity-80"><?= __('group_balance') ?></div>
             <div class="text-2xl font-bold">$<?= number_format((float)($ownGroupBalance ?? 0), 2) ?></div>
           </div>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80">Mevcut Bakiye</span>
+          <span class="text-sm opacity-80"><?= __('current_balance') ?></span>
           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-wallet text-teal-300 mr-1 text-xs"></i>Aktif
+            <i class="fa-solid fa-wallet text-teal-300 mr-1 text-xs"></i><?= __('active') ?>
           </span>
         </div>
       </div>
@@ -188,8 +236,8 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <div class="text-sm opacity-80">Grubum</div>
-            <div class="text-lg font-bold">Görüntüle</div>
+            <div class="text-sm opacity-80"><?= __('my_group') ?></div>
+            <div class="text-lg font-bold"><?= __('view') ?></div>
           </div>
           <div class="p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors duration-300">
             <i class="fa-solid fa-external-link-alt text-sm"></i>
@@ -207,14 +255,14 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
             <i class="fa-solid fa-sack-dollar text-2xl"></i>
           </div>
           <div class="text-right">
-            <div class="text-sm opacity-80">Bu Hafta Harcama</div>
+            <div class="text-sm opacity-80"><?= __('this_week_spending') ?></div>
             <div class="text-2xl font-bold">$<?= number_format((float)($weeklyRevenue ?? 0), 2) ?></div>
           </div>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80">Son 7 Gün</span>
+          <span class="text-sm opacity-80"><?= __('last_7_days') ?></span>
           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-chart-pie text-pink-300 mr-1 text-xs"></i>Harcama
+            <i class="fa-solid fa-chart-pie text-pink-300 mr-1 text-xs"></i><?= __('spending') ?>
           </span>
         </div>
       </div>
@@ -228,8 +276,8 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           <div class="p-4 bg-white/20 rounded-full mb-4 inline-block">
             <i class="fa-solid fa-plus text-2xl"></i>
           </div>
-          <div class="text-sm opacity-80">Daha Fazla Metrik</div>
-          <div class="text-lg font-bold">Yakında</div>
+          <div class="text-sm opacity-80"><?= __('more_metrics') ?></div>
+          <div class="text-lg font-bold"><?= __('soon') ?></div>
         </div>
       </div>
     </div>
@@ -241,7 +289,7 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
 <section class="mb-8">
   <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
     <i class="fa-solid fa-bolt text-yellow-500"></i>
-    Hızlı Erişim
+    <?= __('quick_access') ?>
   </h2>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -259,12 +307,12 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           </div>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Kullanıcılar</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Kullanıcı yönetimi</p>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('users') ?></h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('user_management') ?></p>
         </div>
         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
           <div class="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-            <span>Görüntüle</span>
+            <span><?= __('view') ?></span>
             <i class="fa-solid fa-external-link-alt"></i>
           </div>
         </div>
@@ -285,12 +333,12 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           </div>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Çağrılar</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Çağrı geçmişi</p>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('calls') ?></h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('call_history') ?></p>
         </div>
         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
           <div class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
-            <span>Görüntüle</span>
+            <span><?= __('view') ?></span>
             <i class="fa-solid fa-external-link-alt"></i>
           </div>
         </div>
@@ -311,12 +359,12 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           </div>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Raporlar</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Detaylı analizler</p>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('reports') ?></h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('detailed_analysis') ?></p>
         </div>
         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
           <div class="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            <span>Görüntüle</span>
+            <span><?= __('view') ?></span>
             <i class="fa-solid fa-external-link-alt"></i>
           </div>
         </div>
@@ -336,12 +384,12 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           </div>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Agent Durum</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Agent yönetimi</p>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('agent_status') ?></h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('agent_management') ?></p>
         </div>
         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
           <div class="flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 font-medium">
-            <span>Görüntüle</span>
+            <span><?= __('view') ?></span>
             <i class="fa-solid fa-external-link-alt"></i>
           </div>
         </div>
@@ -361,12 +409,12 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           </div>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Dış Numaralar</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Numara yönetimi</p>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('external_numbers') ?></h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('number_management') ?></p>
         </div>
         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
           <div class="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-medium">
-            <span>Görüntüle</span>
+            <span><?= __('view') ?></span>
             <i class="fa-solid fa-external-link-alt"></i>
           </div>
         </div>
@@ -386,12 +434,12 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           </div>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Raporlar</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Çağrı raporlarım</p>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('reports') ?></h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('my_call_reports') ?></p>
         </div>
         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
           <div class="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            <span>Görüntüle</span>
+            <span><?= __('view') ?></span>
             <i class="fa-solid fa-external-link-alt"></i>
           </div>
         </div>
@@ -413,12 +461,12 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           </div>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Ana Bakiye</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">API bakiye yönetimi</p>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('main_balance') ?></h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('api_balance_management') ?></p>
         </div>
         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
           <div class="flex items-center gap-1 text-xs text-fuchsia-600 dark:text-fuchsia-400 font-medium">
-            <span>Görüntüle</span>
+            <span><?= __('view') ?></span>
             <i class="fa-solid fa-external-link-alt"></i>
           </div>
         </div>
@@ -439,12 +487,12 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           </div>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Profil</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Hesap ayarları</p>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('profile') ?></h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('account_settings') ?></p>
         </div>
         <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
           <div class="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 font-medium">
-            <span>Görüntüle</span>
+            <span><?= __('view') ?></span>
             <i class="fa-solid fa-external-link-alt"></i>
           </div>
         </div>
@@ -460,13 +508,13 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
             <i class="fa-solid fa-right-from-bracket text-2xl"></i>
           </div>
           <div class="text-right">
-            <div class="text-sm opacity-80">Güvenli çıkış</div>
+            <div class="text-sm opacity-80"><?= __('secure_logout') ?></div>
           </div>
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <div class="text-lg font-bold">Çıkış Yap</div>
-            <div class="text-sm opacity-80">Oturumu kapat</div>
+            <div class="text-lg font-bold"><?= __('logout_button') ?></div>
+            <div class="text-sm opacity-80"><?= __('end_session') ?></div>
           </div>
           <div class="p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors duration-300">
             <i class="fa-solid fa-sign-out-alt text-sm"></i>
@@ -482,7 +530,7 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
 <section class="mb-8">
   <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
     <i class="fa-solid fa-chart-bar text-purple-500"></i>
-    Analizler
+    <?= __('analytics') ?>
   </h2>
 
   <div class="grid lg:grid-cols-2 gap-8">
@@ -493,7 +541,7 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
           <h3 class="text-lg font-bold text-slate-800 dark:text-white">
             <?php echo $isSuper ? 'Gelir/Maliyet Trendi' : 'Harcama Trendi'; ?>
           </h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Son 7 günün analizi</p>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('last_7_days_analysis') ?></p>
         </div>
         <div class="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg">
           <i class="fa-solid fa-chart-line text-white text-xl"></i>
@@ -506,16 +554,16 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
         <?php if ($isSuper): ?>
         <div class="flex items-center space-x-2">
           <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
-          <span class="text-sm text-slate-600 dark:text-slate-400">Gelir</span>
+          <span class="text-sm text-slate-600 dark:text-slate-400"><?= __('revenue') ?></span>
         </div>
         <div class="flex items-center space-x-2">
           <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-          <span class="text-sm text-slate-600 dark:text-slate-400">Maliyet</span>
+          <span class="text-sm text-slate-600 dark:text-slate-400"><?= __('cost') ?></span>
         </div>
         <?php else: ?>
         <div class="flex items-center space-x-2">
           <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <span class="text-sm text-slate-600 dark:text-slate-400">Harcama</span>
+          <span class="text-sm text-slate-600 dark:text-slate-400"><?= __('spending') ?></span>
         </div>
         <?php endif; ?>
       </div>
@@ -525,8 +573,8 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
     <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white">Günlük Çağrı Adedi</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Son 7 günün çağrı sayısı</p>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white"><?= __('daily_call_count') ?></h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('call_count_last_7_days') ?></p>
         </div>
         <div class="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
           <i class="fa-solid fa-phone text-white text-xl"></i>
@@ -538,7 +586,7 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
       <div class="flex items-center justify-center mt-4">
         <div class="flex items-center space-x-2">
           <div class="w-3 h-3 bg-indigo-500 rounded-full"></div>
-          <span class="text-sm text-slate-600 dark:text-slate-400">Çağrı Sayısı</span>
+          <span class="text-sm text-slate-600 dark:text-slate-400"><?= __('call_count') ?></span>
         </div>
       </div>
     </div>
@@ -552,7 +600,7 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
   <div class="lg:col-span-1">
     <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
       <i class="fa-solid fa-server text-green-500"></i>
-      Sistem Durumu
+      <?= __('system_status') ?>
     </h2>
 
     <div class="space-y-4">
@@ -564,13 +612,13 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
               <i class="fa-solid fa-globe text-green-600 dark:text-green-400"></i>
             </div>
             <div>
-              <div class="font-semibold text-slate-800 dark:text-white">API Bağlantısı</div>
-              <div class="text-sm text-slate-600 dark:text-slate-400">VoIP API durumu</div>
+              <div class="font-semibold text-slate-800 dark:text-white"><?= __('api_connection') ?></div>
+              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('voip_api_status') ?></div>
             </div>
           </div>
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-circle text-green-500 text-sm animate-pulse"></i>
-            <span class="text-sm text-green-600 dark:text-green-400 font-medium">Aktif</span>
+            <span class="text-sm text-green-600 dark:text-green-400 font-medium"><?= __('active') ?></span>
           </div>
         </div>
       </div>
@@ -583,13 +631,13 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
               <i class="fa-solid fa-database text-blue-600 dark:text-blue-400"></i>
             </div>
             <div>
-              <div class="font-semibold text-slate-800 dark:text-white">Veritabanı</div>
-              <div class="text-sm text-slate-600 dark:text-slate-400">MySQL bağlantısı</div>
+              <div class="font-semibold text-slate-800 dark:text-white"><?= __('database') ?></div>
+              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('mysql_connection') ?></div>
             </div>
           </div>
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-circle text-green-500 text-sm animate-pulse"></i>
-            <span class="text-sm text-green-600 dark:text-green-400 font-medium">Aktif</span>
+            <span class="text-sm text-green-600 dark:text-green-400 font-medium"><?= __('active') ?></span>
           </div>
         </div>
       </div>
@@ -602,13 +650,13 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
               <i class="fa-solid fa-sync text-purple-600 dark:text-purple-400"></i>
             </div>
             <div>
-              <div class="font-semibold text-slate-800 dark:text-white">Son Senkronizasyon</div>
-              <div class="text-sm text-slate-600 dark:text-slate-400">Veri güncellemesi</div>
+              <div class="font-semibold text-slate-800 dark:text-white"><?= __('last_sync') ?></div>
+              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('data_update') ?></div>
             </div>
           </div>
           <div class="text-right">
-            <div class="text-sm font-medium text-slate-800 dark:text-white">2 dk önce</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400">Otomatik</div>
+            <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('2_minutes_ago') ?></div>
+            <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('automatic') ?></div>
           </div>
         </div>
       </div>
@@ -619,7 +667,7 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
   <div class="lg:col-span-2">
     <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
       <i class="fa-solid fa-clock-rotate-left text-orange-500"></i>
-      Son Aktiviteler
+      <?= __('recent_activities') ?>
     </h2>
 
     <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
@@ -627,13 +675,13 @@ $greeting = $currentHour < 12 ? 'Günaydın' : ($currentHour < 18 ? 'İyi günle
         <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full mb-6">
           <i class="fa-solid fa-clock text-3xl text-white"></i>
         </div>
-        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Yakında Gelecek</h3>
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2"><?= __('coming_soon') ?></h3>
         <p class="text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
-          Son aktiviteler özelliği yakında aktif edilecektir. Bu bölümde sisteminizdeki tüm faaliyetleri gerçek zamanlı olarak takip edebileceksiniz.
+          <?= __('coming_soon_text') ?>
         </p>
         <div class="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-300 rounded-lg">
           <i class="fa-solid fa-tools text-sm"></i>
-          <span class="text-sm font-medium">Geliştirme aşamasında</span>
+          <span class="text-sm font-medium"><?= __('under_development') ?></span>
         </div>
       </div>
     </div>

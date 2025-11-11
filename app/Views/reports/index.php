@@ -1,4 +1,4 @@
-<?php $title='Raporlar - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('reports').' - '.__('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
 <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
 <?php $isGroupMember = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='groupmember'; ?>
 
@@ -6,7 +6,7 @@
 <div id="loading-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
   <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
     <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
-    <div class="text-lg font-medium text-slate-700 dark:text-slate-300">Rapor hazırlanıyor...</div>
+    <div class="text-lg font-medium text-slate-700 dark:text-slate-300"><?= __('report_preparing') ?></div>
   </div>
 </div>
 
@@ -19,9 +19,9 @@
       </div>
       <div>
         <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-          Raporlar ve Analizler
+          <?= __('reports_and_analysis') ?>
         </h1>
-        <p class="text-slate-500 dark:text-slate-400 text-sm">Detaylı çağrı istatistikleri ve performans analizleri</p>
+        <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('detailed_call_statistics') ?></p>
       </div>
     </div>
 
@@ -46,26 +46,26 @@
   <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 dark:border-slate-700/50 p-6 mb-6">
     <div class="flex items-center gap-2 mb-4">
       <i class="fa-solid fa-filter text-indigo-600"></i>
-      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Filtreler</h3>
+      <h3 class="text-lg font-semibold text-slate-800 dark:text-white"><?= __('filters') ?></h3>
     </div>
 
     <form method="get" class="space-y-4">
       <!-- Predefined Date Ranges -->
       <div class="flex flex-wrap gap-2 mb-4">
         <button type="button" onclick="setDateRange('today')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          Bugün
+          <?= __('today') ?>
         </button>
         <button type="button" onclick="setDateRange('yesterday')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          Dün
+          <?= __('yesterday') ?>
         </button>
         <button type="button" onclick="setDateRange('week')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          Bu Hafta
+          <?= __('this_week') ?>
         </button>
         <button type="button" onclick="setDateRange('month')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          Bu Ay
+          <?= __('this_month') ?>
         </button>
         <button type="button" onclick="setDateRange('lastmonth')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          Geçen Ay
+          <?= __('last_month') ?>
         </button>
       </div>
 
@@ -73,7 +73,7 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="space-y-2">
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            <i class="fa-solid fa-calendar-start text-emerald-600 mr-1"></i>Başlangıç Tarihi
+            <i class="fa-solid fa-calendar-start text-emerald-600 mr-1"></i><?= __('start_date') ?>
           </label>
           <input type="datetime-local" name="from" id="from-date"
                  class="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
@@ -82,7 +82,7 @@
 
         <div class="space-y-2">
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            <i class="fa-solid fa-calendar-end text-rose-600 mr-1"></i>Bitiş Tarihi
+            <i class="fa-solid fa-calendar-end text-rose-600 mr-1"></i><?= __('end_date') ?>
           </label>
           <input type="datetime-local" name="to" id="to-date"
                  class="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
@@ -92,11 +92,11 @@
         <?php if ($isSuper): ?>
         <div class="space-y-2">
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            <i class="fa-solid fa-users text-purple-600 mr-1"></i>Grup Seçimi
+            <i class="fa-solid fa-users text-purple-600 mr-1"></i><?= __('group_selection') ?>
           </label>
           <input type="number" name="group_id"
                  class="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                 value="<?= isset($_GET['group_id'])? (int)$_GET['group_id'] : '' ?>" placeholder="Grup ID (boş = hepsi)">
+                 value="<?= isset($_GET['group_id'])? (int)$_GET['group_id'] : '' ?>" placeholder="<?= __('group_id_placeholder') ?>">
         </div>
         <?php endif; ?>
       </div>
@@ -106,7 +106,7 @@
         <button type="submit"
                 class="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-medium">
           <i class="fa-solid fa-magnifying-glass"></i>
-          Filtreleri Uygula
+          <?= __('apply_filters') ?>
         </button>
       </div>
     </form>
@@ -131,7 +131,7 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= (int)$totCalls ?>" id="total-calls">0</div>
-          <div class="text-blue-100 text-sm">Toplam Çağrı</div>
+          <div class="text-blue-100 text-sm"><?= __('total_calls') ?></div>
         </div>
       </div>
       <div class="w-full bg-white/20 rounded-full h-2">
@@ -147,7 +147,7 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= (int)$answered ?>" id="answered-calls">0</div>
-          <div class="text-emerald-100 text-sm">Cevaplanan</div>
+          <div class="text-emerald-100 text-sm"><?= __('answered_calls') ?></div>
         </div>
       </div>
       <div class="w-full bg-white/20 rounded-full h-2">
@@ -163,7 +163,7 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= (int)$noans ?>" id="noanswer-calls">0</div>
-          <div class="text-rose-100 text-sm">Cevapsız</div>
+          <div class="text-rose-100 text-sm"><?= __('no_answer_calls') ?></div>
         </div>
       </div>
       <div class="w-full bg-white/20 rounded-full h-2">
@@ -180,11 +180,11 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= number_format((float)$totCost,2) ?>" id="total-cost">0.00</div>
-          <div class="text-amber-100 text-sm">Toplam Maliyet</div>
+          <div class="text-amber-100 text-sm"><?= __('total_cost') ?></div>
         </div>
       </div>
       <div class="text-xs text-amber-100 mt-2">
-        <i class="fa-solid fa-chart-line mr-1"></i>Cevaplama Oranı: <span class="font-semibold"><?= $answerRate ?>%</span>
+        <i class="fa-solid fa-chart-line mr-1"></i><?= __('answer_rate') ?>: <span class="font-semibold"><?= $answerRate ?>%</span>
       </div>
     </div>
     <?php elseif (!$isGroupMember): ?>
@@ -195,11 +195,11 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= number_format((float)($spent??0),2) ?>" id="total-spent">0.00</div>
-          <div class="text-amber-100 text-sm">Harcanan</div>
+          <div class="text-amber-100 text-sm"><?= __('spent_amount') ?></div>
         </div>
       </div>
       <div class="text-xs text-amber-100 mt-2">
-        <i class="fa-solid fa-chart-line mr-1"></i>Cevaplama Oranı: <span class="font-semibold"><?= $answerRate ?>%</span>
+        <i class="fa-solid fa-chart-line mr-1"></i><?= __('answer_rate') ?>: <span class="font-semibold"><?= $answerRate ?>%</span>
       </div>
     </div>
     <?php else: ?>
@@ -210,7 +210,7 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= $answerRate ?>" id="answer-rate">0</div>
-          <div class="text-purple-100 text-sm">Cevaplama Oranı</div>
+          <div class="text-purple-100 text-sm"><?= __('answer_rate_percent') ?></div>
         </div>
       </div>
       <div class="w-full bg-white/20 rounded-full h-2 mt-2">
@@ -231,12 +231,12 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= number_format((float)$totRev,2) ?>" id="total-revenue">0.00</div>
-          <div class="text-emerald-100 text-sm">Toplam Gelir</div>
+          <div class="text-emerald-100 text-sm"><?= __('total_revenue') ?></div>
         </div>
       </div>
       <div class="flex items-center text-sm text-emerald-100">
         <i class="fa-solid fa-arrow-up mr-1"></i>
-        <span>Aylık artış gösteriyor</span>
+        <span><?= __('monthly_increase') ?></span>
       </div>
     </div>
 
@@ -248,12 +248,12 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= number_format((float)$totProfit,2) ?>" id="total-profit">0.00</div>
-          <div class="text-fuchsia-100 text-sm">Net Kar</div>
+          <div class="text-fuchsia-100 text-sm"><?= __('net_profit') ?></div>
         </div>
       </div>
       <div class="flex items-center text-sm text-fuchsia-100">
         <i class="fa-solid fa-chart-line mr-1"></i>
-        <span>Karlılık oranı: <span class="font-semibold">
+        <span><?= __('profitability_rate') ?> <span class="font-semibold">
           <?= $totRev > 0 ? round(($totProfit / $totRev) * 100, 1) : 0 ?>%
         </span></span>
       </div>
@@ -267,7 +267,7 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= count($summary ?? []) ?>" id="total-groups">0</div>
-          <div class="text-slate-100 text-sm">Aktif Grup</div>
+          <div class="text-slate-100 text-sm"><?= __('active_groups') ?></div>
         </div>
       </div>
       <div class="space-y-2">
@@ -291,12 +291,12 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold" data-count="<?= number_format((float)($balance??0),2) ?>" id="remaining-balance">0.00</div>
-          <div class="text-teal-100 text-sm">Kalan Bakiye</div>
+          <div class="text-teal-100 text-sm"><?= __('remaining_balance') ?></div>
         </div>
       </div>
       <div class="flex items-center text-sm text-teal-100">
         <i class="fa-solid fa-wallet mr-1"></i>
-        <span>Bu ay harcanan: <span class="font-semibold text-amber-300">
+        <span><?= __('this_month_spent') ?> <span class="font-semibold text-amber-300">
           <?= number_format((float)($spent??0),2) ?>₺
         </span></span>
       </div>
@@ -310,21 +310,21 @@
         </div>
         <div class="text-right">
           <div class="text-2xl font-bold" data-count="<?= $answerRate ?>" id="summary-rate">0</div>
-          <div class="text-indigo-100 text-sm">Başarı Oranı</div>
+          <div class="text-indigo-100 text-sm"><?= __('success_rate') ?></div>
         </div>
       </div>
       <div class="grid grid-cols-3 gap-4 mt-4">
         <div class="text-center">
           <div class="text-lg font-bold text-emerald-300" data-count="<?= (int)$answered ?>" id="summary-answered">0</div>
-          <div class="text-xs text-indigo-100">Cevaplanan</div>
+          <div class="text-xs text-indigo-100"><?= __('answered_calls') ?></div>
         </div>
         <div class="text-center">
           <div class="text-lg font-bold text-rose-300" data-count="<?= (int)$noans ?>" id="summary-noans">0</div>
-          <div class="text-xs text-indigo-100">Cevapsız</div>
+          <div class="text-xs text-indigo-100"><?= __('no_answer_calls') ?></div>
         </div>
         <div class="text-center">
           <div class="text-lg font-bold text-blue-300" data-count="<?= (int)$totCalls ?>" id="summary-total">0</div>
-          <div class="text-xs text-indigo-100">Toplam</div>
+          <div class="text-xs text-indigo-100"><?= __('total') ?></div>
         </div>
       </div>
     </div>
@@ -338,18 +338,18 @@
         <i class="fa-solid fa-chart-line text-white text-lg"></i>
       </div>
       <div>
-        <h3 class="text-xl font-bold text-slate-800 dark:text-white">Günlük Trend Analizi</h3>
-        <p class="text-slate-500 dark:text-slate-400 text-sm">Maliyet ve gelir trendleri</p>
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white"><?= __('daily_trend_analysis') ?></h3>
+        <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('cost_and_revenue_trends') ?></p>
       </div>
     </div>
     <div class="relative">
       <canvas id="trend" height="140"></canvas>
       <div class="absolute top-4 right-4 flex gap-2">
         <button onclick="toggleChartData('cost')" class="px-3 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-lg text-xs hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors">
-          Maliyet
+          <?= __('cost') ?>
         </button>
         <button onclick="toggleChartData('revenue')" class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors">
-          Gelir
+          <?= __('revenue') ?>
         </button>
       </div>
     </div>
@@ -363,14 +363,14 @@
           <i class="fa-solid fa-users text-white text-lg"></i>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-slate-800 dark:text-white">Agent Performans Özeti</h3>
-          <p class="text-slate-500 dark:text-slate-400 text-sm">Detaylı agent istatistikleri</p>
+          <h3 class="text-xl font-bold text-slate-800 dark:text-white"><?= __('agent_performance_summary') ?></h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('detailed_agent_statistics') ?></p>
         </div>
       </div>
       <div class="flex gap-2">
         <button onclick="toggleTableView()" class="px-4 py-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-xl hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors flex items-center gap-2">
           <i class="fa-solid fa-table"></i>
-          <span class="hidden sm:inline">Görünüm</span>
+          <span class="hidden sm:inline"><?= __('view_button') ?></span>
         </button>
       </div>
     </div>
@@ -382,27 +382,27 @@
             <i class="fa-solid fa-user-group text-slate-600 dark:text-slate-300"></i>
             <h4 class="font-semibold text-slate-800 dark:text-white"><?= htmlspecialchars($groupName) ?></h4>
             <span class="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs">
-              <?= count($agents) ?> Agent
+              <?= count($agents) ?> <?= __('agent') ?>
             </span>
           </div>
           <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-600">
             <table class="min-w-full">
               <thead class="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600">
                 <tr>
-                  <th class="p-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Agent</th>
+                  <th class="p-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('agent') ?></th>
                   <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <i class="fa-solid fa-phone mr-1"></i>Çağrı
+                    <i class="fa-solid fa-phone mr-1"></i><?= __('calls_count') ?>
                   </th>
                   <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i>Cevap
+                    <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i><?= __('answer_count') ?>
                   </th>
                   <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <i class="fa-solid fa-clock mr-1 text-blue-600"></i>Billsec
+                    <i class="fa-solid fa-clock mr-1 text-blue-600"></i><?= __('billsec_duration') ?>
                   </th>
                   <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <i class="fa-solid fa-coins mr-1 text-amber-600"></i>Maliyet
+                    <i class="fa-solid fa-coins mr-1 text-amber-600"></i><?= __('cost_amount') ?>
                   </th>
-                  <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">Başarı %</th>
+                  <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('success_percent') ?></th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 dark:divide-slate-600">
@@ -464,19 +464,19 @@
         <table class="min-w-full">
           <thead class="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600">
             <tr>
-              <th class="p-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Agent</th>
+              <th class="p-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('agent') ?></th>
               <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                <i class="fa-solid fa-phone mr-1"></i>Çağrı
+                <i class="fa-solid fa-phone mr-1"></i><?= __('calls_count') ?>
               </th>
               <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i>Cevap
+                <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i><?= __('answer_count') ?>
               </th>
               <?php if (!$isGroupMember): ?>
               <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                <i class="fa-solid fa-clock mr-1 text-blue-600"></i>Billsec
+                <i class="fa-solid fa-clock mr-1 text-blue-600"></i><?= __('billsec_duration') ?>
               </th>
               <?php endif; ?>
-              <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">Başarı %</th>
+              <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('success_percent') ?></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-200 dark:divide-slate-600">
@@ -543,20 +543,20 @@
         </div>
         <div>
           <h3 class="text-xl font-bold text-slate-800 dark:text-white">
-            Top Agentler <?php if (!$isGroupMember): ?>(Billsec)<?php else: ?>(Çağrı)<?php endif; ?>
+            <?php if (!$isGroupMember): ?><?= __('top_agents_billsec') ?><?php else: ?><?= __('top_agents_calls') ?><?php endif; ?>
           </h3>
-          <p class="text-slate-500 dark:text-slate-400 text-sm">En performanslı temsilciler</p>
+          <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('top_performers') ?></p>
         </div>
       </div>
       <div class="relative">
         <canvas id="topAgents" height="180"></canvas>
         <div class="absolute top-2 right-2 flex gap-1">
           <button onclick="changeTopAgentsMetric('calls')" class="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded text-xs hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors">
-            Çağrı
+            <?= __('calls_count') ?>
           </button>
           <?php if (!$isGroupMember): ?>
           <button onclick="changeTopAgentsMetric('billsec')" class="px-2 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded text-xs hover:bg-purple-200 dark:hover:bg-purple-900/60 transition-colors">
-            Süre
+            <?= __('duration_time') ?>
           </button>
           <?php endif; ?>
         </div>
@@ -570,8 +570,8 @@
           <i class="fa-solid fa-chart-pie text-white text-lg"></i>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-slate-800 dark:text-white">Çağrı Durum Dağılımı</h3>
-          <p class="text-slate-500 dark:text-slate-400 text-sm">Disposition analizleri</p>
+          <h3 class="text-xl font-bold text-slate-800 dark:text-white"><?= __('call_status_distribution') ?></h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('disposition_analysis') ?></p>
         </div>
       </div>
       <div class="relative">
@@ -684,7 +684,7 @@
       })
       .catch(error => {
         console.error('Export error:', error);
-        alert('Dışa aktarma sırasında hata oluştu.');
+        alert('<?= __('export_error') ?>');
       })
       .finally(() => {
         hideLoading();
@@ -713,7 +713,7 @@
           labels,
           datasets: [
             {
-              label: 'Maliyet',
+              label: '<?= __('cost') ?>',
               data: cost,
               borderColor: 'rgba(239,68,68,1)',
               backgroundColor: 'rgba(239,68,68,0.1)',
@@ -727,7 +727,7 @@
               pointHoverRadius: 8
             },
             {
-              label: 'Gelir',
+              label: '<?= __('revenue') ?>',
               data: revenue,
               borderColor: 'rgba(16,185,129,1)',
               backgroundColor: 'rgba(16,185,129,0.1)',
@@ -813,7 +813,7 @@
         data: {
           labels: aLabels,
           datasets: [{
-            label: metric === 'calls' ? 'Çağrı' : 'Billsec',
+            label: metric === 'calls' ? '<?= __('calls_count') ?>' : '<?= __('billsec_duration') ?>',
             data: aData,
             backgroundColor: [
               'rgba(59,130,246,0.8)',
@@ -855,7 +855,7 @@
               cornerRadius: 8,
               callbacks: {
                 label: function(context) {
-                  return context.parsed.y + (metric === 'calls' ? ' çağrı' : ' saniye');
+                  return context.parsed.y + (metric === 'calls' ? ' <?= __('calls_text') ?>' : ' <?= __('seconds_text') ?>');
                 }
               }
             }
@@ -968,7 +968,7 @@
 
       topAgentsChart.data.labels = labels;
       topAgentsChart.data.datasets[0].data = data;
-      topAgentsChart.data.datasets[0].label = metric === 'calls' ? 'Çağrı' : 'Billsec';
+      topAgentsChart.data.datasets[0].label = metric === 'calls' ? '<?= __('calls_count') ?>' : '<?= __('billsec_duration') ?>';
       topAgentsChart.update();
     }
 
@@ -983,7 +983,7 @@
 
     function toggleTableView() {
       // Simple table view toggle - could be expanded
-      alert('Tablo görünümü değiştirildi!');
+      alert('<?= __('table_view_changed') ?>');
     }
 
     // ===== INITIALIZATION =====

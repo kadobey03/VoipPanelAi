@@ -1,4 +1,4 @@
-<?php $title='Ödeme Yöntemleri - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('payment_methods_title') . ' - ' . __('site_title'); require dirname(__DIR__).'/partials/header.php'; ?>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header Section -->
@@ -6,14 +6,14 @@
         <div>
           <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent flex items-center gap-3 mb-2">
             <i class="fa-solid fa-money-bill-transfer text-3xl"></i>
-            Ödeme Yöntemleri
+            <?= __('payment_methods_title') ?>
           </h1>
-          <p class="text-slate-600 dark:text-slate-400">Mevcut ödeme yöntemlerini yönetin ve yeni yöntemler ekleyin</p>
+          <p class="text-slate-600 dark:text-slate-400"><?= __('manage_payment_methods_desc') ?></p>
         </div>
         <a href="<?= \App\Helpers\Url::to('/payment-methods/create') ?>"
            class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mt-4 sm:mt-0">
           <i class="fa-solid fa-plus"></i>
-          <span>Yeni Yöntem</span>
+          <span><?= __('new_method') ?></span>
         </a>
       </div>
 
@@ -25,11 +25,11 @@
           <table class="min-w-full">
             <thead class="bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/50">
               <tr>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Ödeme Yöntemi</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Tip</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Komisyon</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Durum</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">İşlemler</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('payment_method') ?></th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('type') ?></th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('commission') ?></th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('status') ?></th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('actions') ?></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-600">
@@ -73,7 +73,7 @@
                     <?php if((int)$pm['active'] === 1): ?>bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-400
                     <?php else: ?>bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-400<?php endif; ?>">
                     <i class="fa-solid <?php if((int)$pm['active'] === 1): ?>fa-check<?php else: ?>fa-xmark<?php endif; ?>"></i>
-                    <?php if((int)$pm['active'] === 1): ?>Aktif<?php else: ?>Pasif<?php endif; ?>
+                    <?php if((int)$pm['active'] === 1): ?><?= __('active') ?><?php else: ?><?= __('inactive') ?><?php endif; ?>
                   </span>
                 </td>
                 <td class="px-6 py-4">
@@ -81,14 +81,14 @@
                     <a href="<?= \App\Helpers\Url::to('/payment-methods/edit') ?>?id=<?= (int)$pm['id'] ?>"
                        class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors text-sm font-medium">
                       <i class="fa-regular fa-pen-to-square"></i>
-                      <span>Düzenle</span>
+                      <span><?= __('edit') ?></span>
                     </a>
                     <form method="post" action="<?= \App\Helpers\Url::to('/payment-methods/delete') ?>" style="display:inline"
-                          onsubmit="return confirm('Bu ödeme yöntemini silmek istediğinizden emin misiniz?')">
+                          onsubmit="return confirm('<?= __('confirm_delete_payment_method') ?>')">
                       <input type="hidden" name="id" value="<?= (int)$pm['id'] ?>">
                       <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-400 rounded-lg hover:bg-rose-200 dark:hover:bg-rose-800 transition-colors text-sm font-medium">
                         <i class="fa-regular fa-trash-can"></i>
-                        <span>Sil</span>
+                        <span><?= __('delete') ?></span>
                       </button>
                     </form>
                   </div>
@@ -122,12 +122,12 @@
               <?php if((int)$pm['active'] === 1): ?>bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-400
               <?php else: ?>bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-400<?php endif; ?>">
               <i class="fa-solid <?php if((int)$pm['active'] === 1): ?>fa-check<?php else: ?>fa-xmark<?php endif; ?>"></i>
-              <?php if((int)$pm['active'] === 1): ?>Aktif<?php else: ?>Pasif<?php endif; ?>
+              <?php if((int)$pm['active'] === 1): ?><?= __('active') ?><?php else: ?><?= __('inactive') ?><?php endif; ?>
             </span>
           </div>
 
           <div class="mb-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
-            <div class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Komisyon Oranları</div>
+            <div class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"><?= __('commission_rates') ?></div>
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1">
                 <i class="fa-solid fa-percent text-slate-400"></i>
@@ -145,14 +145,14 @@
             <a href="<?= \App\Helpers\Url::to('/payment-methods/edit') ?>?id=<?= (int)$pm['id'] ?>"
                class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400 rounded-xl hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors text-sm font-medium">
               <i class="fa-regular fa-pen-to-square"></i>
-              <span>Düzenle</span>
+              <span><?= __('edit') ?></span>
             </a>
             <form method="post" action="<?= \App\Helpers\Url::to('/payment-methods/delete') ?>" style="flex:1"
-                  onsubmit="return confirm('Bu ödeme yöntemini silmek istediğinizden emin misiniz?')">
+                  onsubmit="return confirm('<?= __('confirm_delete_payment_method') ?>')">
               <input type="hidden" name="id" value="<?= (int)$pm['id'] ?>">
               <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-400 rounded-xl hover:bg-rose-200 dark:hover:bg-rose-800 transition-colors text-sm font-medium">
                 <i class="fa-regular fa-trash-can"></i>
-                <span>Sil</span>
+                <span><?= __('delete') ?></span>
               </button>
             </form>
           </div>
@@ -166,14 +166,14 @@
         <div class="w-24 h-24 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
           <i class="fa-solid fa-money-bill-transfer text-4xl text-slate-400"></i>
         </div>
-        <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Henüz ödeme yöntemi yok</h3>
+        <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2"><?= __('no_payment_methods_yet') ?></h3>
         <p class="text-slate-600 dark:text-slate-400 mb-6">
-          Sistemde henüz ödeme yöntemi tanımlanmamış. Yeni bir yöntem eklemek için yukarıdaki butona tıklayın.
+          <?= __('no_payment_methods_desc') ?>
         </p>
         <a href="<?= \App\Helpers\Url::to('/payment-methods/create') ?>"
            class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
           <i class="fa-solid fa-plus"></i>
-          <span>İlk Yöntemi Ekle</span>
+          <span><?= __('add_first_method') ?></span>
         </a>
       </div>
       <?php endif; ?>
@@ -190,7 +190,7 @@
               <div class="text-2xl font-bold text-slate-900 dark:text-slate-100">
                 <?= count($items ?? []) ?>
               </div>
-              <div class="text-sm text-slate-600 dark:text-slate-400">Toplam Yöntem</div>
+              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('total_methods') ?></div>
             </div>
           </div>
         </div>
@@ -204,7 +204,7 @@
               <div class="text-2xl font-bold text-slate-900 dark:text-slate-100">
                 <?= count(array_filter($items ?? [], fn($pm) => (int)$pm['active'] === 1)) ?>
               </div>
-              <div class="text-sm text-slate-600 dark:text-slate-400">Aktif Yöntem</div>
+              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('active_methods') ?></div>
             </div>
           </div>
         </div>
@@ -218,7 +218,7 @@
               <div class="text-2xl font-bold text-slate-900 dark:text-slate-100">
                 <?= count(array_filter($items ?? [], fn($pm) => (int)$pm['active'] !== 1)) ?>
               </div>
-              <div class="text-sm text-slate-600 dark:text-slate-400">Pasif Yöntem</div>
+              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('inactive_methods') ?></div>
             </div>
           </div>
         </div>

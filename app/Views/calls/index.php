@@ -1,18 +1,18 @@
-<?php $title='Çağrılar - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('calls') . ' - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
   <div class="flex items-center justify-between mb-4">
-    <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-phone text-rose-600"></i> Çağrılar</h1>
+    <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-phone text-rose-600"></i> <?= __('calls') ?></h1>
   </div>
   <?php if (isset($_SESSION['user']) && $_SESSION['user']['role']==='superadmin'): ?>
   <form method="post" action="<?= \App\Helpers\Url::to('/calls/sync-history') ?>" class="mb-4 bg-white/80 dark:bg-slate-800 p-3 rounded-xl shadow flex flex-wrap items-end gap-2">
     <div>
-      <label class="block text-xs">Başlangıç</label>
+      <label class="block text-xs"><?= __('start_date') ?></label>
       <input type="datetime-local" name="from" class="border rounded p-1 bg-white dark:bg-slate-900">
     </div>
     <div>
-      <label class="block text-xs">Bitiş</label>
+      <label class="block text-xs"><?= __('end_date') ?></label>
       <input type="datetime-local" name="to" class="border rounded p-1 bg-white dark:bg-slate-900">
     </div>
-    <button class="px-4 py-2 rounded bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:opacity-90 transition"><i class="fa-solid fa-rotate"></i> CDR Senkronize</button>
+    <button class="px-4 py-2 rounded bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:opacity-90 transition"><i class="fa-solid fa-rotate"></i> <?= __('sync_cdr') ?></button>
   </form>
   <?php endif; ?>
 
@@ -21,17 +21,17 @@
     <table class="min-w-full text-xs md:text-sm">
       <thead class="bg-slate-50 dark:bg-slate-900/40">
         <tr class="border-b border-slate-200 dark:border-slate-700 text-left">
-          <th class="p-2">Tarih</th>
-          <th class="p-2">Src</th>
-          <th class="p-2">Dst</th>
-          <th class="p-2">Süre</th>
-          <th class="p-2">Billsec</th>
-          <th class="p-2">Durum</th>
-          <th class="p-2">Grup</th>
-          <?php if ($isSuper): ?><th class="p-2">Cost(API)</th><?php endif; ?>
-          <?php if ($isSuper): ?><th class="p-2">Margin%</th><?php endif; ?>
-          <th class="p-2">Tahsil</th>
-          <th class="p-2">Kayıt</th>
+          <th class="p-2"><?= __('date') ?></th>
+          <th class="p-2"><?= __('src') ?></th>
+          <th class="p-2"><?= __('dst') ?></th>
+          <th class="p-2"><?= __('duration') ?></th>
+          <th class="p-2"><?= __('billsec') ?></th>
+          <th class="p-2"><?= __('disposition') ?></th>
+          <th class="p-2"><?= __('group') ?></th>
+          <?php if ($isSuper): ?><th class="p-2"><?= __('cost_api') ?></th><?php endif; ?>
+          <?php if ($isSuper): ?><th class="p-2"><?= __('margin_percent') ?></th><?php endif; ?>
+          <th class="p-2"><?= __('charged_amount') ?></th>
+          <th class="p-2"><?= __('record') ?></th>
         </tr>
       </thead>
       <tbody>
@@ -55,7 +55,7 @@
           <td class="p-2"><?= number_format((float)$c['amount_charged'],6) ?></td>
           <td class="p-2">
             <?php if (!empty($c['call_id']) && strtoupper($c['disposition'])==='ANSWERED'): ?>
-              <a class="inline-flex items-center gap-1 text-blue-600 hover:underline" href="<?= \App\Helpers\Url::to('/calls/record') ?>?call_id=<?= urlencode($c['call_id']) ?>" target="_blank"><i class="fa-regular fa-circle-play"></i> Dinle</a>
+              <a class="inline-flex items-center gap-1 text-blue-600 hover:underline" href="<?= \App\Helpers\Url::to('/calls/record') ?>?call_id=<?= urlencode($c['call_id']) ?>" target="_blank"><i class="fa-regular fa-circle-play"></i> <?= __('listen') ?></a>
             <?php endif; ?>
           </td>
         </tr>

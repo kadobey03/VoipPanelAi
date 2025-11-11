@@ -1,25 +1,25 @@
-<?php $title='Grup Detayı - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('group_detail') . ' - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
   <div class="flex items-center justify-between mb-4">
-    <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-layer-group text-indigo-600"></i> Grup: <?= htmlspecialchars($group['name']) ?></h1>
+    <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-layer-group text-indigo-600"></i> <?= __('group') ?>: <?= htmlspecialchars($group['name']) ?></h1>
     <div class="space-x-2">
-      <a href="<?= \App\Helpers\Url::to('/groups/edit') ?>?id=<?= (int)$group['id'] ?>" class="px-3 py-2 rounded bg-indigo-600 text-white"><i class="fa-regular fa-pen-to-square"></i> Düzenle</a>
-      <a href="<?= \App\Helpers\Url::to('/groups/topup') ?>?id=<?= (int)$group['id'] ?>" class="px-3 py-2 rounded bg-emerald-600 text-white"><i class="fa-solid fa-circle-plus"></i> Bakiye Yükle</a>
+      <a href="<?= \App\Helpers\Url::to('/groups/edit') ?>?id=<?= (int)$group['id'] ?>" class="px-3 py-2 rounded bg-indigo-600 text-white"><i class="fa-regular fa-pen-to-square"></i> <?= __('edit') ?></a>
+      <a href="<?= \App\Helpers\Url::to('/groups/topup') ?>?id=<?= (int)$group['id'] ?>" class="px-3 py-2 rounded bg-emerald-600 text-white"><i class="fa-solid fa-circle-plus"></i> <?= __('load_balance_title') ?></a>
     </div>
   </div>
   <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
   <div class="grid md:grid-cols-3 gap-4 mb-6">
     <div class="bg-white dark:bg-slate-800 rounded p-4 shadow">
-      <div class="text-sm text-slate-500">Bakiye</div>
+      <div class="text-sm text-slate-500"><?= __('balance') ?></div>
       <div class="text-2xl font-semibold"><?= number_format((float)$group['balance'],2) ?></div>
     </div>
     <?php if ($isSuper): ?>
       <div class="bg-white dark:bg-slate-800 rounded p-4 shadow">
-        <div class="text-sm text-slate-500">Margin</div>
+        <div class="text-sm text-slate-500"><?= __('margin') ?></div>
         <div class="text-2xl font-semibold"><?= number_format((float)$group['margin'],2) ?>%</div>
       </div>
     <?php endif; ?>
     <div class="bg-white dark:bg-slate-800 rounded p-4 shadow">
-      <div class="text-sm text-slate-500">Grup ID</div>
+      <div class="text-sm text-slate-500"><?= __('group_id') ?></div>
       <div class="text-2xl font-semibold"><?= (int)$group['id'] ?></div>
     </div>
   </div>
@@ -27,11 +27,11 @@
     <table class="min-w-full text-sm">
       <thead>
         <tr class="border-b border-gray-200 dark:border-gray-700 text-left">
-          <th class="p-2">Tarih</th>
-          <th class="p-2">Tür</th>
-          <th class="p-2">Tutar</th>
-          <th class="p-2">Referans</th>
-          <th class="p-2">Açıklama</th>
+          <th class="p-2"><?= __('date') ?></th>
+          <th class="p-2"><?= __('type') ?></th>
+          <th class="p-2"><?= __('amount') ?></th>
+          <th class="p-2"><?= __('reference') ?></th>
+          <th class="p-2"><?= __('description') ?></th>
         </tr>
       </thead>
       <tbody>

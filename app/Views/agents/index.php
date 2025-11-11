@@ -1,11 +1,11 @@
-<?php $title='Agent Durum - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('agent_management').' - '.__('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
 <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
 
 <!-- Loading Overlay -->
 <div id="loading-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
   <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
     <div class="animate-spin rounded-full h-12 w-12 border-4 border-rose-500 border-t-transparent"></div>
-    <div class="text-lg font-medium text-slate-700 dark:text-slate-300">Agent bilgileri yükleniyor...</div>
+    <div class="text-lg font-medium text-slate-700 dark:text-slate-300"><?= __('agent_info_loading') ?></div>
   </div>
 </div>
 
@@ -20,8 +20,8 @@
               <i class="fa-solid fa-headset text-3xl text-white"></i>
             </div>
             <div>
-              <h1 class="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white">Agent Yönetimi</h1>
-              <p class="text-lg text-slate-600 dark:text-slate-400 mt-2">Temsilci durumlarını takip edin ve yönetin</p>
+              <h1 class="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white"><?= __('agent_management') ?></h1>
+              <p class="text-lg text-slate-600 dark:text-slate-400 mt-2"><?= __('manage_agent_statuses') ?></p>
             </div>
           </div>
 
@@ -30,7 +30,7 @@
             <form method="post" action="/VoipPanelAi/agents/sync" class="inline">
               <button type="submit" class="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105">
                 <i class="fa-solid fa-sync-alt"></i>
-                Agentleri Güncelle
+                <?= __('update_agents') ?>
               </button>
             </form>
           </div>
@@ -77,7 +77,7 @@
               </div>
               <div class="text-right">
                 <div class="text-2xl font-bold text-emerald-800 dark:text-emerald-300"><?php echo $totalAgents; ?></div>
-                <div class="text-sm text-emerald-600 dark:text-emerald-400">Toplam Agent</div>
+                <div class="text-sm text-emerald-600 dark:text-emerald-400"><?= __('total_agents') ?></div>
               </div>
             </div>
           </div>
@@ -89,7 +89,7 @@
               </div>
               <div class="text-right">
                 <div class="text-2xl font-bold text-green-800 dark:text-green-300"><?php echo $onlineAgents; ?></div>
-                <div class="text-sm text-green-600 dark:text-green-400">Çevrimiçi</div>
+                <div class="text-sm text-green-600 dark:text-green-400"><?= __('online') ?></div>
               </div>
             </div>
           </div>
@@ -101,7 +101,7 @@
               </div>
               <div class="text-right">
                 <div class="text-2xl font-bold text-amber-800 dark:text-amber-300"><?php echo $ringingAgents; ?></div>
-                <div class="text-sm text-amber-600 dark:text-amber-400">Çalıyor</div>
+                <div class="text-sm text-amber-600 dark:text-amber-400"><?= __('ringing') ?></div>
               </div>
             </div>
           </div>
@@ -113,7 +113,7 @@
               </div>
               <div class="text-right">
                 <div class="text-2xl font-bold text-blue-800 dark:text-blue-300"><?php echo $activeAgents; ?></div>
-                <div class="text-sm text-blue-600 dark:text-blue-400">Aktif</div>
+                <div class="text-sm text-blue-600 dark:text-blue-400"><?= __('active') ?></div>
               </div>
             </div>
           </div>
@@ -136,7 +136,7 @@
                 <?php echo htmlspecialchars($groupData['groupName'] ?? 'Grup'); ?>
               </h3>
               <span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full text-sm font-medium">
-                <?php echo count($groupData['agents'] ?? []); ?> Agent
+                <?php echo count($groupData['agents'] ?? []); ?> <?= __('agent') ?>
               </span>
             </div>
 
@@ -270,7 +270,7 @@
                           </p>
                           <?php if (!empty($userAgents)): ?>
                           <p class="text-xs text-purple-600 dark:text-purple-400 font-medium">
-                            <?php echo count($userAgents); ?> Aktif Abonelik
+                            <?php echo count($userAgents); ?> <?= __('active_subscriptions') ?>
                           </p>
                           <?php endif; ?>
                         </div>
@@ -285,10 +285,10 @@
                           else echo 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300';
                           ?>">
                           <?php
-                          if ($status === 'up' || $status === 'online') echo '🟢 Çevrimiçi';
-                          elseif ($status === 'ring' || $status === 'ringing') echo '🟡 Çalıyor';
-                          elseif ($status === 'busy') echo '🔴 Meşgul';
-                          else echo '⚪ Çevrimdışı';
+                          if ($status === 'up' || $status === 'online') echo '🟢 ' . __('online');
+                          elseif ($status === 'ring' || $status === 'ringing') echo '🟡 ' . __('ringing');
+                          elseif ($status === 'busy') echo '🔴 ' . __('busy');
+                          else echo '⚪ ' . __('offline');
                           ?>
                         </span>
                       </div>
@@ -297,22 +297,22 @@
                     <!-- Agent Details -->
                     <div class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 mb-4 space-y-2">
                       <div class="flex justify-between text-sm">
-                        <span class="text-slate-600 dark:text-slate-400">Sistem Durumu:</span>
+                        <span class="text-slate-600 dark:text-slate-400"><?= __('system_status') ?></span>
                         <span class="font-semibold <?php echo ($a['active'] ?? 1) ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'; ?>">
-                          <?php echo ($a['active'] ?? 1) ? '✅ Aktif' : '❌ Pasif'; ?>
+                          <?php echo ($a['active'] ?? 1) ? '✅ ' . __('active') : '❌ ' . __('passive'); ?>
                         </span>
                       </div>
                       <div class="flex justify-between text-sm">
-                        <span class="text-slate-600 dark:text-slate-400">Grup:</span>
+                        <span class="text-slate-600 dark:text-slate-400"><?= __('group') ?>:</span>
                         <span class="font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($a['group_name'] ?? $groupData['groupName'] ?? '-'); ?></span>
                       </div>
                       <div class="flex justify-between text-sm">
-                        <span class="text-slate-600 dark:text-slate-400">Son Çağrı:</span>
+                        <span class="text-slate-600 dark:text-slate-400"><?= __('last_call') ?>:</span>
                         <span class="font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars((string)($a['las_call_time'] ?? '-')); ?></span>
                       </div>
                       <?php if ($a['lead'] ?? false): ?>
                       <div class="flex justify-between text-sm">
-                        <span class="text-slate-600 dark:text-slate-400">Lead:</span>
+                        <span class="text-slate-600 dark:text-slate-400"><?= __('lead') ?>:</span>
                         <span class="font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($a['lead']); ?></span>
                       </div>
                       <?php endif; ?>
@@ -322,7 +322,7 @@
                     <?php if (!empty($userAgents)): ?>
                     <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-3 mb-4">
                       <h5 class="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-3">
-                        <i class="fa-solid fa-crown mr-1"></i>Aktif Abonelikler (<?php echo count($userAgents); ?>)
+                        <i class="fa-solid fa-crown mr-1"></i><?= __('active_subscriptions') ?> (<?php echo count($userAgents); ?>)
                       </h5>
                       <?php foreach ($userAgents as $userAgent): ?>
                       <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg p-2 mb-2 last:mb-0">
@@ -361,7 +361,7 @@
                           <?php if (!empty($userAgent['subscription_start'])): ?>
                           <div class="flex items-center justify-between">
                             <span class="text-slate-600 dark:text-slate-400">
-                              <i class="fa-solid fa-calendar-plus text-xs mr-1"></i>Başlangıç:
+                              <i class="fa-solid fa-calendar-plus text-xs mr-1"></i><?= __('start_date') ?>
                             </span>
                             <span class="text-slate-700 dark:text-slate-300 font-medium">
                               <?php echo date('d.m.Y', strtotime($userAgent['subscription_start'])); ?>
@@ -372,7 +372,7 @@
                           <?php if (!empty($userAgent['subscription_end'])): ?>
                           <div class="flex items-center justify-between">
                             <span class="text-slate-600 dark:text-slate-400">
-                              <i class="fa-solid fa-calendar-check text-xs mr-1"></i>Sonraki Ödeme:
+                              <i class="fa-solid fa-calendar-check text-xs mr-1"></i><?= __('next_payment') ?>
                             </span>
                             <span class="text-slate-700 dark:text-slate-300 font-medium">
                               <?php
@@ -380,9 +380,9 @@
                               $daysLeft = ceil(($nextDate - time()) / (24 * 3600));
                               echo date('d.m.Y', $nextDate);
                               if ($daysLeft >= 0) {
-                                echo " <span class='text-xs text-blue-600'>($daysLeft gün)</span>";
+                                echo " <span class='text-xs text-blue-600'>($daysLeft " . __('days') . ")</span>";
                               } else {
-                                echo " <span class='text-xs text-red-600'>(" . abs($daysLeft) . " gün gecikmiş)</span>";
+                                echo " <span class='text-xs text-red-600'>(" . abs($daysLeft) . " " . __('days_delayed') . ")</span>";
                               }
                               ?>
                             </span>

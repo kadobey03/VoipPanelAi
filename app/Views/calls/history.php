@@ -1,4 +1,4 @@
-<?php $title='CDR Geçmişi - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('cdr_history') . ' - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
 <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
 <?php $isGroupMember = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='groupmember'; ?>
 
@@ -9,8 +9,8 @@
       <i class="fa-solid fa-table-list text-white text-xl"></i>
     </div>
     <div>
-      <h1 class="text-2xl font-bold text-slate-800 dark:text-white">CDR Geçmişi</h1>
-      <p class="text-sm text-slate-600 dark:text-slate-400">Çağrı detay kayıtlarını görüntüleyin</p>
+      <h1 class="text-2xl font-bold text-slate-800 dark:text-white"><?= __('cdr_history') ?></h1>
+      <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('call_detail_records') ?></p>
     </div>
   </div>
 
@@ -18,7 +18,7 @@
   <div class="flex gap-3">
     <button onclick="exportToExcel()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-200">
       <i class="fa-solid fa-download"></i>
-      <span class="hidden sm:inline">Excel İndir</span>
+      <span class="hidden sm:inline"><?= __('export_excel') ?></span>
     </button>
   </div>
 </div>
@@ -28,7 +28,7 @@
   <form method="get" action="<?= \App\Helpers\Url::to('/calls/history') ?>" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
     <div class="space-y-2">
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i>Başlangıç
+        <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i><?= __('start_date') ?>
       </label>
       <input type="datetime-local" name="from" value="<?= htmlspecialchars($_GET['from'] ?? date('Y-m-d\TH:i', strtotime('-1 day'))) ?>"
              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
@@ -36,7 +36,7 @@
 
     <div class="space-y-2">
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i>Bitiş
+        <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i><?= __('end_date') ?>
       </label>
       <input type="datetime-local" name="to" value="<?= htmlspecialchars($_GET['to'] ?? date('Y-m-d\TH:i')) ?>"
              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
@@ -44,23 +44,23 @@
 
     <div class="space-y-2">
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <i class="fa-solid fa-phone mr-2 text-emerald-500"></i>Src
+        <i class="fa-solid fa-phone mr-2 text-emerald-500"></i><?= __('src') ?>
       </label>
-      <input name="src" value="<?= htmlspecialchars($_GET['src'] ?? '') ?>" placeholder="aramayı başlatan"
+      <input name="src" value="<?= htmlspecialchars($_GET['src'] ?? '') ?>" placeholder="<?= __('caller_initiator') ?>"
              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
     </div>
 
     <div class="space-y-2">
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <i class="fa-solid fa-phone mr-2 text-blue-500"></i>Dst
+        <i class="fa-solid fa-phone mr-2 text-blue-500"></i><?= __('dst') ?>
       </label>
-      <input name="dst" value="<?= htmlspecialchars($_GET['dst'] ?? '') ?>" placeholder="aranan"
+      <input name="dst" value="<?= htmlspecialchars($_GET['dst'] ?? '') ?>" placeholder="<?= __('called_number') ?>"
              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
     </div>
 
     <div class="space-y-2">
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <i class="fa-solid fa-list-ol mr-2 text-purple-500"></i>Sayfa
+        <i class="fa-solid fa-list-ol mr-2 text-purple-500"></i><?= __('page_number') ?>
       </label>
       <input type="number" min="1" name="page" value="<?= (int)($_GET['page'] ?? 1) ?>"
              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200">
@@ -68,7 +68,7 @@
 
     <div class="space-y-2">
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <i class="fa-solid fa-hashtag mr-2 text-orange-500"></i>Adet
+        <i class="fa-solid fa-hashtag mr-2 text-orange-500"></i><?= __('count_per_page') ?>
       </label>
       <input type="number" min="10" max="200" name="per" value="<?= (int)($_GET['per'] ?? 100) ?>"
              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
@@ -77,10 +77,10 @@
     <?php if ($isSuper): ?>
     <div class="space-y-2 xl:col-span-2">
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-        <i class="fa-solid fa-users mr-2 text-rose-500"></i>Grup
+        <i class="fa-solid fa-users mr-2 text-rose-500"></i><?= __('group') ?>
       </label>
       <select name="group_id" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-200">
-        <option value="">Tümü</option>
+        <option value=""><?= __('all_groups') ?></option>
         <?php foreach (($groups ?? []) as $g): $gid=(int)$g['id']; ?>
           <option value="<?= $gid ?>" <?= (isset($_GET['group_id']) && (int)$_GET['group_id']===$gid)?'selected':'' ?>><?= htmlspecialchars($g['name']) ?></option>
         <?php endforeach; ?>
@@ -90,7 +90,7 @@
 
     <div class="flex items-end xl:col-span-2">
       <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transform hover:scale-105 transition-all duration-200">
-        <i class="fa-solid fa-magnifying-glass mr-2"></i>Ara
+        <i class="fa-solid fa-magnifying-glass mr-2"></i><?= __('search') ?>
       </button>
     </div>
   </form>
@@ -103,50 +103,50 @@
         <thead class="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50">
           <tr>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i>Tarih
+              <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i><?= __('date') ?>
             </th>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-phone mr-2 text-emerald-500"></i>Src
+              <i class="fa-solid fa-phone mr-2 text-emerald-500"></i><?= __('src') ?>
             </th>
             <?php if ($isSuper): ?>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-users mr-2 text-blue-500"></i>Grup
+              <i class="fa-solid fa-users mr-2 text-blue-500"></i><?= __('group') ?>
             </th>
             <?php endif; ?>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-phone mr-2 text-purple-500"></i>Dst
+              <i class="fa-solid fa-phone mr-2 text-purple-500"></i><?= __('dst') ?>
             </th>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-info-circle mr-2 text-orange-500"></i>Durum
+              <i class="fa-solid fa-info-circle mr-2 text-orange-500"></i><?= __('disposition') ?>
             </th>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-clock mr-2 text-gray-500"></i>Süre
+              <i class="fa-solid fa-clock mr-2 text-gray-500"></i><?= __('duration') ?>
             </th>
             <?php if (!$isGroupMember): ?>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-stopwatch mr-2 text-red-500"></i>Billsec
+              <i class="fa-solid fa-stopwatch mr-2 text-red-500"></i><?= __('billsec') ?>
             </th>
             <?php endif; ?>
             <?php if ($isSuper): ?>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-dollar-sign mr-2 text-green-500"></i>Cost(API)
+              <i class="fa-solid fa-dollar-sign mr-2 text-green-500"></i><?= __('cost_api') ?>
             </th>
             <?php endif; ?>
             <?php if ($isSuper): ?>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-percentage mr-2 text-yellow-500"></i>Margin%
+              <i class="fa-solid fa-percentage mr-2 text-yellow-500"></i><?= __('margin_percent') ?>
             </th>
             <?php endif; ?>
             <?php if (!$isGroupMember): ?>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-coins mr-2 text-cyan-500"></i>Tahsil
+              <i class="fa-solid fa-coins mr-2 text-cyan-500"></i><?= __('charged_amount') ?>
             </th>
             <?php endif; ?>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-headphones mr-2 text-pink-500"></i>Kayıt
+              <i class="fa-solid fa-headphones mr-2 text-pink-500"></i><?= __('record') ?>
             </th>
             <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <i class="fa-solid fa-eye mr-2 text-violet-500"></i>Detay
+              <i class="fa-solid fa-eye mr-2 text-violet-500"></i><?= __('detail') ?>
             </th>
           </tr>
         </thead>
@@ -241,7 +241,7 @@
                 <?php if (!empty($c['call_id']) && strtoupper($c['disposition'])==='ANSWERED'): ?>
                   <button onclick="playAudio('<?= htmlspecialchars($c['call_id']) ?>')"
                           class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-pink-100 text-pink-800 hover:bg-pink-200 dark:bg-pink-900/50 dark:text-pink-300 dark:hover:bg-pink-900/70 transition-colors duration-200">
-                    <i class="fa-solid fa-play mr-1"></i>Dinle
+                    <i class="fa-solid fa-play mr-1"></i><?= __('listen') ?>
                   </button>
                 <?php else: ?>
                   <span class="text-slate-400 dark:text-slate-600 text-xs">-</span>
@@ -250,7 +250,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm">
                 <button onclick="showCallDetails(<?= $index ?>)"
                         class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-100 text-violet-800 hover:bg-violet-200 dark:bg-violet-900/50 dark:text-violet-300 dark:hover:bg-violet-900/70 transition-colors duration-200">
-                  <i class="fa-solid fa-eye mr-1"></i>Detay
+                  <i class="fa-solid fa-eye mr-1"></i><?= __('detail') ?>
                 </button>
               </td>
             </tr>
@@ -260,8 +260,8 @@
               <td colspan="<?= $isSuper ? 12 : 9 ?>" class="px-6 py-16 text-center">
                 <div class="flex flex-col items-center justify-center">
                   <i class="fa-solid fa-inbox text-4xl text-slate-400 dark:text-slate-600 mb-4"></i>
-                  <h3 class="text-lg font-medium text-slate-900 dark:text-white mb-1">Kayıt Bulunamadı</h3>
-                  <p class="text-slate-500 dark:text-slate-400">Belirtilen kriterlere uygun çağrı bulunamadı.</p>
+                  <h3 class="text-lg font-medium text-slate-900 dark:text-white mb-1"><?= __('no_records_found') ?></h3>
+                  <p class="text-slate-500 dark:text-slate-400"><?= __('no_records_message') ?></p>
                 </div>
               </td>
             </tr>
@@ -275,20 +275,20 @@
   <?php if ($totalPages > 1): ?>
   <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
     <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-      <span>Toplam <?= number_format($totalCalls ?? 0) ?> kayıt</span>
+      <span><?= sprintf(__('total_records'), number_format($totalCalls ?? 0)) ?></span>
       <span>•</span>
-      <span>Sayfa <?= number_format($page) ?> / <?= number_format($totalPages) ?></span>
+      <span><?= sprintf(__('page_info'), number_format($page), number_format($totalPages)) ?></span>
     </div>
 
     <div class="flex items-center gap-2">
       <?php if ($page > 1): $q=$_GET; $q['page']=1; ?>
-        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="İlk Sayfa">
+        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('first_page') ?>">
           <i class="fa-solid fa-angles-left"></i>
         </a>
       <?php endif; ?>
 
       <?php if ($page > 1): $q=$_GET; $q['page']=$page-1; ?>
-        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="Önceki Sayfa">
+        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('previous_page') ?>">
           <i class="fa-solid fa-chevron-left"></i>
         </a>
       <?php endif; ?>
@@ -308,13 +308,13 @@
       <?php endfor; ?>
 
       <?php if ($page < $totalPages): $q=$_GET; $q['page']=$page+1; ?>
-        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="Sonraki Sayfa">
+        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('next_page') ?>">
           <i class="fa-solid fa-chevron-right"></i>
         </a>
       <?php endif; ?>
 
       <?php if ($page < $totalPages): $q=$_GET; $q['page']=$totalPages; ?>
-        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="Son Sayfa">
+        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('last_page') ?>">
           <i class="fa-solid fa-angles-right"></i>
         </a>
       <?php endif; ?>
@@ -328,7 +328,7 @@
       <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-            <i class="fa-solid fa-phone mr-2 text-indigo-500"></i>Çağrı Detayları
+            <i class="fa-solid fa-phone mr-2 text-indigo-500"></i><?= __('call_details') ?>
           </h3>
           <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
             <i class="fa-solid fa-times text-xl"></i>
@@ -348,7 +348,7 @@
       <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full">
         <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-            <i class="fa-solid fa-headphones mr-2 text-pink-500"></i>Çağrı Kaydı
+            <i class="fa-solid fa-headphones mr-2 text-pink-500"></i><?= __('call_record') ?>
           </h3>
           <button onclick="closeAudioModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
             <i class="fa-solid fa-times text-xl"></i>
@@ -357,7 +357,7 @@
 
         <div class="p-6">
           <audio id="audioPlayer" controls class="w-full">
-            <p>Tarayıcınız audio elementini desteklemiyor.</p>
+            <p><?= __('browser_no_audio_support') ?></p>
           </audio>
         </div>
       </div>
@@ -381,11 +381,11 @@
         <!-- Basic Info -->
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4">
-            <div class="text-sm text-slate-500 dark:text-slate-400 mb-1">Başlangıç</div>
+            <div class="text-sm text-slate-500 dark:text-slate-400 mb-1"><?= __('start_date') ?></div>
             <div class="font-semibold text-slate-900 dark:text-white">${formatDateTime(call.start)}</div>
           </div>
           <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4">
-            <div class="text-sm text-slate-500 dark:text-slate-400 mb-1">Süre</div>
+            <div class="text-sm text-slate-500 dark:text-slate-400 mb-1"><?= __('duration') ?></div>
             <div class="font-semibold text-slate-900 dark:text-white">${formatDuration(call.duration)}</div>
           </div>
         </div>
@@ -393,25 +393,25 @@
         <!-- Call Details -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Çağrı Bilgileri</div>
+            <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3"><?= __('call_info') ?></div>
             <div class="space-y-3">
               <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-                <span class="text-slate-600 dark:text-slate-400">Kaynak (Src):</span>
+                <span class="text-slate-600 dark:text-slate-400"><?= __('source') ?>:</span>
                 <span class="font-mono font-semibold text-emerald-600 dark:text-emerald-400">${call.src}</span>
               </div>
               <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-                <span class="text-slate-600 dark:text-slate-400">Hedef (Dst):</span>
+                <span class="text-slate-600 dark:text-slate-400"><?= __('destination') ?>:</span>
                 <span class="font-mono font-semibold text-purple-600 dark:text-purple-400">${call.dst}</span>
               </div>
               <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-                <span class="text-slate-600 dark:text-slate-400">Durum:</span>
+                <span class="text-slate-600 dark:text-slate-400"><?= __('disposition') ?>:</span>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${dispositionColor.class}">
                   <i class="fa-solid fa-circle mr-1 text-xs"></i>${call.disposition}
                 </span>
               </div>
               ${call.call_id ? `
               <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-                <span class="text-slate-600 dark:text-slate-400">Çağrı ID:</span>
+                <span class="text-slate-600 dark:text-slate-400"><?= __('call_id') ?>:</span>
                 <span class="font-mono text-xs text-slate-500 dark:text-slate-400">${call.call_id}</span>
               </div>
               ` : ''}
@@ -419,25 +419,25 @@
           </div>
 
           <div>
-            <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Teknik Detaylar</div>
+            <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3"><?= __('technical_details') ?></div>
             <div class="space-y-3">
               ${<?php echo $isGroupMember ? 'false' : 'true'; ?> ? `
               <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-                <span class="text-slate-600 dark:text-slate-400">Billsec:</span>
+                <span class="text-slate-600 dark:text-slate-400"><?= __('billsec') ?>:</span>
                 <span class="font-semibold text-red-600 dark:text-red-400">${formatDuration(call.billsec)}</span>
               </div>
               <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-                <span class="text-slate-600 dark:text-slate-400">Tahsil:</span>
+                <span class="text-slate-600 dark:text-slate-400"><?= __('charged_amount') ?>:</span>
                 <span class="font-mono font-semibold text-cyan-600 dark:text-cyan-400">$${parseFloat(call.amount_charged || 0).toFixed(6)}</span>
               </div>
               ` : ''}
               ${<?php echo $isSuper ? 'true' : 'false'; ?> ? `
               <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-                <span class="text-slate-600 dark:text-slate-400">Cost (API):</span>
+                <span class="text-slate-600 dark:text-slate-400"><?= __('cost_api') ?>:</span>
                 <span class="font-mono font-semibold text-green-600 dark:text-green-400">$${parseFloat(call.cost_api || 0).toFixed(6)}</span>
               </div>
               <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-                <span class="text-slate-600 dark:text-slate-400">Margin %:</span>
+                <span class="text-slate-600 dark:text-slate-400"><?= __('margin_percent') ?>:</span>
                 <span class="font-semibold text-yellow-600 dark:text-yellow-400">${parseFloat(call.margin_percent || 0).toFixed(2)}%</span>
               </div>
               ` : ''}
@@ -450,7 +450,7 @@
         <div class="flex justify-center pt-4 border-t border-slate-200 dark:border-slate-700">
           <button onclick="playAudio('${call.call_id}'); closeModal();"
                   class="inline-flex items-center px-6 py-3 rounded-lg bg-pink-600 hover:bg-pink-700 text-white font-medium transition-colors duration-200">
-            <i class="fa-solid fa-play mr-2"></i>Çağrıyı Dinle
+            <i class="fa-solid fa-play mr-2"></i><?= __('listen_call') ?>
           </button>
         </div>
         ` : ''}
@@ -509,7 +509,7 @@
     const calls = <?php echo json_encode($calls ?? []); ?>;
 
     if (calls.length === 0) {
-      alert('Dışa aktarılacak veri bulunamadı.');
+      alert('<?= __('no_export_data') ?>');
       return;
     }
 

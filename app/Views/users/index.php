@@ -1,5 +1,5 @@
 <?php
-$title='Kullanıcılar - PapaM VoIP Panel';
+$title=__('users') . ' - PapaM VoIP Panel';
 require dirname(__DIR__).'/partials/header.php';
 $isSuperAdmin = isset($_SESSION['user']) && $_SESSION['user']['role'] === 'superadmin';
 ?>
@@ -11,8 +11,8 @@ $isSuperAdmin = isset($_SESSION['user']) && $_SESSION['user']['role'] === 'super
       <i class="fa-solid fa-users text-white text-xl"></i>
     </div>
     <div>
-      <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Kullanıcı Yönetimi</h1>
-      <p class="text-sm text-slate-600 dark:text-slate-400">Sistem kullanıcılarını görüntüleyin ve yönetin</p>
+      <h1 class="text-2xl font-bold text-slate-800 dark:text-white"><?= __('user_management') ?></h1>
+      <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('view_and_manage_users') ?></p>
     </div>
   </div>
 
@@ -20,12 +20,12 @@ $isSuperAdmin = isset($_SESSION['user']) && $_SESSION['user']['role'] === 'super
   <div class="flex gap-3">
     <button onclick="exportUsers()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-200">
       <i class="fa-solid fa-download"></i>
-      <span class="hidden sm:inline">Excel İndir</span>
+      <span class="hidden sm:inline"><?= __('download_excel') ?></span>
     </button>
 
     <a href="<?= \App\Helpers\Url::to('/users/create') ?>" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transform hover:scale-105 transition-all duration-200">
       <i class="fa-solid fa-user-plus"></i>
-      <span class="hidden sm:inline">Yeni Kullanıcı</span>
+      <span class="hidden sm:inline"><?= __('new_user') ?></span>
     </a>
   </div>
 </div>
@@ -42,16 +42,16 @@ $isSuperAdmin = isset($_SESSION['user']) && $_SESSION['user']['role'] === 'super
             <i class="fa-solid fa-hashtag mr-2 text-indigo-500"></i>ID
           </th>
           <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-            <i class="fa-solid fa-user mr-2 text-emerald-500"></i>Kullanıcı
+            <i class="fa-solid fa-user mr-2 text-emerald-500"></i><?= __('user') ?>
           </th>
           <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-            <i class="fa-solid fa-shield mr-2 text-purple-500"></i>Rol
+            <i class="fa-solid fa-shield mr-2 text-purple-500"></i><?= __('role') ?>
           </th>
           <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-            <i class="fa-solid fa-phone mr-2 text-blue-500"></i>Exten
+            <i class="fa-solid fa-phone mr-2 text-blue-500"></i><?= __('exten') ?>
           </th>
           <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-            <i class="fa-solid fa-cogs mr-2 text-gray-500"></i>İşlemler
+            <i class="fa-solid fa-cogs mr-2 text-gray-500"></i><?= __('actions') ?>
           </th>
         </tr>
       </thead>
@@ -118,24 +118,24 @@ $isSuperAdmin = isset($_SESSION['user']) && $_SESSION['user']['role'] === 'super
             <div class="flex items-center space-x-2">
               <button onclick="showUserDetails(<?= $index ?>)"
                       class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:hover:bg-indigo-900/70 transition-colors duration-200">
-                <i class="fa-solid fa-eye mr-1"></i>Detay
+                <i class="fa-solid fa-eye mr-1"></i><?= __('detail') ?>
               </button>
 
               <a href="<?= \App\Helpers\Url::to('/users/edit') ?>?id=<?= (int)$u['id'] ?>"
                  class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/70 transition-colors duration-200">
-                <i class="fa-solid fa-edit mr-1"></i>Düzenle
+                <i class="fa-solid fa-edit mr-1"></i><?= __('edit') ?>
               </a>
 
               <?php if ($isSuperAdmin): ?>
-              <a href="<?= \App\Helpers\Url::to('/admin/impersonate') ?>?id=<?= (int)$u['id'] ?>" title="Bu kullanıcı olarak giriş yap"
+              <a href="<?= \App\Helpers\Url::to('/admin/impersonate') ?>?id=<?= (int)$u['id'] ?>" title="<?= __('login_as_this_user') ?>"
                  class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/50 dark:text-amber-300 dark:hover:bg-amber-900/70 transition-colors duration-200">
-                <i class="fa-solid fa-right-to-bracket mr-1"></i>Giriş
+                <i class="fa-solid fa-right-to-bracket mr-1"></i><?= __('login') ?>
               </a>
 
               <?php if ((int)$u['id'] > 1): ?>
               <button onclick="deleteUser(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['login']) ?>')"
                       class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-300 dark:hover:bg-red-900/70 transition-colors duration-200">
-                <i class="fa-solid fa-trash mr-1"></i>Sil
+                <i class="fa-solid fa-trash mr-1"></i><?= __('delete') ?>
               </button>
               <?php endif; ?>
               <?php endif; ?>
@@ -154,7 +154,7 @@ $isSuperAdmin = isset($_SESSION['user']) && $_SESSION['user']['role'] === 'super
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
         <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-          <i class="fa-solid fa-user mr-2 text-indigo-500"></i>Kullanıcı Detayları
+          <i class="fa-solid fa-user mr-2 text-indigo-500"></i><?= __('user_details') ?>
         </h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i class="fa-solid fa-times text-xl"></i>
@@ -174,7 +174,7 @@ $isSuperAdmin = isset($_SESSION['user']) && $_SESSION['user']['role'] === 'super
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full">
       <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
         <h3 class="text-xl font-bold text-red-600 dark:text-red-400">
-          <i class="fa-solid fa-triangle-exclamation mr-2"></i>Kullanıcıyı Sil
+          <i class="fa-solid fa-triangle-exclamation mr-2"></i><?= __('delete_user') ?>
         </h3>
         <button onclick="closeDeleteModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i class="fa-solid fa-times text-xl"></i>
@@ -183,16 +183,16 @@ $isSuperAdmin = isset($_SESSION['user']) && $_SESSION['user']['role'] === 'super
 
       <div class="p-6">
         <p class="text-slate-700 dark:text-slate-300 mb-6">
-          <strong id="deleteUserName"></strong> kullanıcısını silmek istediğinizden emin misiniz?
-          Bu işlem geri alınamaz.
+          <strong id="deleteUserName"></strong> <?= __('are_you_sure_delete_user') ?>
+          <?= __('this_action_cannot_be_undone') ?>
         </p>
 
         <div class="flex justify-end gap-3">
           <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 transition-colors duration-200">
-            İptal
+            <?= __('cancel') ?>
           </button>
           <button id="confirmDeleteBtn" onclick="confirmDelete()" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors duration-200">
-            <i class="fa-solid fa-trash mr-1"></i>Sil
+            <i class="fa-solid fa-trash mr-1"></i><?= __('delete') ?>
           </button>
         </div>
       </div>
@@ -231,37 +231,37 @@ function showUserDetails(index) {
       <!-- User Details -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Hesap Bilgileri</div>
+          <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3"><?= __('account_info') ?></div>
           <div class="space-y-3">
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Kullanıcı Adı:</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('username') ?>:</span>
               <span class="font-semibold text-slate-900 dark:text-white">${user.login}</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Rol:</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('role') ?>:</span>
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${roleColor}-100 text-${roleColor}-800 dark:bg-${roleColor}-900/50 dark:text-${roleColor}-300">
                 <i class="fa-solid fa-shield mr-1 text-xs"></i>${user.role}
               </span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Exten:</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('exten') ?>:</span>
               <span class="font-mono font-semibold ${user.exten ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}">
-                ${user.exten || 'Belirtilmemiş'}
+                ${user.exten || '<?= __('not_specified') ?>'}
               </span>
             </div>
           </div>
         </div>
 
         <div>
-          <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Ek Bilgiler</div>
+          <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3"><?= __('additional_info') ?></div>
           <div class="space-y-3">
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Kayıt Tarihi:</span>
-              <span class="text-slate-900 dark:text-white">Bilinmiyor</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('registration_date') ?>:</span>
+              <span class="text-slate-900 dark:text-white"><?= __('unknown') ?></span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Son Giriş:</span>
-              <span class="text-slate-900 dark:text-white">Bilinmiyor</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('last_login') ?>:</span>
+              <span class="text-slate-900 dark:text-white"><?= __('unknown') ?></span>
             </div>
           </div>
         </div>
@@ -271,12 +271,12 @@ function showUserDetails(index) {
       <div class="flex justify-center gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
         <a href="<?= \App\Helpers\Url::to('/users/edit') ?>?id=${user.id}"
            class="inline-flex items-center px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors duration-200">
-          <i class="fa-solid fa-edit mr-2"></i>Kullanıcıyı Düzenle
+          <i class="fa-solid fa-edit mr-2"></i><?= __('edit_user') ?>
         </a>
         <?php if ($isSuperAdmin): ?>
         <a href="<?= \App\Helpers\Url::to('/admin/impersonate') ?>?id=${user.id}"
            class="inline-flex items-center px-6 py-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors duration-200">
-          <i class="fa-solid fa-right-to-bracket mr-2"></i>Bu Kullanıcı Olarak Giriş Yap
+          <i class="fa-solid fa-right-to-bracket mr-2"></i><?= __('login_as_user') ?>
         </a>
         <?php endif; ?>
       </div>
@@ -333,12 +333,12 @@ function exportUsers() {
   const users = <?php echo json_encode($users); ?>;
 
   if (users.length === 0) {
-    alert('Dışa aktarılacak kullanıcı bulunamadı.');
+    alert('<?= __('no_users_to_export') ?>');
     return;
   }
 
   // Create CSV content
-  let csvContent = 'ID,Kullanici_Adi,Rol,Exten\n';
+  let csvContent = 'ID,<?= __('username') ?>,<?= __('role') ?>,<?= __('exten') ?>\n';
   users.forEach(user => {
     csvContent += `"${user.id}","${user.login}","${user.role}","${user.exten || ''}"\n`;
   });
@@ -348,7 +348,7 @@ function exportUsers() {
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   link.setAttribute('href', url);
-  link.setAttribute('download', `kullanicilar_export_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `users_export_${new Date().toISOString().split('T')[0]}.csv`);
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();

@@ -1,4 +1,4 @@
-<?php $title='Bakiye Geçmişi - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
+<?php $title=__('balance_history').' - '.__('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
   <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -6,9 +6,9 @@
       <div class="text-center mb-8 animate-fade-in">
         <h1 class="text-4xl font-bold bg-gradient-to-r from-slate-600 to-slate-800 bg-clip-text text-transparent flex items-center justify-center gap-3 mb-2">
           <i class="fa-solid fa-clock-rotate-left text-3xl"></i>
-          Bakiye Geçmişi
+          <?= __('balance_history') ?>
         </h1>
-        <p class="text-slate-600 dark:text-slate-400">Tüm bakiye işlemlerinin detaylı kayıtlarını görüntüleyin</p>
+        <p class="text-slate-600 dark:text-slate-400"><?= __('view_all_balance_transaction_details') ?></p>
       </div>
 
       <!-- Filter Section -->
@@ -19,29 +19,29 @@
             <i class="fa-solid fa-filter text-indigo-600 text-xl"></i>
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200">Filtrele</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400">Belirli bir gruba göre işlemleri filtreleyin</p>
+            <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200"><?= __('filter') ?></h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('filter_transactions_by_group') ?></p>
           </div>
         </div>
 
         <form method="get" class="flex flex-col sm:flex-row items-end gap-4">
           <div class="flex-1 max-w-xs">
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Grup ID <span class="text-slate-500">(isteğe bağlı)</span>
+              <?= __('group_id_optional') ?>
             </label>
             <input type="number" name="group_id" value="<?= isset($_GET['group_id'])?(int)$_GET['group_id']:'' ?>"
                    class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                   placeholder="Tüm gruplar için boş bırakın">
+                   placeholder="<?= __('leave_empty_for_all_groups') ?>">
           </div>
           <div class="flex gap-2">
             <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
               <i class="fa-solid fa-magnifying-glass"></i>
-              <span>Uygula</span>
+              <span><?= __('apply') ?></span>
             </button>
             <?php if(isset($_GET['group_id'])): ?>
             <a href="<?= \App\Helpers\Url::to('/transactions') ?>" class="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
               <i class="fa-solid fa-xmark"></i>
-              <span>Temizle</span>
+              <span><?= __('clear') ?></span>
             </a>
             <?php endif; ?>
           </div>
@@ -57,12 +57,12 @@
           <table class="min-w-full">
             <thead class="bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600">
               <tr>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Tarih</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Grup</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Tür</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Tutar</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Referans</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Açıklama</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('date') ?></th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('group') ?></th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('type') ?></th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('amount') ?></th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('reference') ?></th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('description') ?></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-600">
@@ -153,7 +153,7 @@
           <div class="space-y-2">
             <?php if (!empty(trim((string)$t['reference']))): ?>
             <div class="flex items-center gap-2 text-sm">
-              <span class="font-medium text-slate-600 dark:text-slate-400">Referans:</span>
+              <span class="font-medium text-slate-600 dark:text-slate-400"><?= __('reference_label') ?></span>
               <span class="text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-lg">
                 <?= htmlspecialchars((string)$t['reference']) ?>
               </span>
@@ -162,7 +162,7 @@
 
             <?php if (!empty(trim((string)$t['description']))): ?>
             <div class="text-sm">
-              <span class="font-medium text-slate-600 dark:text-slate-400">Açıklama:</span>
+              <span class="font-medium text-slate-600 dark:text-slate-400"><?= __('description_label') ?></span>
               <p class="text-slate-800 dark:text-slate-200 mt-1 leading-relaxed">
                 <?= htmlspecialchars((string)$t['description']) ?>
               </p>
@@ -179,12 +179,12 @@
         <div class="w-24 h-24 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
           <i class="fa-solid fa-clock-rotate-left text-4xl text-slate-400"></i>
         </div>
-        <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Henüz işlem bulunmuyor</h3>
+        <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2"><?= __('no_transactions_found') ?></h3>
         <p class="text-slate-600 dark:text-slate-400">
           <?php if(isset($_GET['group_id'])): ?>
-            Bu grup için henüz bakiye işlemi gerçekleşmemiş.
+            <?= __('no_transactions_for_this_group') ?>
           <?php else: ?>
-            Sistemde henüz bakiye işlemi gerçekleşmemiş.
+            <?= __('no_transactions_in_system') ?>
           <?php endif; ?>
         </p>
       </div>

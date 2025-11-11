@@ -1,5 +1,5 @@
 <?php
-$title='Gruplar - PapaM VoIP Panel';
+$title=__('groups') . ' - PapaM VoIP Panel';
 require dirname(__DIR__).'/partials/header.php';
 $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'superadmin';
 ?>
@@ -23,8 +23,8 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
             <i class="fa-solid fa-layer-group text-4xl"></i>
           </div>
           <div>
-            <h1 class="text-4xl lg:text-5xl font-bold">Grup Yönetimi</h1>
-            <p class="text-xl text-white/80 mt-2">Sistem gruplarını görüntüleyin ve yönetin</p>
+            <h1 class="text-4xl lg:text-5xl font-bold"><?= __('group_management') ?></h1>
+            <p class="text-xl text-white/80 mt-2"><?= __('view_and_manage_groups') ?></p>
           </div>
         </div>
 
@@ -33,7 +33,7 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
           <div class="p-2 bg-white/30 rounded-lg group-hover:bg-white/40 transition-colors duration-300">
             <i class="fa-solid fa-plus text-lg"></i>
           </div>
-          <span class="font-semibold">Yeni Grup</span>
+          <span class="font-semibold"><?= __('new_group') ?></span>
         </a>
         <?php endif; ?>
       </div>
@@ -52,7 +52,7 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
             </div>
             <div class="text-right">
               <div class="text-2xl font-bold"><?php echo $totalGroups; ?></div>
-              <div class="text-sm opacity-80">Toplam Grup</div>
+              <div class="text-sm opacity-80"><?= __('total_groups') ?></div>
             </div>
           </div>
         </div>
@@ -64,7 +64,7 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
             </div>
             <div class="text-right">
               <div class="text-2xl font-bold">$<?php echo number_format($totalBalance, 2); ?></div>
-              <div class="text-sm opacity-80">Toplam Bakiye</div>
+              <div class="text-sm opacity-80"><?= __('total_balance') ?></div>
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
             </div>
             <div class="text-right">
               <div class="text-2xl font-bold"><?php echo $activeGroups; ?></div>
-              <div class="text-sm opacity-80">API Bağlantılı</div>
+              <div class="text-sm opacity-80"><?= __('api_connected') ?></div>
             </div>
           </div>
         </div>
@@ -113,11 +113,11 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
         <div class="flex items-center space-x-2">
           <?php if (!empty($g['api_group_name'])): ?>
           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
-            <i class="fa-solid fa-circle text-emerald-500 mr-1 text-xs"></i>API Bağlı
+            <i class="fa-solid fa-circle text-emerald-500 mr-1 text-xs"></i><?= __('api_connected_status') ?>
           </span>
           <?php else: ?>
           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300">
-            <i class="fa-solid fa-circle text-slate-400 mr-1 text-xs"></i>Bağlı Değil
+            <i class="fa-solid fa-circle text-slate-400 mr-1 text-xs"></i><?= __('not_connected') ?>
           </span>
           <?php endif; ?>
         </div>
@@ -128,7 +128,7 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-dollar-sign text-emerald-200"></i>
-            <span class="text-sm opacity-80">Bakiye</span>
+            <span class="text-sm opacity-80"><?= __('balance') ?></span>
           </div>
           <div class="text-2xl font-bold">
             $<?= number_format((float)$g['balance'], 2) ?>
@@ -139,12 +139,12 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
       <!-- Additional Info -->
       <div class="grid grid-cols-1 gap-4 mb-4">
         <div class="text-center">
-          <div class="text-sm text-slate-600 dark:text-slate-400 mb-1">API Grup</div>
+          <div class="text-sm text-slate-600 dark:text-slate-400 mb-1"><?= __('api_group') ?></div>
           <div class="font-medium text-sm text-slate-800 dark:text-white truncate">
             <?php if (!empty($g['api_group_name'])): ?>
               <?= htmlspecialchars($g['api_group_name']) ?>
             <?php else: ?>
-              <span class="text-slate-400">Eşleşmedi</span>
+              <span class="text-slate-400"><?= __('not_matched') ?></span>
             <?php endif; ?>
           </div>
         </div>
@@ -155,13 +155,13 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
         <div class="flex space-x-2">
           <button onclick="showGroupDetails(<?= $index ?>)"
                   class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:hover:bg-indigo-900/70 transition-colors duration-200">
-            <i class="fa-solid fa-eye mr-1"></i>Detay
+            <i class="fa-solid fa-eye mr-1"></i><?= __('detail') ?>
           </button>
 
           <?php if ($isSuper): ?>
           <a href="<?= \App\Helpers\Url::to('/groups/edit') ?>?id=<?= (int)$g['id'] ?>"
              class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/70 transition-colors duration-200">
-            <i class="fa-solid fa-edit mr-1"></i>Düzenle
+            <i class="fa-solid fa-edit mr-1"></i><?= __('edit') ?>
           </a>
           <?php endif; ?>
         </div>
@@ -169,7 +169,7 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
         <?php if ($isSuper): ?>
         <a href="<?= \App\Helpers\Url::to('/groups/topup') ?>?id=<?= (int)$g['id'] ?>"
            class="inline-flex items-center px-4 py-2 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-200">
-          <i class="fa-solid fa-plus mr-1"></i>Yükle
+          <i class="fa-solid fa-plus mr-1"></i><?= __('load_balance') ?>
         </a>
         <?php endif; ?>
       </div>
@@ -187,7 +187,7 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
         <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-          <i class="fa-solid fa-layer-group mr-2 text-indigo-500"></i>Grup Detayları
+          <i class="fa-solid fa-layer-group mr-2 text-indigo-500"></i><?= __('group_details') ?>
         </h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i class="fa-solid fa-times text-xl"></i>
@@ -223,49 +223,49 @@ function showGroupDetails(index) {
         </div>
         <div>
           <h4 class="text-xl font-bold text-slate-900 dark:text-white">${group.name}</h4>
-          <p class="text-slate-600 dark:text-slate-400">Grup ID: #${group.id}</p>
+          <p class="text-slate-600 dark:text-slate-400"><?= __('group_id') ?>: #${group.id}</p>
         </div>
       </div>
 
       <!-- Group Details -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Grup Bilgileri</div>
+          <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3"><?= __('group_info') ?></div>
           <div class="space-y-3">
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Grup Adı:</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('group_name') ?>:</span>
               <span class="font-semibold text-slate-900 dark:text-white">${group.name}</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Grup ID:</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('group_id') ?>:</span>
               <span class="font-mono font-semibold text-indigo-600 dark:text-indigo-400">#${group.id}</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Bakiye:</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('balance') ?>:</span>
               <span class="font-mono font-semibold text-emerald-600 dark:text-emerald-400">$${parseFloat(group.balance).toFixed(2)}</span>
             </div>
           </div>
         </div>
 
         <div>
-          <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">API Bağlantısı</div>
+          <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3"><?= __('api_connection') ?></div>
           <div class="space-y-3">
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">API Grup:</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('api_group') ?>:</span>
               <span class="font-semibold ${group.api_group_name ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}">
-                ${group.api_group_name || 'Eşleşmedi'}
+                ${group.api_group_name || '<?= __('not_matched') ?>'}
               </span>
             </div>
             ${group.api_group_id ? `
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">API ID:</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('api_id') ?>:</span>
               <span class="font-mono font-semibold text-blue-600 dark:text-blue-400">#${group.api_group_id}</span>
             </div>
             ` : ''}
             <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
-              <span class="text-slate-600 dark:text-slate-400">Durum:</span>
+              <span class="text-slate-600 dark:text-slate-400"><?= __('status') ?>:</span>
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${group.api_group_name ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300'}">
-                <i class="fa-solid fa-circle mr-1 text-xs"></i>${group.api_group_name ? 'Bağlı' : 'Bağlı Değil'}
+                <i class="fa-solid fa-circle mr-1 text-xs"></i>${group.api_group_name ? '<?= __('connected') ?>' : '<?= __('not_connected') ?>'}
               </span>
             </div>
           </div>
@@ -276,12 +276,12 @@ function showGroupDetails(index) {
       <div class="flex justify-center gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
         <a href="<?= \App\Helpers\Url::to('/groups/show') ?>?id=${group.id}"
            class="inline-flex items-center px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors duration-200">
-          <i class="fa-solid fa-eye mr-2"></i>Detaylı Görüntüle
+          <i class="fa-solid fa-eye mr-2"></i><?= __('detailed_view') ?>
         </a>
         <?php if ($isSuper): ?>
         <a href="<?= \App\Helpers\Url::to('/groups/edit') ?>?id=${group.id}"
            class="inline-flex items-center px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors duration-200">
-          <i class="fa-solid fa-edit mr-2"></i>Grubu Düzenle
+          <i class="fa-solid fa-edit mr-2"></i><?= __('edit_group') ?>
         </a>
         <?php endif; ?>
       </div>

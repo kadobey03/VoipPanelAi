@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Helpers\DB;
 use App\Helpers\Security;
+use App\Helpers\Lang;
 
 class UserController {
     private function startSession() {
@@ -55,13 +56,13 @@ class UserController {
                     $stmt->bind_param('ssssi', $login, $hash, $exten, $role, $group_id);
                 }
                 if ($stmt->execute()) {
-                    $ok = 'Kullanıcı oluşturuldu';
+                    $ok = Lang::get('user_created');
                 } else {
-                    $error = 'Kullanıcı oluşturulamadı';
+                    $error = Lang::get('user_create_failed');
                 }
                 $stmt->close();
             } else {
-                $error = 'Zorunlu alanlar eksik';
+                $error = Lang::get('required_fields_missing');
             }
         }
         // fetch groups and agents for superadmin selection
@@ -102,8 +103,8 @@ class UserController {
             $stmt = $mysqli->prepare($sql);
             $stmt->bind_param($types, ...$params);
             if ($stmt->execute()) {
-                $ok = 'Kullanıcı güncellendi';
-            } else { $error = 'Güncelleme başarısız'; }
+                $ok = Lang::get('user_updated');
+            } else { $error = Lang::get('update_failed'); }
             $stmt->close();
         }
         // fetch current
@@ -126,7 +127,7 @@ class UserController {
 
     public function delete() {
         $this->requireAuth();
-        if (!$this->isSuperAdmin()) { http_response_code(403); echo 'Yetkisiz'; return; }
+        if (!$this->isSuperAdmin()) { http_response_code(403); echo Lang::get('unauthorized'); return; }
         $mysqli = DB::conn();
         $id = (int)($_POST['id'] ?? 0);
         if ($id > 1) { // id 1 süper admin varsayılanı koru
