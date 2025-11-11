@@ -1,5 +1,6 @@
 <?php $title=__('cdr_history') . ' - PapaM VoIP Panel'; require dirname(__DIR__).'/partials/header.php'; ?>
 <?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
+<?php $isGroupAdmin = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='groupadmin'; ?>
 <?php $isGroupMember = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='groupmember'; ?>
 
 <!-- Page Header -->
@@ -137,7 +138,7 @@
               <i class="fa-solid fa-percentage mr-2 text-yellow-500"></i><?= __('margin_percent') ?>
             </th>
             <?php endif; ?>
-            <?php if (!$isGroupMember): ?>
+            <?php if ($isSuper || $isGroupAdmin): ?>
             <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-coins mr-2 text-cyan-500"></i><?= __('charged_amount') ?>
             </th>
@@ -232,7 +233,7 @@
                 </span>
               </td>
               <?php endif; ?>
-              <?php if (!$isGroupMember): ?>
+              <?php if ($isSuper || $isGroupAdmin): ?>
               <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-cyan-600 dark:text-cyan-400">
                 $<?= number_format((float)$c['amount_charged'], 6) ?>
               </td>
@@ -257,7 +258,7 @@
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="<?= $isSuper ? 12 : 9 ?>" class="px-4 py-12 text-center">
+              <td colspan="<?= $isSuper ? 12 : ($isGroupAdmin ? 10 : 9) ?>" class="px-4 py-12 text-center">
                 <div class="flex flex-col items-center justify-center">
                   <i class="fa-solid fa-inbox text-3xl text-slate-400 dark:text-slate-600 mb-3"></i>
                   <h3 class="text-base font-medium text-slate-900 dark:text-white mb-1"><?= __('no_records_found') ?></h3>
@@ -426,6 +427,8 @@
                 <span class="text-slate-600 dark:text-slate-400"><?= __('billsec') ?>:</span>
                 <span class="font-semibold text-red-600 dark:text-red-400">${formatDuration(call.billsec)}</span>
               </div>
+              ` : ''}
+              ${<?php echo ($isSuper || $isGroupAdmin) ? 'true' : 'false'; ?> ? `
               <div class="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-700">
                 <span class="text-slate-600 dark:text-slate-400"><?= __('charged_amount') ?>:</span>
                 <span class="font-mono font-semibold text-cyan-600 dark:text-cyan-400">$${parseFloat(call.amount_charged || 0).toFixed(6)}</span>
@@ -517,7 +520,8 @@
     let csvContent = 'Tarih,Src,';
     <?php if ($isSuper): ?>csvContent += 'Grup,';<?php endif; ?>
     csvContent += 'Dst,Durum,Süre';
-    <?php if (!$isGroupMember): ?>csvContent += ',Billsec,Tahsil';<?php endif; ?>
+    <?php if (!$isGroupMember): ?>csvContent += ',Billsec';<?php endif; ?>
+    <?php if ($isSuper || $isGroupAdmin): ?>csvContent += ',Tahsil';<?php endif; ?>
     <?php if ($isSuper): ?>csvContent += ',Cost_API,Margin_Percent';<?php endif; ?>
     csvContent += '\n';
 
@@ -531,7 +535,8 @@
         csvContent += `"${groupName}",`;
       <?php endif; ?>
       csvContent += `"${call.dst}","${call.disposition}","${formatDuration(call.duration)}"`;
-      <?php if (!$isGroupMember): ?>csvContent += `,"${formatDuration(call.billsec)}","${call.amount_charged || 0}"`;<?php endif; ?>
+      <?php if (!$isGroupMember): ?>csvContent += `,"${formatDuration(call.billsec)}"`;<?php endif; ?>
+      <?php if ($isSuper || $isGroupAdmin): ?>csvContent += `,"${call.amount_charged || 0}"`;<?php endif; ?>
       <?php if ($isSuper): ?>csvContent += `,"${call.cost_api || 0}","${call.margin_percent || 0}"`;<?php endif; ?>
       csvContent += '\n';
     });

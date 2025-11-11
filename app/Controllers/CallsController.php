@@ -8,6 +8,7 @@ class CallsController {
     private function startSession(){ if(session_status()===PHP_SESSION_NONE) session_start(); }
     private function requireAuth(){ $this->startSession(); if(!isset($_SESSION['user'])){ \App\Helpers\Url::redirect('/login'); } }
     private function isSuper(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='superadmin'; }
+    private function isGroupAdmin(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='groupadmin'; }
     private function isGroupMember(): bool { return isset($_SESSION['user']['role']) && $_SESSION['user']['role']==='groupmember'; }
     private function currentGroupId(): ?int { return $_SESSION['user']['group_id'] ?? null; }
 
@@ -37,6 +38,7 @@ class CallsController {
         $db = DB::conn();
         $user = $_SESSION['user'];
         $isSuper = ($user['role'] ?? '') === 'superadmin';
+        $isGroupAdmin = ($user['role'] ?? '') === 'groupadmin';
         $isGroupMember = ($user['role'] ?? '') === 'groupmember';
 
         // Groupmember için session'da agent_id yoksa veritabanından çek
@@ -64,15 +66,37 @@ class CallsController {
         $where = 'start BETWEEN ? AND ?';
         $types = 'ss';
         $params = [$from, $to];
-        if (!$isSuper) { $where .= ' AND group_id=?'; $types.='i'; $params[] = (int)($user['group_id'] ?? 0); }
-        if (($user['role'] ?? '') === 'user') { $where .= ' AND src=?'; $types.='s'; $params[] = $user['exten'] ?? ''; }
-        if ($isGroupMember) {
-            // Groupmember için doğrudan exten üzerinden filtrele
+        // Role based filtering
+        if ($isSuper) {
+            // Superadmin: tüm grupları görebilir, ek filtreleme yok
+        } elseif ($isGroupAdmin) {
+            // Group admin: sadece kendi grubunun çağrıları
+            $where .= ' AND group_id=?';
+            $types.='i';
+            $params[] = (int)($user['group_id'] ?? 0);
+        } elseif ($isGroupMember) {
+            // Group member: sadece kendi agent'ının (exten) çağrıları
+            $where .= ' AND group_id=?';
+            $types.='i';
+            $params[] = (int)($user['group_id'] ?? 0);
+            
             $userExten = $user['exten'] ?? '';
             if (!empty($userExten)) {
                 $where .= ' AND src=?';
                 $types.='s';
                 $params[] = $userExten;
+            }
+        } else {
+            // Legacy user role: kendi extension'ı
+            if (($user['role'] ?? '') === 'user') {
+                $where .= ' AND src=?';
+                $types.='s';
+                $params[] = $user['exten'] ?? '';
+            } else {
+                // Diğer roller için grup bazlı filtreleme
+                $where .= ' AND group_id=?';
+                $types.='i';
+                $params[] = (int)($user['group_id'] ?? 0);
             }
         }
         if ($isSuper && $selectedGroup) { $where .= ' AND group_id=?'; $types.='i'; $params[] = $selectedGroup; }
@@ -95,6 +119,7 @@ class CallsController {
         $groupNamesById=[]; $groupNamesByApi=[]; $groups=[];
         if($r=$db->query('SELECT id, api_group_id, name FROM groups ORDER BY name')){ while($rw=$r->fetch_assoc()){ $groupNamesById[(int)$rw['id']]=$rw['name']; if(!empty($rw['api_group_id'])){$groupNamesByApi[(int)$rw['api_group_id']]=$rw['name'];} $groups[]=$rw; } }
 
+        // Pass role variables to view
         require __DIR__.'/../Views/calls/history.php';
     }
 
@@ -383,9 +408,16 @@ class CallsController {
         $stmt->close();
         if ($row) {
             $gid = (int)$row['group_id'];
-            if (!$this->isSuper() && $gid !== (int)$this->currentGroupId()) { http_response_code(403); echo 'Yetkisiz'; return; }
+            // Super admin: tüm kayıtları dinleyebilir
+            // Group admin veya group member: sadece kendi grubunun kayıtlarını dinleyebilir
+            if (!$this->isSuper() && !$this->isGroupAdmin() && !$this->isGroupMember()) {
+                http_response_code(403); echo 'Yetkisiz'; return;
+            }
+            if (($this->isGroupAdmin() || $this->isGroupMember()) && $gid !== (int)$this->currentGroupId()) {
+                http_response_code(403); echo 'Yetkisiz'; return;
+            }
         } else {
-            // No local record; superadmin can try fetch, group admin denied
+            // No local record; superadmin can try fetch, others denied
             if (!$this->isSuper()) { http_response_code(404); echo 'Bulunamadı'; return; }
         }
         $api = new ApiClient();
