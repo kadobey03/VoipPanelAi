@@ -3,7 +3,7 @@
 <?php $isGroupMember = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='groupmember'; ?>
 
 <!-- Page Header -->
-<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-5 gap-3">
   <div class="flex items-center gap-3">
     <div class="p-3 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl shadow-lg">
       <i class="fa-solid fa-table-list text-white text-xl"></i>
@@ -15,8 +15,8 @@
   </div>
 
   <!-- Export Button -->
-  <div class="flex gap-3">
-    <button onclick="exportToExcel()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-200">
+  <div class="flex gap-2">
+    <button onclick="exportToExcel()" class="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-medium rounded-lg hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 text-sm">
       <i class="fa-solid fa-download"></i>
       <span class="hidden sm:inline"><?= __('export_excel') ?></span>
     </button>
@@ -24,14 +24,14 @@
 </div>
 
 <!-- Filter Form -->
-<div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-6 mb-6">
-  <form method="get" action="<?= \App\Helpers\Url::to('/calls/history') ?>" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+<div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-5 mb-5">
+  <form method="get" action="<?= \App\Helpers\Url::to('/calls/history') ?>" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
     <div class="space-y-2">
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
         <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i><?= __('start_date') ?>
       </label>
       <input type="datetime-local" name="from" value="<?= htmlspecialchars($_GET['from'] ?? date('Y-m-d\TH:i', strtotime('-1 day'))) ?>"
-             class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+             class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
     </div>
 
     <div class="space-y-2">
@@ -39,7 +39,7 @@
         <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i><?= __('end_date') ?>
       </label>
       <input type="datetime-local" name="to" value="<?= htmlspecialchars($_GET['to'] ?? date('Y-m-d\TH:i')) ?>"
-             class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+             class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
     </div>
 
     <div class="space-y-2">
@@ -47,7 +47,7 @@
         <i class="fa-solid fa-phone mr-2 text-emerald-500"></i><?= __('src') ?>
       </label>
       <input name="src" value="<?= htmlspecialchars($_GET['src'] ?? '') ?>" placeholder="<?= __('caller_initiator') ?>"
-             class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+             class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
     </div>
 
     <div class="space-y-2">
@@ -55,7 +55,7 @@
         <i class="fa-solid fa-phone mr-2 text-blue-500"></i><?= __('dst') ?>
       </label>
       <input name="dst" value="<?= htmlspecialchars($_GET['dst'] ?? '') ?>" placeholder="<?= __('called_number') ?>"
-             class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+             class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
     </div>
 
     <div class="space-y-2">
@@ -63,7 +63,7 @@
         <i class="fa-solid fa-list-ol mr-2 text-purple-500"></i><?= __('page_number') ?>
       </label>
       <input type="number" min="1" name="page" value="<?= (int)($_GET['page'] ?? 1) ?>"
-             class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200">
+             class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200">
     </div>
 
     <div class="space-y-2">
@@ -71,7 +71,7 @@
         <i class="fa-solid fa-hashtag mr-2 text-orange-500"></i><?= __('count_per_page') ?>
       </label>
       <input type="number" min="10" max="200" name="per" value="<?= (int)($_GET['per'] ?? 100) ?>"
-             class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
+             class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
     </div>
 
     <?php if ($isSuper): ?>
@@ -79,7 +79,7 @@
       <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
         <i class="fa-solid fa-users mr-2 text-rose-500"></i><?= __('group') ?>
       </label>
-      <select name="group_id" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-200">
+      <select name="group_id" class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-200">
         <option value=""><?= __('all_groups') ?></option>
         <?php foreach (($groups ?? []) as $g): $gid=(int)$g['id']; ?>
           <option value="<?= $gid ?>" <?= (isset($_GET['group_id']) && (int)$_GET['group_id']===$gid)?'selected':'' ?>><?= htmlspecialchars($g['name']) ?></option>
@@ -89,7 +89,7 @@
     <?php endif; ?>
 
     <div class="flex items-end xl:col-span-2">
-      <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transform hover:scale-105 transition-all duration-200">
+      <button type="submit" class="w-full px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-indigo-500/25 transform hover:scale-105 transition-all duration-200">
         <i class="fa-solid fa-magnifying-glass mr-2"></i><?= __('search') ?>
       </button>
     </div>
@@ -102,50 +102,50 @@
       <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
         <thead class="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50">
           <tr>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-calendar-days mr-2 text-indigo-500"></i><?= __('date') ?>
             </th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-phone mr-2 text-emerald-500"></i><?= __('src') ?>
             </th>
             <?php if ($isSuper): ?>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-users mr-2 text-blue-500"></i><?= __('group') ?>
             </th>
             <?php endif; ?>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-phone mr-2 text-purple-500"></i><?= __('dst') ?>
             </th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-info-circle mr-2 text-orange-500"></i><?= __('disposition') ?>
             </th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-clock mr-2 text-gray-500"></i><?= __('duration') ?>
             </th>
             <?php if (!$isGroupMember): ?>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-stopwatch mr-2 text-red-500"></i><?= __('billsec') ?>
             </th>
             <?php endif; ?>
             <?php if ($isSuper): ?>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-dollar-sign mr-2 text-green-500"></i><?= __('cost_api') ?>
             </th>
             <?php endif; ?>
             <?php if ($isSuper): ?>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-percentage mr-2 text-yellow-500"></i><?= __('margin_percent') ?>
             </th>
             <?php endif; ?>
             <?php if (!$isGroupMember): ?>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-coins mr-2 text-cyan-500"></i><?= __('charged_amount') ?>
             </th>
             <?php endif; ?>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-headphones mr-2 text-pink-500"></i><?= __('record') ?>
             </th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <i class="fa-solid fa-eye mr-2 text-violet-500"></i><?= __('detail') ?>
             </th>
           </tr>
@@ -154,7 +154,7 @@
           <?php if (!empty($calls ?? [])): ?>
             <?php foreach ($calls as $index => $c): ?>
             <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-900/50 transition-all duration-200 group">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                 <div class="flex items-center">
                   <div class="text-sm font-medium">
                     <?= date('d.m.Y', strtotime($c['start'])) ?>
@@ -164,21 +164,21 @@
                   </div>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
                 <?= htmlspecialchars($c['src']) ?>
               </td>
               <?php if ($isSuper): ?>
                 <?php $gid=(int)$c['group_id']; $gn = isset($groupNamesById[$gid]) ? $groupNamesById[$gid] : (isset($groupNamesByApi[$gid]) ? $groupNamesByApi[$gid] : ('#'.$gid)); ?>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
                     <?= htmlspecialchars($gn) ?>
                   </span>
                 </td>
               <?php endif; ?>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-purple-600 dark:text-purple-400 font-semibold">
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-purple-600 dark:text-purple-400 font-semibold">
                 <?= htmlspecialchars($c['dst']) ?>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="px-4 py-3 whitespace-nowrap">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                   <?php
                   $disp = strtoupper($c['disposition']);
@@ -196,14 +196,14 @@
                   <?= htmlspecialchars($c['disposition']) ?>
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                 <div class="flex items-center">
                   <i class="fa-solid fa-clock text-gray-400 mr-2"></i>
                   <?= gmdate('i:s', (int)$c['duration']) ?>
                 </div>
               </td>
               <?php if (!$isGroupMember): ?>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                 <div class="flex items-center">
                   <i class="fa-solid fa-stopwatch text-red-400 mr-2"></i>
                   <?= gmdate('i:s', (int)$c['billsec']) ?>
@@ -211,12 +211,12 @@
               </td>
               <?php endif; ?>
               <?php if ($isSuper): ?>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-green-600 dark:text-green-400">
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-green-600 dark:text-green-400">
                 $<?= number_format((float)$c['cost_api'], 6) ?>
               </td>
               <?php endif; ?>
               <?php if ($isSuper): ?>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <td class="px-4 py-3 whitespace-nowrap text-sm">
                 <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium
                   <?php
                   $margin = (float)$c['margin_percent'];
@@ -233,35 +233,35 @@
               </td>
               <?php endif; ?>
               <?php if (!$isGroupMember): ?>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-cyan-600 dark:text-cyan-400">
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-cyan-600 dark:text-cyan-400">
                 $<?= number_format((float)$c['amount_charged'], 6) ?>
               </td>
               <?php endif; ?>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <td class="px-4 py-3 whitespace-nowrap text-sm">
                 <?php if (!empty($c['call_id']) && strtoupper($c['disposition'])==='ANSWERED'): ?>
                   <button onclick="playAudio('<?= htmlspecialchars($c['call_id']) ?>')"
-                          class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-pink-100 text-pink-800 hover:bg-pink-200 dark:bg-pink-900/50 dark:text-pink-300 dark:hover:bg-pink-900/70 transition-colors duration-200">
-                    <i class="fa-solid fa-play mr-1"></i><?= __('listen') ?>
+                          class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-pink-100 text-pink-800 hover:bg-pink-200 dark:bg-pink-900/50 dark:text-pink-300 dark:hover:bg-pink-900/70 transition-colors duration-200">
+                    <i class="fa-solid fa-play mr-1"></i><span class="hidden sm:inline"><?= __('listen') ?></span>
                   </button>
                 <?php else: ?>
                   <span class="text-slate-400 dark:text-slate-600 text-xs">-</span>
                 <?php endif; ?>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <td class="px-4 py-3 whitespace-nowrap text-sm">
                 <button onclick="showCallDetails(<?= $index ?>)"
-                        class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-100 text-violet-800 hover:bg-violet-200 dark:bg-violet-900/50 dark:text-violet-300 dark:hover:bg-violet-900/70 transition-colors duration-200">
-                  <i class="fa-solid fa-eye mr-1"></i><?= __('detail') ?>
+                        class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-violet-100 text-violet-800 hover:bg-violet-200 dark:bg-violet-900/50 dark:text-violet-300 dark:hover:bg-violet-900/70 transition-colors duration-200">
+                  <i class="fa-solid fa-eye mr-1"></i><span class="hidden sm:inline"><?= __('detail') ?></span>
                 </button>
               </td>
             </tr>
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="<?= $isSuper ? 12 : 9 ?>" class="px-6 py-16 text-center">
+              <td colspan="<?= $isSuper ? 12 : 9 ?>" class="px-4 py-12 text-center">
                 <div class="flex flex-col items-center justify-center">
-                  <i class="fa-solid fa-inbox text-4xl text-slate-400 dark:text-slate-600 mb-4"></i>
-                  <h3 class="text-lg font-medium text-slate-900 dark:text-white mb-1"><?= __('no_records_found') ?></h3>
-                  <p class="text-slate-500 dark:text-slate-400"><?= __('no_records_message') ?></p>
+                  <i class="fa-solid fa-inbox text-3xl text-slate-400 dark:text-slate-600 mb-3"></i>
+                  <h3 class="text-base font-medium text-slate-900 dark:text-white mb-1"><?= __('no_records_found') ?></h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-400"><?= __('no_records_message') ?></p>
                 </div>
               </td>
             </tr>
@@ -273,23 +273,23 @@
   <!-- Pagination -->
   <?php $page = (int)($_GET['page'] ?? 1); $per=(int)($_GET['per'] ?? 100); $totalPages = $totalPages ?? 1; ?>
   <?php if ($totalPages > 1): ?>
-  <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-    <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+  <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
       <span><?= sprintf(__('total_records'), number_format($totalCalls ?? 0)) ?></span>
-      <span>•</span>
+      <span class="text-slate-300 dark:text-slate-600">•</span>
       <span><?= sprintf(__('page_info'), number_format($page), number_format($totalPages)) ?></span>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1">
       <?php if ($page > 1): $q=$_GET; $q['page']=1; ?>
-        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('first_page') ?>">
-          <i class="fa-solid fa-angles-left"></i>
+        <a class="px-2.5 py-1.5 rounded-md bg-slate-50 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-all duration-150 text-sm" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('first_page') ?>">
+          <i class="fa-solid fa-angles-left text-xs"></i>
         </a>
       <?php endif; ?>
 
       <?php if ($page > 1): $q=$_GET; $q['page']=$page-1; ?>
-        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('previous_page') ?>">
-          <i class="fa-solid fa-chevron-left"></i>
+        <a class="px-2.5 py-1.5 rounded-md bg-slate-50 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-all duration-150 text-sm" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('previous_page') ?>">
+          <i class="fa-solid fa-chevron-left text-xs"></i>
         </a>
       <?php endif; ?>
 
@@ -301,21 +301,21 @@
         $q = $_GET; $q['page'] = $i;
         $isActive = $i === $page;
       ?>
-        <a class="px-4 py-2 rounded-lg font-medium transition-colors duration-200 <?= $isActive ? 'bg-indigo-600 text-white' : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300' ?>"
+        <a class="px-3 py-1.5 rounded-md font-medium transition-all duration-150 text-sm <?= $isActive ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300' ?>"
            href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>">
           <?= $i ?>
         </a>
       <?php endfor; ?>
 
       <?php if ($page < $totalPages): $q=$_GET; $q['page']=$page+1; ?>
-        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('next_page') ?>">
-          <i class="fa-solid fa-chevron-right"></i>
+        <a class="px-2.5 py-1.5 rounded-md bg-slate-50 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-all duration-150 text-sm" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('next_page') ?>">
+          <i class="fa-solid fa-chevron-right text-xs"></i>
         </a>
       <?php endif; ?>
 
       <?php if ($page < $totalPages): $q=$_GET; $q['page']=$totalPages; ?>
-        <a class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition-colors duration-200" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('last_page') ?>">
-          <i class="fa-solid fa-angles-right"></i>
+        <a class="px-2.5 py-1.5 rounded-md bg-slate-50 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-all duration-150 text-sm" href="<?= \App\Helpers\Url::to('/calls/history').'?'.http_build_query($q) ?>" title="<?= __('last_page') ?>">
+          <i class="fa-solid fa-angles-right text-xs"></i>
         </a>
       <?php endif; ?>
     </div>
@@ -324,8 +324,8 @@
 
   <!-- Call Details Modal -->
   <div id="callModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-3">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-2">
         <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h3 class="text-xl font-bold text-slate-900 dark:text-white">
             <i class="fa-solid fa-phone mr-2 text-indigo-500"></i><?= __('call_details') ?>
@@ -344,8 +344,8 @@
 
   <!-- Audio Player Modal -->
   <div id="audioModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full">
+    <div class="flex items-center justify-center min-h-screen p-3">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full mx-2">
         <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h3 class="text-xl font-bold text-slate-900 dark:text-white">
             <i class="fa-solid fa-headphones mr-2 text-pink-500"></i><?= __('call_record') ?>
