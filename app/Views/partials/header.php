@@ -19,7 +19,15 @@ Lang::load(Lang::current());
    <meta property="og:image" content="/VoipPanelAi/public/assets/images/seo-image.png">
    <meta property="og:type" content="website">
    <title><?= isset($title) ? htmlspecialchars($title) : __('papam_voip_panel') ?></title>
-   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script>
+     tailwind.config = {
+       darkMode: 'class',
+       theme: {
+         extend: {}
+       }
+     }
+   </script>
    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet">
    <?php if (isset($title) && strpos($title, 'Giriş') !== false): ?>
 
@@ -508,15 +516,26 @@ Lang::load(Lang::current());
       function toggleTheme() {
         const isCurrentlyDark = document.documentElement.classList.contains('dark');
         
+        console.log('Current theme:', isCurrentlyDark ? 'dark' : 'light');
+        
         if (isCurrentlyDark) {
           // Switch to light mode
           document.documentElement.classList.remove('dark');
+          document.body.classList.remove('dark');
           localStorage.setItem('theme', 'light');
+          console.log('Switched to light mode');
         } else {
           // Switch to dark mode
           document.documentElement.classList.add('dark');
+          document.body.classList.add('dark');
           localStorage.setItem('theme', 'dark');
+          console.log('Switched to dark mode');
         }
+
+        // Force a repaint
+        document.body.style.display = 'none';
+        document.body.offsetHeight; // trigger reflow
+        document.body.style.display = '';
 
         // Update theme icon
         updateThemeIcon();
@@ -533,6 +552,7 @@ Lang::load(Lang::current());
             themeIcon.className = 'fa-solid fa-moon text-white text-base';
           }
         }
+        console.log('Icon updated, isDark:', isDark);
       }
 
       // Theme toggle buttons
