@@ -6,11 +6,39 @@ class TelegramNotifier
 {
     private $botToken;
     private $chatId;
+    private $language;
     
-    public function __construct($botToken = null, $chatId = null)
+    public function __construct($botToken = null, $chatId = null, $language = 'TR')
     {
         $this->botToken = $botToken ?: '8076802006:AAFi4IOMuNespxZyvvFTLZuVZxMGOucmvUk';
         $this->chatId = $chatId ?: '-4931882446';
+        $this->language = $language ?: 'TR';
+    }
+    
+    /**
+     * Gruba göre telegram ayarlarını al ve notifier'ı yapılandır
+     */
+    public static function forGroup($groupId)
+    {
+        try {
+            $db = \App\Helpers\DB::conn();
+            $stmt = $db->prepare('SELECT telegram_chat_id, telegram_language, telegram_enabled FROM groups WHERE id = ?');
+            $stmt->bind_param('i', $groupId);
+            $stmt->execute();
+            $group = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            
+            if ($group && $group['telegram_enabled'] && $group['telegram_chat_id']) {
+                return new self(null, $group['telegram_chat_id'], $group['telegram_language'] ?: 'TR');
+            }
+            
+            // Varsayılan ayarları kullan
+            return new self();
+            
+        } catch (\Exception $e) {
+            error_log('TelegramNotifier::forGroup Error: ' . $e->getMessage());
+            return new self();
+        }
     }
     
     /**
@@ -217,26 +245,76 @@ class TelegramNotifier
      */
     public function sendDailySubscriptionReport($totalProcessed, $successCount, $failedCount, $totalRevenue, $suspendedCount)
     {
-        $message = "📊 *GÜNLÜK ABONELİK RAPORU*\n\n";
-        $message .= "📈 *Toplam İşlem:* {$totalProcessed}\n";
-        $message .= "✅ *Başarılı Ödeme:* {$successCount}\n";
-        $message .= "❌ *Başarısız Ödeme:* {$failedCount}\n";
-        $message .= "💰 *Toplam Gelir:* \$" . number_format($totalRevenue, 2) . "\n";
-        $message .= "⏸️ *Askıya Alınan:* {$suspendedCount}\n";
-        $message .= "📅 *Tarih:* " . date('d.m.Y') . "\n";
-        $message .= "⏰ *Rapor Zamanı:* " . date('H:i:s') . "\n";
-        
-        if ($failedCount > 0) {
-            $message .= "\n⚠️ *DİKKAT:* Başarısız ödemeler için müşterilerle iletişime geçin";
+        if ($this->language === 'EN') {
+            $message = "📊 *DAILY SUBSCRIPTION REPORT*\n\n";
+            $message .= "📈 *Total Processed:* {$totalProcessed}\n";
+            $message .= "✅ *Successful Payments:* {$successCount}\n";
+            $message .= "❌ *Failed Payments:* {$failedCount}\n";
+            $message .= "💰 *Total Revenue:* \$" . number_format($totalRevenue, 2) . "\n";
+            $message .= "⏸️ *Suspended:* {$suspendedCount}\n";
+            $message .= "📅 *Date:* " . date('d.m.Y') . "\n";
+            $message .= "⏰ *Report Time:* " . date('H:i:s') . "\n";
+            
+            if ($failedCount > 0) {
+                $message .= "\n⚠️ *ATTENTION:* Contact customers for failed payments";
+            }
+        } elseif ($this->language === 'RU') {
+            $message = "📊 *ЕЖЕДНЕВНЫЙ ОТЧЕТ ПО ПОДПИСКАМ*\n\n";
+            $message .= "📈 *Всего обработано:* {$totalProcessed}\n";
+            $message .= "✅ *Успешные платежи:* {$successCount}\n";
+            $message .= "❌ *Неудачные платежи:* {$failedCount}\n";
+            $message .= "💰 *Общий доход:* \$" . number_format($totalRevenue, 2) . "\n";
+            $message .= "⏸️ *Приостановлено:* {$suspendedCount}\n";
+            $message .= "📅 *Дата:* " . date('d.m.Y') . "\n";
+            $message .= "⏰ *Время отчета:* " . date('H:i:s') . "\n";
+            
+            if ($failedCount > 0) {
+                $message .= "\n⚠️ *ВНИМАНИЕ:* Свяжитесь с клиентами по неудачным платежам";
+            }
+        } else { // TR
+            $message = "📊 *GÜNLÜK ABONELİK RAPORU*\n\n";
+            $message .= "📈 *Toplam İşlem:* {$totalProcessed}\n";
+            $message .= "✅ *Başarılı Ödeme:* {$successCount}\n";
+            $message .= "❌ *Başarısız Ödeme:* {$failedCount}\n";
+            $message .= "💰 *Toplam Gelir:* \$" . number_format($totalRevenue, 2) . "\n";
+            $message .= "⏸️ *Askıya Alınan:* {$suspendedCount}\n";
+            $message .= "📅 *Tarih:* " . date('d.m.Y') . "\n";
+            $message .= "⏰ *Rapor Zamanı:* " . date('H:i:s') . "\n";
+            
+            if ($failedCount > 0) {
+                $message .= "\n⚠️ *DİKKAT:* Başarısız ödemeler için müşterilerle iletişime geçin";
+            }
         }
         
         return $this->sendMessage($message);
     }
     
     /**
-     * Telegram'a mesaj gönder
+     * Cron hata bildirimi gönder
      */
-    private function sendMessage($message)
+    public function sendCronErrorNotification($errorMessage)
+    {
+        if ($this->language === 'EN') {
+            $message = "🚨 *SUBSCRIPTION CRON JOB ERROR*\n\n";
+            $message .= "📅 *Date:* " . date('d.m.Y H:i') . "\n";
+            $message .= "❌ *Error:* {$errorMessage}\n";
+        } elseif ($this->language === 'RU') {
+            $message = "🚨 *ОШИБКА CRON JOB ПОДПИСОК*\n\n";
+            $message .= "📅 *Дата:* " . date('d.m.Y H:i') . "\n";
+            $message .= "❌ *Ошибка:* {$errorMessage}\n";
+        } else { // TR
+            $message = "🚨 *ABONELİK CRON JOB HATASI*\n\n";
+            $message .= "📅 *Tarih:* " . date('d.m.Y H:i') . "\n";
+            $message .= "❌ *Hata:* {$errorMessage}\n";
+        }
+        
+        return $this->sendMessage($message);
+    }
+    
+    /**
+     * Telegram'a mesaj gönder - PUBLIC metod
+     */
+    public function sendMessage($message)
     {
         $url = "https://api.telegram.org/bot{$this->botToken}/sendMessage";
         
