@@ -73,7 +73,7 @@ class BinanceClient {
      */
     public function getUSDTPrice() {
         try {
-            $data = $this->makeRequest('/api/v3/ticker/price', 'GET', ['symbol' => 'USDTTRY']);
+            $data = $this->makeRequest('/api/v3/ticker/price', 'GET', ['symbol' => 'USDTUSDT']);
             return $data['price'] ?? 0;
         } catch (\Exception $e) {
             error_log('BinanceClient::getUSDTPrice Error: ' . $e->getMessage());

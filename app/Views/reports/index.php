@@ -274,7 +274,7 @@
         <?php foreach (array_slice(($summary??[]), 0, 3) as $row): $gid=(int)$row['group_id']; ?>
           <div class="flex items-center justify-between bg-white/10 rounded-lg p-2">
             <span class="text-sm truncate"><?= htmlspecialchars($groups[$gid] ?? ('#'.$gid)) ?></span>
-            <span class="font-semibold text-sm text-emerald-300"><?= number_format((float)$row['profit'],0) ?>₺</span>
+            <span class="font-semibold text-sm text-emerald-300">$<?= number_format((float)$row['profit'],0) ?></span>
           </div>
         <?php endforeach; ?>
       </div>
@@ -297,7 +297,7 @@
       <div class="flex items-center text-sm text-teal-100">
         <i class="fa-solid fa-wallet mr-1"></i>
         <span><?= __('this_month_spent') ?> <span class="font-semibold text-amber-300">
-          <?= number_format((float)($spent??0),2) ?>₺
+          $<?= number_format((float)($spent??0),2) ?>
         </span></span>
       </div>
     </div>
@@ -439,7 +439,7 @@
                     <?= number_format((int)($r['billsec'] ?? 0)) ?>s
                   </td>
                   <td class="p-4 text-center font-semibold text-amber-700 dark:text-amber-300">
-                    <?= number_format((float)($r['cost'] ?? 0),2) ?>₺
+                    $<?= number_format((float)($r['cost'] ?? 0),2) ?>
                   </td>
                   <td class="p-4 text-center">
                     <div class="flex items-center justify-center gap-2">
@@ -774,7 +774,7 @@
               },
               ticks: {
                 callback: function(value) {
-                  return value.toFixed(2) + '₺';
+                  return '$' + value.toFixed(2);
                 }
               }
             },

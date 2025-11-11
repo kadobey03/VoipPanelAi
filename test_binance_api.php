@@ -42,7 +42,7 @@ try {
     
     echo "1. USDT Fiyat Kontrolü (Public):\n";
     $usdtPrice = $client->getUSDTPrice();
-    echo "USDT/TRY Fiyatı: " . $usdtPrice . " TL\n\n";
+    echo "USDT/USD Fiyatı: $" . $usdtPrice . "\n\n";
     
     if ($apiKey && $apiSecret) {
         echo "2. Hesap Bilgileri:\n";
@@ -98,7 +98,7 @@ echo "MANUEL CURL TEST KOMUTLARI:\n";
 echo "=============================\n\n";
 
 echo "Public - USDT Fiyat:\n";
-echo "curl -X GET \"https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY\" -H \"Content-Type: application/json\"\n\n";
+echo "curl -X GET \"https://api.binance.com/api/v3/ticker/price?symbol=USDTUSDT\" -H \"Content-Type: application/json\"\n\n";
 
 if ($apiKey) {
     echo "Private - Account Info (API KEY gerekli):\n";
