@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Helpers\DB;
 use App\Helpers\TronClient;
+use App\Helpers\TelegramNotifier;
 
 class TopupController {
     private function start(){ if (session_status()===PHP_SESSION_NONE) session_start(); if (!isset($_SESSION['user'])) { \App\Helpers\Url::redirect('/login'); } }
@@ -227,6 +228,19 @@ class TopupController {
                 throw new \Exception('Payment not found or already processed');
             }
             
+            // Get group info for Telegram notification
+            $groupName = 'Bilinmeyen Grup';
+            $balanceBefore = 0;
+            $stmt = $db->prepare('SELECT name, balance FROM groups WHERE id = ?');
+            $stmt->bind_param('i', $payment['group_id']);
+            $stmt->execute();
+            $groupResult = $stmt->get_result()->fetch_assoc();
+            if ($groupResult) {
+                $groupName = $groupResult['name'];
+                $balanceBefore = (float)$groupResult['balance'];
+            }
+            $stmt->close();
+            
             // Update crypto payment
             $stmt = $db->prepare(
                 'UPDATE crypto_payments
@@ -255,6 +269,7 @@ class TopupController {
             
             $stmt->bind_param('isdss', $payment['group_id'], $type, $amount, $reference, $description);
             $stmt->execute();
+            $transactionId = $db->insert_id;
             $stmt->close();
             
             // Update topup request
@@ -271,6 +286,18 @@ class TopupController {
             $stmt->close();
             
             $db->commit();
+            
+            // Send Telegram notification for manual approval
+            try {
+                $balanceAfter = $balanceBefore + $amount;
+                $telegram = new TelegramNotifier();
+                $telegram->sendPaymentNotification($groupName, $amount, $paymentId, $transactionId, $balanceBefore, $balanceAfter);
+                error_log("Telegram manual approval notification sent for payment ID: $paymentId");
+            } catch (\Exception $e) {
+                error_log('Telegram manual approval notification failed: ' . $e->getMessage());
+                // Don't fail the approval if Telegram fails
+            }
+            
             \App\Helpers\Url::redirect('/topups?success=crypto_approved');
             
         } catch (\Exception $e) {

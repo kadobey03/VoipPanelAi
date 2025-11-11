@@ -11,6 +11,7 @@ require_once __DIR__ . '/config/bootstrap.php';
 use App\Helpers\DB;
 use App\Helpers\TronClient;
 use App\Helpers\Logger;
+use App\Helpers\TelegramNotifier;
 
 class CryptoPaymentMonitor {
     private $db;
@@ -143,10 +144,25 @@ class CryptoPaymentMonitor {
             $receivedAmount = (float)($transaction['value'] ?? 0) / 1000000;
             $txHash = $transaction['transaction_id'];
             
+            // Get group info for Telegram notification
+            $groupName = 'Bilinmeyen Grup';
+            $balanceBefore = 0;
+            if ($payment['group_id']) {
+                $stmt = $this->db->prepare('SELECT name, balance FROM groups WHERE id = ?');
+                $stmt->bind_param('i', $payment['group_id']);
+                $stmt->execute();
+                $groupResult = $stmt->get_result()->fetch_assoc();
+                if ($groupResult) {
+                    $groupName = $groupResult['name'];
+                    $balanceBefore = (float)$groupResult['balance'];
+                }
+                $stmt->close();
+            }
+            
             // Update crypto payment status
             $stmt = $this->db->prepare(
-                'UPDATE crypto_payments 
-                 SET status = ?, amount_received = ?, transaction_hash = ?, confirmed_at = NOW(), confirmations = ? 
+                'UPDATE crypto_payments
+                 SET status = ?, amount_received = ?, transaction_hash = ?, confirmed_at = NOW(), confirmations = ?
                  WHERE id = ?'
             );
             
@@ -165,7 +181,7 @@ class CryptoPaymentMonitor {
             
             // Create transaction record
             $stmt = $this->db->prepare(
-                'INSERT INTO transactions (group_id, type, amount, reference, description) 
+                'INSERT INTO transactions (group_id, type, amount, reference, description)
                  VALUES (?, ?, ?, ?, ?)'
             );
             
@@ -175,12 +191,13 @@ class CryptoPaymentMonitor {
             
             $stmt->bind_param('isdss', $payment['group_id'], $type, $receivedAmount, $reference, $description);
             $stmt->execute();
+            $transactionId = $this->db->insert_id;
             $stmt->close();
             
             // Update topup request status
             $stmt = $this->db->prepare(
-                'UPDATE topup_requests 
-                 SET status = ?, crypto_transaction_hash = ? 
+                'UPDATE topup_requests
+                 SET status = ?, crypto_transaction_hash = ?
                  WHERE crypto_payment_id = ?'
             );
             
@@ -190,6 +207,17 @@ class CryptoPaymentMonitor {
             $stmt->close();
             
             $this->db->commit();
+            
+            // Send Telegram notification
+            try {
+                $balanceAfter = $balanceBefore + $receivedAmount;
+                $telegram = new TelegramNotifier();
+                $telegram->sendPaymentNotification($groupName, $receivedAmount, $payment['id'], $transactionId, $balanceBefore, $balanceAfter);
+                $this->logger->info("Telegram notification sent for payment ID: {$payment['id']}");
+            } catch (\Exception $e) {
+                $this->logger->error("Telegram notification failed for payment {$payment['id']}: " . $e->getMessage());
+                // Don't fail the payment if Telegram fails
+            }
             
             $this->logger->info("Payment confirmed! ID: {$payment['id']}, Amount: {$receivedAmount} USDT, TX: {$txHash}");
             
@@ -268,14 +296,28 @@ class CryptoPaymentMonitor {
      * Clean up expired payments
      */
     private function cleanupExpiredPayments() {
+        // First get expired payments for Telegram notification
         $stmt = $this->db->prepare(
-            'UPDATE crypto_payments 
-             SET status = ? 
+            'SELECT cp.id, cp.group_id, cp.amount_requested, g.name as group_name
+             FROM crypto_payments cp
+             LEFT JOIN topup_requests tr ON tr.crypto_payment_id = cp.id
+             LEFT JOIN groups g ON g.id = tr.group_id
+             WHERE cp.status = ? AND cp.expired_at < NOW()'
+        );
+        $statusPending = 'pending';
+        $stmt->bind_param('s', $statusPending);
+        $stmt->execute();
+        $expiredPayments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        
+        // Update expired payments
+        $stmt = $this->db->prepare(
+            'UPDATE crypto_payments
+             SET status = ?
              WHERE status = ? AND expired_at < NOW()'
         );
         
         $statusExpired = 'expired';
-        $statusPending = 'pending';
         $stmt->bind_param('ss', $statusExpired, $statusPending);
         $stmt->execute();
         $affected = $stmt->affected_rows;
@@ -283,6 +325,18 @@ class CryptoPaymentMonitor {
         
         if ($affected > 0) {
             $this->logger->info("Cleaned up {$affected} expired payments");
+            
+            // Send Telegram notifications for expired payments
+            foreach ($expiredPayments as $payment) {
+                try {
+                    $telegram = new TelegramNotifier();
+                    $groupName = $payment['group_name'] ?: 'Bilinmeyen Grup';
+                    $telegram->sendPaymentExpiredNotification($groupName, $payment['amount_requested'], $payment['id']);
+                    $this->logger->info("Expired payment notification sent for ID: {$payment['id']}");
+                } catch (\Exception $e) {
+                    $this->logger->error("Failed to send expired payment notification for ID {$payment['id']}: " . $e->getMessage());
+                }
+            }
         }
     }
     
