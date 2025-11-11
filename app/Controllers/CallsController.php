@@ -41,16 +41,32 @@ class CallsController {
         $isGroupAdmin = ($user['role'] ?? '') === 'groupadmin';
         $isGroupMember = ($user['role'] ?? '') === 'groupmember';
 
-        // Groupmember için session'da agent_id yoksa veritabanından çek
-        if ($isGroupMember && !isset($user['agent_id'])) {
+        // Groupmember için doğru exten bilgisini veritabanından çek ve session'ı güncelle
+        if ($isGroupMember) {
             $userId = (int)$user['id'];
-            $stmt = $db->prepare('SELECT agent_id FROM users WHERE id=?');
+            $stmt = $db->prepare('SELECT exten, agent_id, group_id FROM users WHERE id=?');
             $stmt->bind_param('i', $userId);
             $stmt->execute();
             $r = $stmt->get_result()->fetch_assoc();
-            if ($r && $r['agent_id']) {
-                $_SESSION['user']['agent_id'] = $r['agent_id'];
-                $user['agent_id'] = $r['agent_id'];
+            if ($r) {
+                // Session'ı tamamen güncel verilerle güncelle - eski veriyi temizle
+                if ($r['exten']) {
+                    $_SESSION['user']['exten'] = $r['exten'];
+                    $user['exten'] = $r['exten'];
+                } else {
+                    // Exten yoksa session'dan da kaldır
+                    unset($_SESSION['user']['exten']);
+                    unset($user['exten']);
+                }
+                
+                if ($r['agent_id']) {
+                    $_SESSION['user']['agent_id'] = $r['agent_id'];
+                    $user['agent_id'] = $r['agent_id'];
+                }
+                
+                // Group ID'yi de güncelle
+                $_SESSION['user']['group_id'] = $r['group_id'];
+                $user['group_id'] = $r['group_id'];
             }
             $stmt->close();
         }
@@ -76,15 +92,24 @@ class CallsController {
             $params[] = (int)($user['group_id'] ?? 0);
         } elseif ($isGroupMember) {
             // Group member: sadece kendi agent'ının (exten) çağrıları
-            $where .= ' AND group_id=?';
-            $types.='i';
-            $params[] = (int)($user['group_id'] ?? 0);
+            $userGroupId = (int)($user['group_id'] ?? 0);
+            $userExten = trim($user['exten'] ?? '');
             
-            $userExten = $user['exten'] ?? '';
+            // Önce grup kontrolü
+            if ($userGroupId > 0) {
+                $where .= ' AND group_id=?';
+                $types.='i';
+                $params[] = $userGroupId;
+            }
+            
+            // Sonra exten kontrolü - bu çok kritik
             if (!empty($userExten)) {
                 $where .= ' AND src=?';
                 $types.='s';
                 $params[] = $userExten;
+            } else {
+                // Exten bilgisi yoksa hiçbir kayıt gösterme (güvenlik)
+                $where .= ' AND 1=0';
             }
         } else {
             // Legacy user role: kendi extension'ı
