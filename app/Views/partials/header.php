@@ -30,11 +30,19 @@ Lang::load(Lang::current());
       // Login sayfası için her zaman dark mode
       <?php if (isset($title) && strpos($title, 'Giriş') !== false): ?>
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
       <?php else: ?>
-      const t=localStorage.getItem('theme');
-      if(t==='dark'){document.documentElement.classList.add('dark')}
+      // Theme initialization
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
       <?php endif; ?>
-    }catch(e){}
+    }catch(e){console.warn('Theme initialization failed:', e);}
   </script>
 </head>
 <body class="min-h-screen <?php echo (isset($title) && strpos($title, 'Giriş') !== false) ? 'login-background dark bg-slate-900 text-white' : 'bg-gradient-to-b from-slate-50 to-slate-100'; ?> text-slate-900 dark:from-slate-900 dark:to-slate-950 dark:text-slate-100">
@@ -498,20 +506,32 @@ Lang::load(Lang::current());
 
       // Theme toggle function
       function toggleTheme() {
-        document.documentElement.classList.toggle('dark');
+        const isCurrentlyDark = document.documentElement.classList.contains('dark');
+        
+        if (isCurrentlyDark) {
+          // Switch to light mode
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        } else {
+          // Switch to dark mode
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        }
 
-        // Update localStorage
-        try {
-          const isDark = document.documentElement.classList.contains('dark');
-          localStorage.setItem('theme', isDark ? 'dark' : 'light');
-
-          // Update theme icon
-          const themeIcon = document.querySelector('#toggle-theme i');
-          if (themeIcon) {
-            themeIcon.className = isDark ? 'fa-solid fa-sun text-yellow-400' : 'fa-solid fa-moon text-white';
+        // Update theme icon
+        updateThemeIcon();
+      }
+      
+      // Update theme icon function
+      function updateThemeIcon() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const themeIcon = document.querySelector('#toggle-theme i');
+        if (themeIcon) {
+          if (isDark) {
+            themeIcon.className = 'fa-solid fa-sun text-yellow-400 text-base';
+          } else {
+            themeIcon.className = 'fa-solid fa-moon text-white text-base';
           }
-        } catch (e) {
-          console.warn('Unable to save theme preference');
         }
       }
 
@@ -620,14 +640,20 @@ Lang::load(Lang::current());
       }
 
       // Initialize theme icon on load
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
+      function updateThemeIcon() {
+        const isDark = document.documentElement.classList.contains('dark');
         const themeIcon = document.querySelector('#toggle-theme i');
         if (themeIcon) {
-          themeIcon.className = 'fa-solid fa-sun text-yellow-400';
+          if (isDark) {
+            themeIcon.className = 'fa-solid fa-sun text-yellow-400 text-base';
+          } else {
+            themeIcon.className = 'fa-solid fa-moon text-white text-base';
+          }
         }
       }
+      
+      // Set initial theme icon
+      updateThemeIcon();
 
       // Smooth scroll for anchor links
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
