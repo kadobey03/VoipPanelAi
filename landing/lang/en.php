@@ -6,6 +6,8 @@ return [
     'Özellikler' => 'Features',
     'Fiyatlandırma' => 'Pricing',
     'Panel Girişi' => 'Panel Login',
+    'Giriş' => 'Login',
+    'Kayıt Ol' => 'Sign Up',
     'İletişim' => 'Contact',
     
     // Hero Section
@@ -74,10 +76,20 @@ return [
     'Gelişmiş VoIP panel yönetim sistemi ile çağrı yönetimi, agent takibi, bakiye kontrolü ve detaylı raporlama özelliklerini tek platformda sunuyoruz.' => 'We provide call management, agent tracking, balance control and detailed reporting features on a single platform with advanced VoIP panel management system.',
     'Tüm hakları saklıdır.' => 'All rights reserved.',
     
+    // Hero section additions
+    'Profesyonel VoIP Çözümleri' => 'Professional VoIP Solutions',
+    'İşletmeniz için güvenilir, yüksek kaliteli VoIP hizmetleri' => 'Reliable, high-quality VoIP services for your business',
+    'Hemen Başla' => 'Get Started',
+    'Ücretsiz Kayıt Ol' => 'Sign Up Free',
+    'Sorularınız mı var?' => 'Have questions?',
+    'Telegram\'dan İletişime Geçin' => 'Contact via Telegram',
+    'Tam yönetim paneli erişimi' => 'Full management panel access',
+    
     // Meta and SEO
     'PapaM VoIP Panel - Professional VoIP Management System' => 'PapaM VoIP Panel - Professional VoIP Management System',
     'Advanced VoIP call management and reporting system with agent tracking, group management, balance control and detailed analytics.' => 'Advanced VoIP call management and reporting system with agent tracking, group management, balance control and detailed analytics.',
     'VoIP panel, call management, agent tracking, CDR analysis, VoIP reporting, call center management' => 'VoIP panel, call management, agent tracking, CDR analysis, VoIP reporting, call center management',
+    'Transform your business communication with our premium VoIP solutions' => 'Transform your business communication with our premium VoIP solutions',
     'Transform your VoIP operations with our comprehensive management panel' => 'Transform your VoIP operations with our comprehensive management panel'
 ];
 ?>

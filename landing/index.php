@@ -114,11 +114,17 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
                         </div>
                     </div>
                     
-                    <!-- Login Button -->
-                    <a href="/panel/" class="btn-primary flex items-center space-x-2 px-4 py-2 text-sm sm:text-base">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span class="hidden sm:inline"><?= __('Panel Girişi') ?></span>
-                    </a>
+                    <!-- Login & Register Buttons -->
+                    <div class="flex items-center space-x-2">
+                        <a href="/panel/" class="btn-outline text-sm px-3 py-2">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span class="hidden sm:inline ml-2"><?= __('Giriş') ?></span>
+                        </a>
+                        <a href="/panel/register" class="btn-primary flex items-center space-x-2 px-4 py-2 text-sm">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="hidden sm:inline"><?= __('Kayıt Ol') ?></span>
+                        </a>
+                    </div>
                     
                     <!-- Mobile Menu Button -->
                     <button class="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-300" onclick="toggleMobileMenu()">
@@ -133,6 +139,7 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
                     <a href="#features" class="mobile-nav-link"><?= __('Özellikler') ?></a>
                     <a href="#pricing" class="mobile-nav-link"><?= __('Fiyatlandırma') ?></a>
                     <a href="/panel/" class="mobile-nav-link"><?= __('Panel Girişi') ?></a>
+                    <a href="/panel/register" class="mobile-nav-link"><?= __('Kayıt Ol') ?></a>
                 </div>
             </div>
         </div>
@@ -161,23 +168,29 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
         <div class="hero-content">
             <div data-animate="fade-in" data-delay="500">
                 <h1 class="hero-title">
-                    <?= __('Profesyonel') ?>
-                    <span class="text-gradient-purple"><?= __('VoIP Panel') ?></span>
-                    <?= __('Yönetim Sistemi') ?>
+                    <?= __('Profesyonel VoIP Çözümleri') ?>
                 </h1>
                 <p class="hero-subtitle">
-                    <?= __('Gelişmiş VoIP çağrı yönetimi ve raporlama sistemi ile işletmenizi yönetin') ?>
+                    <?= __('İşletmeniz için güvenilir, yüksek kaliteli VoIP hizmetleri') ?>
                 </p>
             </div>
             
             <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mt-12" data-animate="slide-up" data-delay="800">
-                <a href="/panel/" class="btn-primary flex items-center space-x-3 text-lg px-10 py-5">
+                <a href="/panel/register" class="btn-primary flex items-center space-x-3 text-lg px-10 py-5">
+                    <i class="fas fa-user-plus text-xl"></i>
+                    <span><?= __('Ücretsiz Kayıt Ol') ?></span>
+                </a>
+                <a href="/panel/" class="btn-outline flex items-center space-x-3 text-lg px-8 py-4">
                     <i class="fas fa-sign-in-alt text-xl"></i>
                     <span><?= __('Panel Girişi') ?></span>
                 </a>
-                <a href="https://t.me/lionmw" target="_blank" class="btn-outline flex items-center space-x-3 text-lg px-8 py-4">
-                    <i class="fab fa-telegram text-xl"></i>
-                    <span><?= __('İletişim') ?></span>
+            </div>
+            
+            <div class="flex flex-col items-center mt-8" data-animate="fade-in" data-delay="1000">
+                <p class="text-purple-200 text-lg mb-4"><?= __('Sorularınız mı var?') ?></p>
+                <a href="https://t.me/lionmw" target="_blank" class="flex items-center space-x-3 text-cyan-300 hover:text-cyan-200 transition-colors">
+                    <i class="fab fa-telegram text-2xl"></i>
+                    <span class="text-lg font-semibold"><?= __('Telegram\'dan İletişime Geçin') ?></span>
                 </a>
             </div>
             

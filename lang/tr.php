@@ -734,4 +734,23 @@ return [
     'agent_product_management_title' => 'Agent Ürün Yönetimi',
     'agent_purchase_title' => 'Agent Satın Al',
     'subscription_management_title' => 'Abonelik Yönetimi',
+    
+    // Registration System
+    'register_title' => 'Kayıt Ol',
+    'create_account_subtitle' => 'Yeni hesap oluşturun',
+    'email' => 'E-posta',
+    'optional' => 'isteğe bağlı',
+    'enter_email' => 'E-posta adresinizi girin',
+    'confirm_password' => 'Şifreyi Onayla',
+    'confirm_password_placeholder' => 'Şifrenizi tekrar girin',
+    'register_button' => 'Kayıt Ol',
+    'already_have_account' => 'Zaten hesabınız var mı?',
+    'login_here' => 'Buradan giriş yapın',
+    'username_min_length' => 'Kullanıcı adı en az 3 karakter olmalıdır',
+    'password_min_length' => 'Şifre en az 6 karakter olmalıdır',
+    'password_mismatch' => 'Şifreler eşleşmiyor',
+    'invalid_email' => 'Geçersiz e-posta adresi',
+    'username_exists' => 'Bu kullanıcı adı zaten kullanılıyor',
+    'registration_success' => 'Kayıt başarılı! Panel\'e yönlendiriliyorsunuz...',
+    'registration_error' => 'Kayıt sırasında hata oluştu',
 ];

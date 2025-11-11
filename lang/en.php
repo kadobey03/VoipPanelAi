@@ -727,4 +727,23 @@ return [
     'save_failed' => 'Could not save',
     'updated' => 'Updated',
     'update_failed_short' => 'Could not update',
+    
+    // Registration System
+    'register_title' => 'Register',
+    'create_account_subtitle' => 'Create new account',
+    'email' => 'Email',
+    'optional' => 'optional',
+    'enter_email' => 'Enter your email address',
+    'confirm_password' => 'Confirm Password',
+    'confirm_password_placeholder' => 'Re-enter your password',
+    'register_button' => 'Register',
+    'already_have_account' => 'Already have an account?',
+    'login_here' => 'Login here',
+    'username_min_length' => 'Username must be at least 3 characters',
+    'password_min_length' => 'Password must be at least 6 characters',
+    'password_mismatch' => 'Passwords do not match',
+    'invalid_email' => 'Invalid email address',
+    'username_exists' => 'This username is already taken',
+    'registration_success' => 'Registration successful! Redirecting to panel...',
+    'registration_error' => 'An error occurred during registration',
 ];

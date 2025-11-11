@@ -150,6 +150,22 @@
           </div>
         </form>
 
+        <!-- Register Link -->
+        <div class="text-center mt-6 animate-fade-in-up" style="animation-delay: 0.4s;">
+          <div class="flex flex-col items-center space-y-3">
+            <div class="h-px w-24 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+            <p class="label-text text-white/70 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-user-plus text-cyan-300 animate-pulse"></i>
+              <?= __('no_account') ?>
+            </p>
+            <a href="/panel/register"
+               class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/30 group">
+              <i class="fa-solid fa-user-plus group-hover:animate-bounce"></i>
+              <span><?= __('sign_up_here') ?></span>
+            </a>
+          </div>
+        </div>
+
         <script>
           function changeLanguage(lang) {
             // Create form and submit

@@ -6,6 +6,8 @@ return [
     'Özellikler' => 'Особенности',
     'Fiyatlandırma' => 'Тарифы',
     'Panel Girişi' => 'Вход в Панель',
+    'Giriş' => 'Вход',
+    'Kayıt Ol' => 'Регистрация',
     'İletişim' => 'Контакты',
     
     // Hero Section
@@ -74,10 +76,20 @@ return [
     'Gelişmiş VoIP panel yönetim sistemi ile çağrı yönetimi, agent takibi, bakiye kontrolü ve detaylı raporlama özelliklerini tek platformda sunuyoruz.' => 'Мы предоставляем управление звонками, отслеживание агентов, контроль баланса и подробную отчетность на одной платформе с помощью продвинутой системы управления VoIP панелью.',
     'Tüm hakları saklıdır.' => 'Все права защищены.',
     
+    // Hero section additions
+    'Profesyonel VoIP Çözümleri' => 'Профессиональные VoIP Решения',
+    'İşletmeniz için güvenilir, yüksek kaliteli VoIP hizmetleri' => 'Надежные высококачественные VoIP услуги для вашего бизнеса',
+    'Hemen Başla' => 'Начать Сейчас',
+    'Ücretsiz Kayıt Ol' => 'Бесплатная Регистрация',
+    'Sorularınız mı var?' => 'Есть вопросы?',
+    'Telegram\'dan İletişime Geçin' => 'Свяжитесь через Telegram',
+    'Tam yönetim paneli erişimi' => 'Полный доступ к панели управления',
+    
     // Meta and SEO
     'PapaM VoIP Panel - Professional VoIP Management System' => 'PapaM VoIP Панель - Профессиональная Система Управления VoIP',
     'Advanced VoIP call management and reporting system with agent tracking, group management, balance control and detailed analytics.' => 'Продвинутая система управления VoIP-звонками и отчетности с отслеживанием агентов, управлением группами, контролем баланса и детальной аналитикой.',
     'VoIP panel, call management, agent tracking, CDR analysis, VoIP reporting, call center management' => 'VoIP панель, управление звонками, отслеживание агентов, CDR анализ, VoIP отчетность, управление call-центром',
+    'Transform your business communication with our premium VoIP solutions' => 'Трансформируйте деловую коммуникацию с помощью наших премиум VoIP решений',
     'Transform your VoIP operations with our comprehensive management panel' => 'Преобразуйте ваши VoIP операции с помощью нашей комплексной панели управления'
 ];
 ?>

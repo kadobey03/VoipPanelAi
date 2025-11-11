@@ -6,6 +6,8 @@ return [
     'Özellikler' => 'Özellikler',
     'Fiyatlandırma' => 'Fiyatlandırma',
     'Panel Girişi' => 'Panel Girişi',
+    'Giriş' => 'Giriş',
+    'Kayıt Ol' => 'Kayıt Ol',
     'İletişim' => 'İletişim',
     
     // Hero Section
@@ -74,10 +76,13 @@ return [
     'Gelişmiş VoIP panel yönetim sistemi ile çağrı yönetimi, agent takibi, bakiye kontrolü ve detaylı raporlama özelliklerini tek platformda sunuyoruz.' => 'Gelişmiş VoIP panel yönetim sistemi ile çağrı yönetimi, agent takibi, bakiye kontrolü ve detaylı raporlama özelliklerini tek platformda sunuyoruz.',
     'Tüm hakları saklıdır.' => 'Tüm hakları saklıdır.',
     
-    // Missing translations for Hero section
+    // Hero section
     'Profesyonel VoIP Çözümleri' => 'Profesyonel VoIP Çözümleri',
     'İşletmeniz için güvenilir, yüksek kaliteli VoIP hizmetleri' => 'İşletmeniz için güvenilir, yüksek kaliteli VoIP hizmetleri',
     'Hemen Başla' => 'Hemen Başla',
+    'Ücretsiz Kayıt Ol' => 'Ücretsiz Kayıt Ol',
+    'Sorularınız mı var?' => 'Sorularınız mı var?',
+    'Telegram\'dan İletişime Geçin' => 'Telegram\'dan İletişime Geçin',
     'Tam yönetim paneli erişimi' => 'Tam yönetim paneli erişimi',
     
     // Meta and SEO
