@@ -52,53 +52,100 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
     
     <!-- Header -->
     <header class="fixed top-0 left-0 w-full z-50 transition-all duration-500" id="main-header">
-        <div class="glass-nav px-6 py-4">
+        <div class="glass-nav px-4 sm:px-6 py-4">
             <nav class="max-w-7xl mx-auto flex items-center justify-between">
+                <!-- Logo Section -->
                 <div class="flex items-center space-x-3">
                     <div class="relative">
-                        <div class="w-12 h-12 bg-gradient-purple rounded-xl flex items-center justify-center animate-pulse-glow">
+                        <div class="w-12 h-12 bg-gradient-purple rounded-xl flex items-center justify-center animate-pulse-glow shadow-lg">
                             <i class="fas fa-phone-volume text-2xl text-white"></i>
                         </div>
                         <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-ping"></div>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gradient-purple">PapaM VoIP</h1>
-                        <p class="text-xs text-purple-200">Professional Communication</p>
+                        <h1 class="text-xl sm:text-2xl font-bold text-gradient-purple">PapaM VoIP</h1>
+                        <p class="text-xs text-purple-200 hidden sm:block">Professional Communication</p>
                     </div>
                 </div>
                 
+                <!-- Desktop Navigation -->
                 <div class="hidden lg:flex items-center space-x-8">
-                    <a href="#features" class="nav-link"><?= __('Özellikler') ?></a>
-                    <a href="#pricing" class="nav-link"><?= __('Fiyatlandırma') ?></a>
-                    <a href="/panel/" class="nav-link"><?= __('Panel Girişi') ?></a>
+                    <a href="#features" class="nav-link hover:text-purple-300 transition-colors duration-300"><?= __('Özellikler') ?></a>
+                    <a href="#pricing" class="nav-link hover:text-purple-300 transition-colors duration-300"><?= __('Fiyatlandırma') ?></a>
+                    <a href="/panel/" class="nav-link hover:text-purple-300 transition-colors duration-300"><?= __('Panel Girişi') ?></a>
                 </div>
                 
-                <div class="flex items-center space-x-4">
+                <!-- Language & Login Section -->
+                <div class="flex items-center space-x-3">
+                    <!-- Language Dropdown -->
                     <div class="relative group">
-                        <button class="nav-button flex items-center space-x-2">
-                            <i class="fas fa-globe"></i>
-                            <span><?= strtoupper($currentLang) ?></span>
+                        <button class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300">
+                            <span class="text-lg">
+                                <?php
+                                $flags = ['tr' => '🇹🇷', 'en' => '🇬🇧', 'ru' => '🇷🇺'];
+                                echo $flags[$currentLang] ?? '🇹🇷';
+                                ?>
+                            </span>
+                            <span class="text-sm font-medium text-white hidden sm:inline"><?= strtoupper($currentLang) ?></span>
+                            <i class="fas fa-chevron-down text-xs text-white/70 group-hover:rotate-180 transition-transform duration-300"></i>
                         </button>
-                        <div class="absolute top-full right-0 mt-2 py-2 w-32 glass-card opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                            <form method="POST" action="">
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="absolute top-full right-0 mt-2 py-2 w-48 glass-card border border-white/20 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-2xl">
+                            <form method="POST" action="" class="block">
                                 <input type="hidden" name="lang" value="tr">
-                                <button type="submit" class="w-full text-left px-4 py-2 hover:bg-white/10 text-white">Türkçe</button>
+                                <button type="submit" class="w-full text-left px-4 py-3 hover:bg-white/10 text-white transition-colors duration-200 flex items-center space-x-3 <?= $currentLang === 'tr' ? 'bg-white/10' : '' ?>">
+                                    <span class="text-lg">🇹🇷</span>
+                                    <span class="font-medium">Türkçe</span>
+                                </button>
                             </form>
-                            <form method="POST" action="">
+                            <form method="POST" action="" class="block">
                                 <input type="hidden" name="lang" value="en">
-                                <button type="submit" class="w-full text-left px-4 py-2 hover:bg-white/10 text-white">English</button>
+                                <button type="submit" class="w-full text-left px-4 py-3 hover:bg-white/10 text-white transition-colors duration-200 flex items-center space-x-3 <?= $currentLang === 'en' ? 'bg-white/10' : '' ?>">
+                                    <span class="text-lg">🇬🇧</span>
+                                    <span class="font-medium">English</span>
+                                </button>
                             </form>
-                            <form method="POST" action="">
+                            <form method="POST" action="" class="block">
                                 <input type="hidden" name="lang" value="ru">
-                                <button type="submit" class="w-full text-left px-4 py-2 hover:bg-white/10 text-white">Русский</button>
+                                <button type="submit" class="w-full text-left px-4 py-3 hover:bg-white/10 text-white transition-colors duration-200 flex items-center space-x-3 <?= $currentLang === 'ru' ? 'bg-white/10' : '' ?>">
+                                    <span class="text-lg">🇷🇺</span>
+                                    <span class="font-medium">Русский</span>
+                                </button>
                             </form>
                         </div>
                     </div>
-                    <a href="/panel/" class="btn-primary"><?= __('Panel Girişi') ?></a>
+                    
+                    <!-- Login Button -->
+                    <a href="/panel/" class="btn-primary flex items-center space-x-2 px-4 py-2 text-sm sm:text-base">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span class="hidden sm:inline"><?= __('Panel Girişi') ?></span>
+                    </a>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button class="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-300" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars text-white"></i>
+                    </button>
                 </div>
             </nav>
+            
+            <!-- Mobile Navigation -->
+            <div class="lg:hidden mt-4 py-4 border-t border-white/20 hidden" id="mobile-menu">
+                <div class="flex flex-col space-y-3">
+                    <a href="#features" class="nav-link py-2 px-4 hover:bg-white/10 rounded-lg transition-colors duration-300"><?= __('Özellikler') ?></a>
+                    <a href="#pricing" class="nav-link py-2 px-4 hover:bg-white/10 rounded-lg transition-colors duration-300"><?= __('Fiyatlandırma') ?></a>
+                    <a href="/panel/" class="nav-link py-2 px-4 hover:bg-white/10 rounded-lg transition-colors duration-300"><?= __('Panel Girişi') ?></a>
+                </div>
+            </div>
         </div>
     </header>
+    
+    <script>
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        menu.classList.toggle('hidden');
+    }
+    </script>
 
     <!-- Hero Section -->
     <section class="hero-background" id="hero">
