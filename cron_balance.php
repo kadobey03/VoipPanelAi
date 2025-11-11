@@ -126,7 +126,7 @@ try {
                     $warnMessage .= "Group: *{$groupName}*\n";
                     $warnMessage .= "Current Balance: *" . number_format($balance, 2) . " USD*\n\n";
                     $warnMessage .= "Please top up your balance as soon as possible. 💳\n\n";
-                    $warnMessage .= "[💰 Top Up Balance](https://voippanel.com/balance/topup)\n\n";
+                    $warnMessage .= "[💰 Top Up Balance](https://crm.akkocbilisim.com/VoipPanelAi/balance/topup)\n\n";
                     $warnMessage .= "Thank you for choosing us! 🙏";
                 }
                 
@@ -148,7 +148,7 @@ try {
                     $warnMessage .= "Группа: *{$groupName}*\n";
                     $warnMessage .= "Текущий баланс: *" . number_format($balance, 2) . " USD*\n\n";
                     $warnMessage .= "Пожалуйста, пополните баланс как можно скорее. 💳\n\n";
-                    $warnMessage .= "[💰 Пополнить Баланс](https://voippanel.com/balance/topup)\n\n";
+                    $warnMessage .= "[💰 Пополнить Баланс](https://crm.akkocbilisim.com/VoipPanelAi/balance/topup)\n\n";
                     $warnMessage .= "Спасибо, что выбрали нас! 🙏";
                 }
                 
@@ -170,7 +170,7 @@ try {
                     $warnMessage .= "Grup: *{$groupName}*\n";
                     $warnMessage .= "Kalan Bakiye: *" . number_format($balance, 2) . " USD*\n\n";
                     $warnMessage .= "Lütfen en kısa sürede bakiye yükleyin. 💳\n\n";
-                    $warnMessage .= "[💰 Bakiye Yükle](https://voippanel.com/balance/topup)\n\n";
+                    $warnMessage .= "[💰 Bakiye Yükle](https://crm.akkocbilisim.com/VoipPanelAi/balance/topup)\n\n";
                     $warnMessage .= "Bizi tercih ettiğiniz için teşekkürler! 🙏";
                 }
             }
@@ -239,7 +239,15 @@ try {
             $adminMessage .= "🏦 *Toplam Bakiye:* " . number_format($totalBalanceAll, 2) . " USD\n";
             $adminMessage .= "⚠️ *Düşük Bakiye Grubu:* {$lowBalanceGroups}\n";
             $adminMessage .= "✉️ *Mesaj Durumu:* OK {$sendOkCount} / FAIL {$sendFailCount}\n\n";
-            $adminMessage .= "⏰ *Rapor Zamanı:* " . date('H:i:s') . "\n";
+            
+            // Her grubun bakiyesini ekle
+            $adminMessage .= "💼 *Grup Bakiyeleri:*\n";
+            foreach ($activeGroups as $group) {
+                $groupBalance = number_format((float)$group['balance'], 2);
+                $lowBadge = ((float)$group['balance'] <= LOW_BALANCE_USD) ? " ⚠️" : "";
+                $adminMessage .= "• {$group['name']}: {$groupBalance} USD{$lowBadge}\n";
+            }
+            $adminMessage .= "\n⏰ *Rapor Zamanı:* " . date('H:i:s') . "\n";
             
             $adminNotifier->sendMessage($adminMessage);
             echo "✓ Admin raporu gönderildi\n";
