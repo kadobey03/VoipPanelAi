@@ -3,10 +3,6 @@ use App\Helpers\Url;
 use App\Helpers\Lang;
 
 Lang::load(Lang::current());
-
-function __($key) {
-    return Lang::get($key);
-}
 ?>
 <!DOCTYPE html>
 <html lang="<?= Lang::current() ?>">
