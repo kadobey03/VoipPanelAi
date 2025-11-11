@@ -67,3 +67,10 @@ if (isset($_GET['lang']) && in_array($_GET['lang'], ['tr', 'en', 'ru'])) {
 }
 
 \App\Helpers\Lang::load(\App\Helpers\Lang::current());
+
+// Global language helper function
+if (!function_exists('__')) {
+    function __($key) {
+        return \App\Helpers\Lang::get($key);
+    }
+}
