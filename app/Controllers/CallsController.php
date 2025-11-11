@@ -86,32 +86,30 @@ class CallsController {
         if ($isSuper) {
             // Superadmin: tüm grupları görebilir, ek filtreleme yok
         } elseif ($isGroupAdmin) {
-            // Group admin: kendi grubundaki tüm kullanıcıların çağrı kayıtları
+            // Group admin: sadece kendi grubunun çağrıları
             $userGroupId = (int)($user['group_id'] ?? 0);
             
             if ($userGroupId > 0) {
-                // Bu gruptaki tüm exten'leri bul
-                $stmt = $db->prepare('SELECT DISTINCT exten FROM users WHERE group_id=? AND exten IS NOT NULL AND exten != ""');
+                // API'den gelen çağrılarda group_id farklı olabilir, bu yüzden hem local group_id hem de api_group_id kontrol et
+                $stmt = $db->prepare('SELECT api_group_id FROM groups WHERE id=?');
                 $stmt->bind_param('i', $userGroupId);
                 $stmt->execute();
-                $res = $stmt->get_result();
-                $groupExtens = [];
-                while ($row = $res->fetch_assoc()) {
-                    if (!empty(trim($row['exten']))) {
-                        $groupExtens[] = trim($row['exten']);
-                    }
-                }
+                $result = $stmt->get_result();
+                $groupData = $result->fetch_assoc();
                 $stmt->close();
                 
-                if (!empty($groupExtens)) {
-                    // Bu extension'lara ait tüm çağrıları göster
-                    $placeholders = str_repeat('?,', count($groupExtens) - 1) . '?';
-                    $where .= " AND src IN ($placeholders)";
-                    $types .= str_repeat('s', count($groupExtens));
-                    $params = array_merge($params, $groupExtens);
+                if ($groupData && !empty($groupData['api_group_id'])) {
+                    // Hem local grup ID'si hem de API grup ID'si ile eşleşenleri al
+                    $apiGroupId = (int)$groupData['api_group_id'];
+                    $where .= ' AND (group_id=? OR group_id=?)';
+                    $types .= 'ii';
+                    $params[] = $userGroupId;
+                    $params[] = $apiGroupId;
                 } else {
-                    // Grup exten'i yoksa hiçbir kayıt gösterme
-                    $where .= ' AND 1=0';
+                    // Sadece local grup ID'si
+                    $where .= ' AND group_id=?';
+                    $types .= 'i';
+                    $params[] = $userGroupId;
                 }
             } else {
                 // Grup ID yoksa hiçbir kayıt gösterme
