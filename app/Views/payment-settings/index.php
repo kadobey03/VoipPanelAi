@@ -12,7 +12,7 @@
           <label class="block text-sm font-medium mb-1"><?= __('usdt_trc20_wallet_address') ?></label>
           <input type="text" name="crypto_usdt_wallet" value="<?= htmlspecialchars($settings['crypto_usdt_wallet'] ?? '') ?>"
                  class="w-full border rounded p-2 bg-white dark:bg-slate-900 font-mono text-sm"
-                 placeholder="TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t (Örnek TRON adresi)">
+                 placeholder="<?= __('tron_address_example') ?>">
           <p class="text-xs text-gray-500 mt-1"><?= __('usdt_payments_info') ?></p>
         </div>
         <div class="grid md:grid-cols-3 gap-4">
@@ -36,7 +36,7 @@
           <label class="block text-sm font-medium mb-1"><?= __('trongrid_api_key') ?></label>
           <input type="text" name="crypto_tron_api_key" value="<?= htmlspecialchars($settings['crypto_tron_api_key'] ?? '') ?>"
                  class="w-full border rounded p-2 bg-white dark:bg-slate-900"
-                 placeholder="TronGrid API anahtarı (blockchain monitoring için)">
+                 placeholder="<?= __('trongrid_api_key_placeholder') ?>">
           <p class="text-xs text-gray-500 mt-1"><?= __('blockchain_monitoring_info') ?></p>
         </div>
       </div>

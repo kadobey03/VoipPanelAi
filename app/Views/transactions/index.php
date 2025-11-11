@@ -49,6 +49,14 @@
       </div>
       <?php endif; ?>
 
+      <!-- Records Info -->
+      <?php if (!empty($items ?? [])): ?>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 text-sm text-slate-600 dark:text-slate-400">
+        <div><?= sprintf(__('total_records'), $pagination['total_records']) ?></div>
+        <div><?= sprintf(__('page_info'), $pagination['current_page'], $pagination['total_pages']) ?></div>
+      </div>
+      <?php endif; ?>
+
       <!-- Transactions Table/Card -->
       <?php if (!empty($items ?? [])): ?>
       <!-- Desktop Table -->
@@ -189,8 +197,82 @@
         </p>
       </div>
       <?php endif; ?>
+
+      <!-- Pagination -->
+      <?php if (!empty($items ?? []) && $pagination['total_pages'] > 1): ?>
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- Page Size Selector -->
+        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+          <span><?= __('count_per_page') ?>:</span>
+          <select onchange="updatePageSize(this.value)" class="px-3 py-1 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+            <option value="10" <?= ($pagination['limit'] == 10) ? 'selected' : '' ?>>10</option>
+            <option value="25" <?= ($pagination['limit'] == 25) ? 'selected' : '' ?>>25</option>
+            <option value="50" <?= ($pagination['limit'] == 50) ? 'selected' : '' ?>>50</option>
+            <option value="100" <?= ($pagination['limit'] == 100) ? 'selected' : '' ?>>100</option>
+          </select>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex items-center gap-2">
+          <!-- First Page -->
+          <?php if ($pagination['current_page'] > 2): ?>
+          <a href="<?= \App\Helpers\Url::to('/transactions') . '?' . http_build_query(array_merge($_GET, ['page' => 1])) ?>"
+             class="px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <?= __('first_page') ?>
+          </a>
+          <?php endif; ?>
+
+          <!-- Previous Page -->
+          <?php if ($pagination['has_prev']): ?>
+          <a href="<?= \App\Helpers\Url::to('/transactions') . '?' . http_build_query(array_merge($_GET, ['page' => $pagination['prev_page']])) ?>"
+             class="px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <i class="fa-solid fa-chevron-left mr-1"></i>
+            <?= __('previous_page') ?>
+          </a>
+          <?php endif; ?>
+
+          <!-- Page Numbers -->
+          <?php
+          $startPage = max(1, $pagination['current_page'] - 2);
+          $endPage = min($pagination['total_pages'], $pagination['current_page'] + 2);
+          for ($i = $startPage; $i <= $endPage; $i++):
+          ?>
+          <a href="<?= \App\Helpers\Url::to('/transactions') . '?' . http_build_query(array_merge($_GET, ['page' => $i])) ?>"
+             class="px-3 py-2 text-sm border <?= $i == $pagination['current_page'] ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700' ?> rounded-lg transition-colors">
+            <?= $i ?>
+          </a>
+          <?php endfor; ?>
+
+          <!-- Next Page -->
+          <?php if ($pagination['has_next']): ?>
+          <a href="<?= \App\Helpers\Url::to('/transactions') . '?' . http_build_query(array_merge($_GET, ['page' => $pagination['next_page']])) ?>"
+             class="px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <?= __('next_page') ?>
+            <i class="fa-solid fa-chevron-right ml-1"></i>
+          </a>
+          <?php endif; ?>
+
+          <!-- Last Page -->
+          <?php if ($pagination['current_page'] < $pagination['total_pages'] - 1): ?>
+          <a href="<?= \App\Helpers\Url::to('/transactions') . '?' . http_build_query(array_merge($_GET, ['page' => $pagination['total_pages']])) ?>"
+             class="px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <?= __('last_page') ?>
+          </a>
+          <?php endif; ?>
+        </div>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
+
+  <script>
+  function updatePageSize(limit) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('limit', limit);
+    url.searchParams.set('page', '1'); // Reset to first page
+    window.location.href = url.toString();
+  }
+  </script>
 
   <style>
     @keyframes fade-in {

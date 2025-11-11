@@ -12,63 +12,97 @@ class TransactionsController {
         $db = DB::conn();
         $items=[]; $groupId=null;
         
+        // Pagination parameters
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $limit = max(1, min(100, (int)($_GET['limit'] ?? 10))); // Default 10, max 100
+        $offset = ($page - 1) * $limit;
+        
+        // Build base WHERE clause
+        $whereClause = '';
+        $params = [];
+        $paramTypes = '';
+        
         if ($this->isSuper()) {
-            if (isset($_GET['group_id']) && $_GET['group_id']!=='') { $groupId=(int)$_GET['group_id']; }
-            if ($groupId) {
-                $stmt=$db->prepare('
-                    SELECT t.*, g.name AS group_name,
-                           cp.currency, cp.blockchain, cp.network,
-                           cp.transaction_hash as crypto_tx_hash,
-                           cp.wallet_address, cp.confirmations,
-                           CASE
-                               WHEN t.reference LIKE "crypto#%" THEN "cryptocurrency"
-                               ELSE "traditional"
-                           END as payment_type
-                    FROM transactions t
-                    LEFT JOIN groups g ON g.id = t.group_id
-                    LEFT JOIN crypto_payments cp ON cp.id = CAST(SUBSTRING(t.reference, 8) AS UNSIGNED) AND t.reference LIKE "crypto#%"
-                    WHERE t.group_id = ?
-                    ORDER BY t.id DESC
-                ');
-                $stmt->bind_param('i',$groupId); $stmt->execute(); $res=$stmt->get_result();
-            } else {
-                $res = $db->query('
-                    SELECT t.*, g.name AS group_name,
-                           cp.currency, cp.blockchain, cp.network,
-                           cp.transaction_hash as crypto_tx_hash,
-                           cp.wallet_address, cp.confirmations,
-                           CASE
-                               WHEN t.reference LIKE "crypto#%" THEN "cryptocurrency"
-                               ELSE "traditional"
-                           END as payment_type
-                    FROM transactions t
-                    LEFT JOIN groups g ON g.id = t.group_id
-                    LEFT JOIN crypto_payments cp ON cp.id = CAST(SUBSTRING(t.reference, 8) AS UNSIGNED) AND t.reference LIKE "crypto#%"
-                    ORDER BY t.id DESC
-                ');
+            if (isset($_GET['group_id']) && $_GET['group_id']!=='') {
+                $groupId=(int)$_GET['group_id'];
+                $whereClause = 'WHERE t.group_id = ?';
+                $params[] = $groupId;
+                $paramTypes .= 'i';
             }
         } else {
             $groupId = (int)($_SESSION['user']['group_id'] ?? 0);
-            $stmt=$db->prepare('
-                SELECT t.*, g.name AS group_name,
-                       cp.currency, cp.blockchain, cp.network,
-                       cp.transaction_hash as crypto_tx_hash,
-                       cp.wallet_address, cp.confirmations,
-                       CASE
-                           WHEN t.reference LIKE "crypto#%" THEN "cryptocurrency"
-                           ELSE "traditional"
-                       END as payment_type
-                FROM transactions t
-                LEFT JOIN groups g ON g.id = t.group_id
-                LEFT JOIN crypto_payments cp ON cp.id = CAST(SUBSTRING(t.reference, 8) AS UNSIGNED) AND t.reference LIKE "crypto#%"
-                WHERE t.group_id = ?
-                ORDER BY t.id DESC
-            ');
-            $stmt->bind_param('i',$groupId); $stmt->execute(); $res=$stmt->get_result();
+            $whereClause = 'WHERE t.group_id = ?';
+            $params[] = $groupId;
+            $paramTypes .= 'i';
+        }
+        
+        // Get total count
+        $countQuery = "
+            SELECT COUNT(*) as total
+            FROM transactions t
+            LEFT JOIN groups g ON g.id = t.group_id
+            $whereClause
+        ";
+        
+        if ($params) {
+            $countStmt = $db->prepare($countQuery);
+            $countStmt->bind_param($paramTypes, ...$params);
+            $countStmt->execute();
+            $totalRecords = $countStmt->get_result()->fetch_assoc()['total'];
+            $countStmt->close();
+        } else {
+            $totalRecords = $db->query($countQuery)->fetch_assoc()['total'];
+        }
+        
+        $totalPages = ceil($totalRecords / $limit);
+        
+        // Get paginated data
+        $dataQuery = "
+            SELECT t.*, g.name AS group_name,
+                   cp.currency, cp.blockchain, cp.network,
+                   cp.transaction_hash as crypto_tx_hash,
+                   cp.wallet_address, cp.confirmations,
+                   CASE
+                       WHEN t.reference LIKE 'crypto#%' THEN 'cryptocurrency'
+                       ELSE 'traditional'
+                   END as payment_type
+            FROM transactions t
+            LEFT JOIN groups g ON g.id = t.group_id
+            LEFT JOIN crypto_payments cp ON cp.id = CAST(SUBSTRING(t.reference, 8) AS UNSIGNED) AND t.reference LIKE 'crypto#%'
+            $whereClause
+            ORDER BY t.id DESC
+            LIMIT ? OFFSET ?
+        ";
+        
+        $params[] = $limit;
+        $params[] = $offset;
+        $paramTypes .= 'ii';
+        
+        if ($params) {
+            $stmt = $db->prepare($dataQuery);
+            $stmt->bind_param($paramTypes, ...$params);
+            $stmt->execute();
+            $res = $stmt->get_result();
+        } else {
+            $dataQuery .= " LIMIT $limit OFFSET $offset";
+            $res = $db->query($dataQuery);
         }
         
         while($row=$res->fetch_assoc()){$items[]=$row;}
         if (isset($stmt)) $stmt->close();
+        
+        // Pagination data for view
+        $pagination = [
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'total_records' => $totalRecords,
+            'limit' => $limit,
+            'has_prev' => $page > 1,
+            'has_next' => $page < $totalPages,
+            'prev_page' => max(1, $page - 1),
+            'next_page' => min($totalPages, $page + 1)
+        ];
+        
         require __DIR__.'/../Views/transactions/index.php';
     }
     

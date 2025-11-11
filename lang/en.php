@@ -707,6 +707,9 @@ return [
     'disabled' => 'Disabled',
     'wallet_blacklist_desc' => 'Check suspicious wallet addresses',
     'save_payment_settings' => '💾 Save Payment Settings',
+    'tron_address_example' => 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t (Example TRON address)',
+    'trongrid_api_key_placeholder' => 'TronGrid API key (for blockchain monitoring)',
+    'balance_topup_requests' => 'Balance Top-up Requests',
     
     // Controller Messages
     'invalid_credentials' => 'Invalid username or password',

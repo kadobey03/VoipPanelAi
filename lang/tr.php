@@ -707,6 +707,9 @@ return [
     'disabled' => 'Kapalı',
     'wallet_blacklist_desc' => 'Şüpheli wallet adreslerini kontrol et',
     'save_payment_settings' => '💾 Ödeme Ayarlarını Kaydet',
+    'tron_address_example' => 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t (Örnek TRON adresi)',
+    'trongrid_api_key_placeholder' => 'TronGrid API anahtarı (blockchain monitoring için)',
+    'balance_topup_requests' => 'Bakiye Yükleme Talepleri',
     
     // Controller Messages
     'invalid_credentials' => 'Geçersiz kullanıcı adı veya şifre',

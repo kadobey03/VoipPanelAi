@@ -707,6 +707,9 @@ return [
     'disabled' => 'Отключено',
     'wallet_blacklist_desc' => 'Проверка подозрительных адресов кошельков',
     'save_payment_settings' => '💾 Сохранить Настройки Платежей',
+    'tron_address_example' => 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t (Пример TRON адреса)',
+    'trongrid_api_key_placeholder' => 'TronGrid API ключ (для мониторинга блокчейна)',
+    'balance_topup_requests' => 'Запросы пополнения баланса',
     
     // Controller Messages
     'invalid_credentials' => 'Неверное имя пользователя или пароль',
