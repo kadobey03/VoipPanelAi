@@ -86,10 +86,37 @@ class CallsController {
         if ($isSuper) {
             // Superadmin: tüm grupları görebilir, ek filtreleme yok
         } elseif ($isGroupAdmin) {
-            // Group admin: sadece kendi grubunun çağrıları
-            $where .= ' AND group_id=?';
-            $types.='i';
-            $params[] = (int)($user['group_id'] ?? 0);
+            // Group admin: kendi grubundaki tüm kullanıcıların çağrı kayıtları
+            $userGroupId = (int)($user['group_id'] ?? 0);
+            
+            if ($userGroupId > 0) {
+                // Bu gruptaki tüm exten'leri bul
+                $stmt = $db->prepare('SELECT DISTINCT exten FROM users WHERE group_id=? AND exten IS NOT NULL AND exten != ""');
+                $stmt->bind_param('i', $userGroupId);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                $groupExtens = [];
+                while ($row = $res->fetch_assoc()) {
+                    if (!empty(trim($row['exten']))) {
+                        $groupExtens[] = trim($row['exten']);
+                    }
+                }
+                $stmt->close();
+                
+                if (!empty($groupExtens)) {
+                    // Bu extension'lara ait tüm çağrıları göster
+                    $placeholders = str_repeat('?,', count($groupExtens) - 1) . '?';
+                    $where .= " AND src IN ($placeholders)";
+                    $types .= str_repeat('s', count($groupExtens));
+                    $params = array_merge($params, $groupExtens);
+                } else {
+                    // Grup exten'i yoksa hiçbir kayıt gösterme
+                    $where .= ' AND 1=0';
+                }
+            } else {
+                // Grup ID yoksa hiçbir kayıt gösterme
+                $where .= ' AND 1=0';
+            }
         } elseif ($isGroupMember) {
             // Group member: sadece kendi agent'ının (exten) çağrıları
             $userGroupId = (int)($user['group_id'] ?? 0);
