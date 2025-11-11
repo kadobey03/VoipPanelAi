@@ -23,14 +23,14 @@ class GroupController {
         $db = DB::conn();
         if ($this->isSuper()) {
             try {
-                $res = $db->query('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups ORDER BY id DESC');
+                $res = $db->query('SELECT id, name, margin, balance, api_group_id, api_group_name, telegram_chat_id, telegram_enabled, telegram_language FROM groups ORDER BY id DESC');
             } catch (\Throwable $e) {
                 $res = $db->query('SELECT id, name, margin, balance FROM groups ORDER BY id DESC');
             }
         } else {
             $gid = (int)$this->currentGroupId();
             try {
-                $stmt = $db->prepare('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups WHERE id=?');
+                $stmt = $db->prepare('SELECT id, name, margin, balance, api_group_id, api_group_name, telegram_chat_id, telegram_enabled, telegram_language FROM groups WHERE id=?');
                 $stmt->bind_param('i', $gid);
                 $stmt->execute();
                 $res = $stmt->get_result();
@@ -70,14 +70,28 @@ class GroupController {
                 } else {
                     foreach ($apiGroups as $ag) { if (strcasecmp((string)($ag['name'] ?? ''), $name) === 0) { $api_group_id = (int)($ag['id'] ?? 0); $api_group_name = (string)($ag['name'] ?? ''); break; } }
                 }
-                $stmt = $db->prepare('UPDATE groups SET name=?, margin=?, api_group_id=?, api_group_name=? WHERE id=?');
-                $stmt->bind_param('sdisi', $name, $margin, $api_group_id, $api_group_name, $id);
+                
+                // Telegram alanlarını al
+                $telegram_chat_id = trim($_POST['telegram_chat_id'] ?? '');
+                $telegram_enabled = isset($_POST['telegram_enabled']) ? 1 : 0;
+                $telegram_language = $_POST['telegram_language'] ?? 'TR';
+                
+                // Chat ID boşsa null yap
+                if ($telegram_chat_id === '') $telegram_chat_id = null;
+                
+                // Dil kontrolü
+                if (!in_array($telegram_language, ['TR', 'EN', 'RU'])) {
+                    $telegram_language = 'TR';
+                }
+                
+                $stmt = $db->prepare('UPDATE groups SET name=?, margin=?, api_group_id=?, api_group_name=?, telegram_chat_id=?, telegram_enabled=?, telegram_language=? WHERE id=?');
+                $stmt->bind_param('sdissisi', $name, $margin, $api_group_id, $api_group_name, $telegram_chat_id, $telegram_enabled, $telegram_language, $id);
                 $ok = $stmt->execute() ? 'Güncellendi' : 'Güncelleme hatası';
                 $stmt->close();
             }
         }
         try {
-            $stmt = $db->prepare('SELECT id, name, margin, balance, api_group_id, api_group_name FROM groups WHERE id=?');
+            $stmt = $db->prepare('SELECT id, name, margin, balance, api_group_id, api_group_name, telegram_chat_id, telegram_enabled, telegram_language FROM groups WHERE id=?');
             $stmt->bind_param('i', $id);
             $stmt->execute();
             $group = $stmt->get_result()->fetch_assoc();
@@ -89,6 +103,7 @@ class GroupController {
             $group = $stmt->get_result()->fetch_assoc();
             $stmt->close();
             $group['api_group_id'] = null; $group['api_group_name'] = null;
+            $group['telegram_chat_id'] = null; $group['telegram_enabled'] = 0; $group['telegram_language'] = 'TR';
         }
         require __DIR__.'/../Views/groups/edit.php';
     }
@@ -111,9 +126,23 @@ class GroupController {
             } else {
                 foreach ($apiGroups as $ag) { if (strcasecmp((string)($ag['name'] ?? ''), $name) === 0) { $api_group_id = (int)($ag['id'] ?? 0); $api_group_name = (string)($ag['name'] ?? ''); break; } }
             }
+            
+            // Telegram alanlarını al
+            $telegram_chat_id = trim($_POST['telegram_chat_id'] ?? '');
+            $telegram_enabled = isset($_POST['telegram_enabled']) ? 1 : 0;
+            $telegram_language = $_POST['telegram_language'] ?? 'TR';
+            
+            // Chat ID boşsa null yap
+            if ($telegram_chat_id === '') $telegram_chat_id = null;
+            
+            // Dil kontrolü
+            if (!in_array($telegram_language, ['TR', 'EN', 'RU'])) {
+                $telegram_language = 'TR';
+            }
+            
             if ($name!=='') {
-                $stmt=$db->prepare('INSERT INTO groups (name, margin, balance, api_group_id, api_group_name) VALUES (?,?,?,?,?)');
-                $stmt->bind_param('sddis', $name, $margin, $balance, $api_group_id, $api_group_name);
+                $stmt=$db->prepare('INSERT INTO groups (name, margin, balance, api_group_id, api_group_name, telegram_chat_id, telegram_enabled, telegram_language) VALUES (?,?,?,?,?,?,?,?)');
+                $stmt->bind_param('sddissii', $name, $margin, $balance, $api_group_id, $api_group_name, $telegram_chat_id, $telegram_enabled, $telegram_language);
                 if ($stmt->execute()) { $ok='Grup oluşturuldu'; } else { $error='Oluşturma hatası'; }
                 $stmt->close();
             } else { $error='İsim gerekli'; }

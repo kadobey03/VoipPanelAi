@@ -33,6 +33,58 @@
       </select>
       <div class="text-xs text-slate-500 mt-1"><?= __('auto_match_explanation') ?></div>
     </div>
+    
+    <!-- Telegram Bildirimleri Bölümü -->
+    <div class="border-t pt-4 mt-4">
+      <h3 class="text-lg font-medium mb-3 flex items-center gap-2">
+        <i class="fab fa-telegram text-blue-500"></i>
+        Telegram Bildirimleri
+      </h3>
+      
+      <div class="mb-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="telegram_enabled" value="1" class="rounded">
+          <span class="text-sm">Telegram bildirimlerini aktifleştir</span>
+        </label>
+      </div>
+      
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm mb-1">
+            <i class="fas fa-comments text-slate-500"></i>
+            Telegram Chat ID
+          </label>
+          <input name="telegram_chat_id"
+                 class="w-full border rounded p-2 bg-white dark:bg-slate-900 font-mono text-sm"
+                 placeholder="-4931882446 (Negatif grup ID'si)">
+          <div class="text-xs text-slate-500 mt-1">
+            Bot'u gruba ekleyin ve grup chat ID'sini girin (- işareti ile başlar)
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm mb-1">
+            <i class="fas fa-language text-slate-500"></i>
+            Telegram Bildirim Dili
+          </label>
+          <select name="telegram_language" class="w-full border rounded p-2 bg-white dark:bg-slate-900">
+            <option value="TR">🇹🇷 Türkçe</option>
+            <option value="EN">🇺🇸 English</option>
+            <option value="RU">🇷🇺 Русский</option>
+          </select>
+          <div class="text-xs text-slate-500 mt-1">
+            Telegram bildirimlerinin hangi dilde gönderileceğini seçin
+          </div>
+        </div>
+      </div>
+      
+      <div class="text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/20 p-2 rounded mt-3">
+        <i class="fas fa-info-circle"></i>
+        <strong>Bilgi:</strong> Telegram Chat ID'si girilerek bu gruba özel bildirimler seçilen dilde alınabilir.
+        Boş bırakılırsa sistem varsayılan telegram ayarları kullanılır.
+      </div>
+    </div>
+    
     <button class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded p-2"><?= __('create') ?></button>
   </form>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
