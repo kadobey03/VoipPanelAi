@@ -51,20 +51,18 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
     <canvas id="particle-canvas" class="particle-canvas"></canvas>
     
     <!-- Header -->
-    <header class="fixed top-0 left-0 w-full z-50 transition-all duration-500" id="main-header">
+    <header class="fixed top-0 left-0 w-full z-50 main-nav floating-header" id="main-header">
         <div class="glass-nav px-4 sm:px-6 py-4">
             <nav class="max-w-7xl mx-auto flex items-center justify-between">
                 <!-- Logo Section -->
-                <div class="flex items-center space-x-3">
-                    <div class="relative">
-                        <div class="w-12 h-12 bg-gradient-purple rounded-xl flex items-center justify-center animate-pulse-glow shadow-lg">
-                            <i class="fas fa-phone-volume text-2xl text-white"></i>
-                        </div>
-                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-ping"></div>
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-phone-volume text-2xl text-white"></i>
+                        <div class="logo-pulse"></div>
                     </div>
                     <div>
-                        <h1 class="text-xl sm:text-2xl font-bold text-gradient-purple">PapaM VoIP</h1>
-                        <p class="text-xs text-purple-200 hidden sm:block">Professional Communication</p>
+                        <h1 class="logo-text">PapaM VoIP</h1>
+                        <p class="logo-subtitle hidden sm:block">Professional Communication</p>
                     </div>
                 </div>
                 
@@ -78,39 +76,39 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
                 <!-- Language & Login Section -->
                 <div class="flex items-center space-x-3">
                     <!-- Language Dropdown -->
-                    <div class="relative group">
-                        <button class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300">
-                            <span class="text-lg">
+                    <div class="language-dropdown">
+                        <button class="language-button">
+                            <span class="language-flag">
                                 <?php
                                 $flags = ['tr' => '🇹🇷', 'en' => '🇬🇧', 'ru' => '🇷🇺'];
                                 echo $flags[$currentLang] ?? '🇹🇷';
                                 ?>
                             </span>
                             <span class="text-sm font-medium text-white hidden sm:inline"><?= strtoupper($currentLang) ?></span>
-                            <i class="fas fa-chevron-down text-xs text-white/70 group-hover:rotate-180 transition-transform duration-300"></i>
+                            <i class="fas fa-chevron-down text-xs chevron-icon"></i>
                         </button>
                         
                         <!-- Dropdown Menu -->
-                        <div class="absolute top-full right-0 mt-2 py-2 w-48 glass-card border border-white/20 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-2xl">
-                            <form method="POST" action="" class="block">
+                        <div class="language-dropdown-menu">
+                            <form method="POST" action="" class="w-full">
                                 <input type="hidden" name="lang" value="tr">
-                                <button type="submit" class="w-full text-left px-4 py-3 hover:bg-white/10 text-white transition-colors duration-200 flex items-center space-x-3 <?= $currentLang === 'tr' ? 'bg-white/10' : '' ?>">
-                                    <span class="text-lg">🇹🇷</span>
-                                    <span class="font-medium">Türkçe</span>
+                                <button type="submit" class="language-option <?= $currentLang === 'tr' ? 'active' : '' ?>">
+                                    <span class="language-flag">🇹🇷</span>
+                                    <span>Türkçe</span>
                                 </button>
                             </form>
-                            <form method="POST" action="" class="block">
+                            <form method="POST" action="" class="w-full">
                                 <input type="hidden" name="lang" value="en">
-                                <button type="submit" class="w-full text-left px-4 py-3 hover:bg-white/10 text-white transition-colors duration-200 flex items-center space-x-3 <?= $currentLang === 'en' ? 'bg-white/10' : '' ?>">
-                                    <span class="text-lg">🇬🇧</span>
-                                    <span class="font-medium">English</span>
+                                <button type="submit" class="language-option <?= $currentLang === 'en' ? 'active' : '' ?>">
+                                    <span class="language-flag">🇬🇧</span>
+                                    <span>English</span>
                                 </button>
                             </form>
-                            <form method="POST" action="" class="block">
+                            <form method="POST" action="" class="w-full">
                                 <input type="hidden" name="lang" value="ru">
-                                <button type="submit" class="w-full text-left px-4 py-3 hover:bg-white/10 text-white transition-colors duration-200 flex items-center space-x-3 <?= $currentLang === 'ru' ? 'bg-white/10' : '' ?>">
-                                    <span class="text-lg">🇷🇺</span>
-                                    <span class="font-medium">Русский</span>
+                                <button type="submit" class="language-option <?= $currentLang === 'ru' ? 'active' : '' ?>">
+                                    <span class="language-flag">🇷🇺</span>
+                                    <span>Русский</span>
                                 </button>
                             </form>
                         </div>
@@ -130,11 +128,11 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
             </nav>
             
             <!-- Mobile Navigation -->
-            <div class="lg:hidden mt-4 py-4 border-t border-white/20 hidden" id="mobile-menu">
-                <div class="flex flex-col space-y-3">
-                    <a href="#features" class="nav-link py-2 px-4 hover:bg-white/10 rounded-lg transition-colors duration-300"><?= __('Özellikler') ?></a>
-                    <a href="#pricing" class="nav-link py-2 px-4 hover:bg-white/10 rounded-lg transition-colors duration-300"><?= __('Fiyatlandırma') ?></a>
-                    <a href="/panel/" class="nav-link py-2 px-4 hover:bg-white/10 rounded-lg transition-colors duration-300"><?= __('Panel Girişi') ?></a>
+            <div class="mobile-menu lg:hidden mt-4 py-4 border-t border-white/20 hidden" id="mobile-menu">
+                <div class="flex flex-col space-y-2">
+                    <a href="#features" class="mobile-nav-link"><?= __('Özellikler') ?></a>
+                    <a href="#pricing" class="mobile-nav-link"><?= __('Fiyatlandırma') ?></a>
+                    <a href="/panel/" class="mobile-nav-link"><?= __('Panel Girişi') ?></a>
                 </div>
             </div>
         </div>
@@ -144,7 +142,18 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
     function toggleMobileMenu() {
         const menu = document.getElementById('mobile-menu');
         menu.classList.toggle('hidden');
+        menu.classList.toggle('active');
     }
+    
+    // Header scroll effect
+    window.addEventListener('scroll', function() {
+        const header = document.getElementById('main-header');
+        if (window.scrollY > 50) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
     </script>
 
     <!-- Hero Section -->

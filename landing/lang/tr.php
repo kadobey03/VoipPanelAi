@@ -74,10 +74,17 @@ return [
     'Gelişmiş VoIP panel yönetim sistemi ile çağrı yönetimi, agent takibi, bakiye kontrolü ve detaylı raporlama özelliklerini tek platformda sunuyoruz.' => 'Gelişmiş VoIP panel yönetim sistemi ile çağrı yönetimi, agent takibi, bakiye kontrolü ve detaylı raporlama özelliklerini tek platformda sunuyoruz.',
     'Tüm hakları saklıdır.' => 'Tüm hakları saklıdır.',
     
+    // Missing translations for Hero section
+    'Profesyonel VoIP Çözümleri' => 'Profesyonel VoIP Çözümleri',
+    'İşletmeniz için güvenilir, yüksek kaliteli VoIP hizmetleri' => 'İşletmeniz için güvenilir, yüksek kaliteli VoIP hizmetleri',
+    'Hemen Başla' => 'Hemen Başla',
+    'Tam yönetim paneli erişimi' => 'Tam yönetim paneli erişimi',
+    
     // Meta and SEO
     'PapaM VoIP Panel - Professional VoIP Management System' => 'PapaM VoIP Panel - Profesyonel VoIP Yönetim Sistemi',
     'Advanced VoIP call management and reporting system with agent tracking, group management, balance control and detailed analytics.' => 'Gelişmiş VoIP çağrı yönetimi ve raporlama sistemi ile agent takibi, grup yönetimi, bakiye kontrolü ve detaylı analitikler.',
     'VoIP panel, call management, agent tracking, CDR analysis, VoIP reporting, call center management' => 'VoIP panel, çağrı yönetimi, agent takibi, CDR analizi, VoIP raporlama, çağrı merkezi yönetimi',
+    'Transform your business communication with our premium VoIP solutions' => 'Premium VoIP çözümlerimiz ile iş iletişiminizi dönüştürün',
     'Transform your VoIP operations with our comprehensive management panel' => 'Kapsamlı yönetim panelimiz ile VoIP operasyonlarınızı dönüştürün'
 ];
 ?>
