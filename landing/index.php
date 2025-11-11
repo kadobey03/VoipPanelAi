@@ -196,8 +196,8 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto" data-animate="slide-up" data-delay="1000">
                 <div class="glass-card p-6 text-center">
-                    <div class="text-3xl font-bold text-purple-300" data-counter="500">0</div>
-                    <div class="text-purple-200 text-sm mt-2"><?= __('Aktif Müşteri') ?></div>
+                    <div class="text-3xl font-bold text-purple-300" data-counter="1250">0</div>
+                    <div class="text-purple-200 text-sm mt-2"><?= __('Aktif Agent') ?></div>
                 </div>
                 <div class="glass-card p-6 text-center">
                     <div class="text-3xl font-bold text-purple-300" data-counter="99">0</div>
@@ -208,8 +208,8 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
                     <div class="text-purple-200 text-sm mt-2"><?= __('Saat Destek') ?></div>
                 </div>
                 <div class="glass-card p-6 text-center">
-                    <div class="text-3xl font-bold text-purple-300" data-counter="50">0</div>
-                    <div class="text-purple-200 text-sm mt-2"><?= __('Ülke Kapsamı') ?></div>
+                    <div class="text-3xl font-bold text-purple-300" data-counter="156">0</div>
+                    <div class="text-purple-200 text-sm mt-2"><?= __('Günlük Çağrı (K)') ?></div>
                 </div>
             </div>
         </div>
@@ -269,6 +269,31 @@ $keywords = __('VoIP panel, call management, agent tracking, CDR analysis, VoIP 
                         <div class="feature-icon"><i class="fab fa-bitcoin text-purple-500"></i></div>
                         <h3 class="feature-title"><?= __('Crypto Ödeme Desteği') ?></h3>
                         <p class="feature-description"><?= __('USDT TRC20 ile güvenli ve hızlı blockchain ödemeleri') ?></p>
+                    </div>
+                </div>
+                
+                <!-- New Advanced Features -->
+                <div class="feature-card bg-white shadow-lg" data-animate="slide-up" data-delay="900">
+                    <div class="text-center">
+                        <div class="feature-icon"><i class="fab fa-telegram text-purple-500"></i></div>
+                        <h3 class="feature-title"><?= __('Telegram Bot Entegrasyonu') ?></h3>
+                        <p class="feature-description"><?= __('Otomatik bildirimler ve komut tabanlı panel kontrolü') ?></p>
+                    </div>
+                </div>
+                
+                <div class="feature-card bg-white shadow-lg" data-animate="slide-up" data-delay="1000">
+                    <div class="text-center">
+                        <div class="feature-icon"><i class="fas fa-tachometer-alt text-purple-500"></i></div>
+                        <h3 class="feature-title"><?= __('Dashboard Kontrolü') ?></h3>
+                        <p class="feature-description"><?= __('Canlı grafikler ve instant performans metrikleri') ?></p>
+                    </div>
+                </div>
+                
+                <div class="feature-card bg-white shadow-lg" data-animate="slide-up" data-delay="1100">
+                    <div class="text-center">
+                        <div class="feature-icon"><i class="fas fa-search-dollar text-purple-500"></i></div>
+                        <h3 class="feature-title"><?= __('Transaction İzleme') ?></h3>
+                        <p class="feature-description"><?= __('Tüm finansal işlemlerin detaylı takibi ve audit trail') ?></p>
                     </div>
                 </div>
             </div>
