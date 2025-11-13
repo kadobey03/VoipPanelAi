@@ -316,6 +316,12 @@ class TelegramNotifier
      */
     public function sendMessage($message)
     {
+        // Chat ID kontrolü
+        if (empty($this->chatId)) {
+            error_log('Telegram notification failed: Chat ID is empty');
+            return false;
+        }
+        
         $url = "https://api.telegram.org/bot{$this->botToken}/sendMessage";
         
         $data = [
@@ -325,11 +331,13 @@ class TelegramNotifier
             'disable_web_page_preview' => true
         ];
         
+        // İlk file_get_contents ile dene
         $options = [
             'http' => [
                 'header' => "Content-type: application/x-www-form-urlencoded\r\n",
                 'method' => 'POST',
-                'content' => http_build_query($data)
+                'content' => http_build_query($data),
+                'timeout' => 30
             ]
         ];
         
@@ -337,18 +345,21 @@ class TelegramNotifier
         $result = @file_get_contents($url, false, $context);
         
         if ($result === false) {
-            error_log('Telegram notification failed - connection error');
-            return false;
+            error_log("Telegram notification failed - connection error to chat_id: {$this->chatId}");
+            // cURL fallback dene
+            return $this->sendMessageCurl($message);
         }
         
         $response = json_decode($result, true);
         
         if (!$response || !$response['ok']) {
-            error_log('Telegram notification failed: ' . $result);
+            $errorMsg = $response['description'] ?? 'Unknown error';
+            error_log("Telegram notification failed to chat_id {$this->chatId}: {$errorMsg}");
+            error_log("Full response: " . $result);
             return false;
         }
         
-        error_log('Telegram notification sent successfully');
+        error_log("Telegram notification sent successfully to chat_id: {$this->chatId}");
         return true;
     }
     
@@ -372,25 +383,29 @@ class TelegramNotifier
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'VoipPanel-Bot/1.0');
         
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
         curl_close($ch);
         
         if ($result === false || $httpCode !== 200) {
-            error_log('Telegram cURL notification failed');
+            error_log("Telegram cURL notification failed to chat_id {$this->chatId} - HTTP: {$httpCode}, Error: {$curlError}");
             return false;
         }
         
         $response = json_decode($result, true);
         
         if (!$response || !$response['ok']) {
-            error_log('Telegram notification failed: ' . $result);
+            $errorMsg = $response['description'] ?? 'Unknown error';
+            error_log("Telegram cURL notification failed to chat_id {$this->chatId}: {$errorMsg}");
+            error_log("Full cURL response: " . $result);
             return false;
         }
         
-        error_log('Telegram notification sent successfully via cURL');
+        error_log("Telegram notification sent successfully via cURL to chat_id: {$this->chatId}");
         return true;
     }
 }

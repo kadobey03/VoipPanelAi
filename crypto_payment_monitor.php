@@ -211,9 +211,32 @@ class CryptoPaymentMonitor {
             // Send Telegram notification
             try {
                 $balanceAfter = $balanceBefore + $receivedAmount;
-                $telegram = new TelegramNotifier();
-                $telegram->sendPaymentNotification($groupName, $receivedAmount, $payment['id'], $transactionId, $balanceBefore, $balanceAfter);
-                $this->logger->info("Telegram notification sent for payment ID: {$payment['id']}");
+                
+                // 1. Varsayılan admin kanalına gönder
+                $adminTelegram = new TelegramNotifier();
+                $adminTelegram->sendPaymentNotification($groupName, $receivedAmount, $payment['id'], $transactionId, $balanceBefore, $balanceAfter);
+                $this->logger->info("Admin Telegram notification sent for payment ID: {$payment['id']}");
+                
+                // 2. İlgili grubun telegram kanalına gönder (eğer aktifse)
+                if ($payment['group_id']) {
+                    $stmt = $this->db->prepare('SELECT telegram_chat_id, telegram_language, telegram_enabled FROM groups WHERE id = ?');
+                    $stmt->bind_param('i', $payment['group_id']);
+                    $stmt->execute();
+                    $groupTelegram = $stmt->get_result()->fetch_assoc();
+                    $stmt->close();
+                    
+                    if ($groupTelegram && $groupTelegram['telegram_enabled'] && !empty(trim($groupTelegram['telegram_chat_id']))) {
+                        $chatId = trim($groupTelegram['telegram_chat_id']);
+                        $language = $groupTelegram['telegram_language'] ?: 'TR';
+                        
+                        $groupNotifier = new TelegramNotifier(null, $chatId, $language);
+                        $groupNotifier->sendPaymentNotification($groupName, $receivedAmount, $payment['id'], $transactionId, $balanceBefore, $balanceAfter);
+                        $this->logger->info("Group Telegram notification sent for payment ID: {$payment['id']} to chat_id: {$chatId} ({$language})");
+                    } else {
+                        $this->logger->info("Group telegram not configured for payment ID: {$payment['id']}");
+                    }
+                }
+                
             } catch (\Exception $e) {
                 $this->logger->error("Telegram notification failed for payment {$payment['id']}: " . $e->getMessage());
                 // Don't fail the payment if Telegram fails
@@ -329,10 +352,31 @@ class CryptoPaymentMonitor {
             // Send Telegram notifications for expired payments
             foreach ($expiredPayments as $payment) {
                 try {
-                    $telegram = new TelegramNotifier();
                     $groupName = $payment['group_name'] ?: 'Bilinmeyen Grup';
-                    $telegram->sendPaymentExpiredNotification($groupName, $payment['amount_requested'], $payment['id']);
-                    $this->logger->info("Expired payment notification sent for ID: {$payment['id']}");
+                    
+                    // 1. Varsayılan admin kanalına gönder
+                    $adminTelegram = new TelegramNotifier();
+                    $adminTelegram->sendPaymentExpiredNotification($groupName, $payment['amount_requested'], $payment['id']);
+                    $this->logger->info("Admin expired payment notification sent for ID: {$payment['id']}");
+                    
+                    // 2. İlgili grubun telegram kanalına gönder (eğer aktifse)
+                    if ($payment['group_id']) {
+                        $stmt = $this->db->prepare('SELECT telegram_chat_id, telegram_language, telegram_enabled FROM groups WHERE id = ?');
+                        $stmt->bind_param('i', $payment['group_id']);
+                        $stmt->execute();
+                        $groupTelegram = $stmt->get_result()->fetch_assoc();
+                        $stmt->close();
+                        
+                        if ($groupTelegram && $groupTelegram['telegram_enabled'] && !empty(trim($groupTelegram['telegram_chat_id']))) {
+                            $chatId = trim($groupTelegram['telegram_chat_id']);
+                            $language = $groupTelegram['telegram_language'] ?: 'TR';
+                            
+                            $groupNotifier = new TelegramNotifier(null, $chatId, $language);
+                            $groupNotifier->sendPaymentExpiredNotification($groupName, $payment['amount_requested'], $payment['id']);
+                            $this->logger->info("Group expired payment notification sent for ID: {$payment['id']} to chat_id: {$chatId} ({$language})");
+                        }
+                    }
+                    
                 } catch (\Exception $e) {
                     $this->logger->error("Failed to send expired payment notification for ID {$payment['id']}: " . $e->getMessage());
                 }
