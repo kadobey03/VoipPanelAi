@@ -105,10 +105,9 @@ class ReportsController {
             $agentParams[] = $groupFilter;
         }
         $sql3 = "SELECT
-                     u.login AS user_login,
+                     COALESCE(a.user_login, c.src) AS user_login,
                      cg.name AS group_name,
-                     COALESCE(u.exten, c.src) AS voip_exten,
-                     c.src AS src,
+                     c.src AS voip_exten,
                      COUNT(*) AS calls,
                      SUM(CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') THEN 1 ELSE 0 END) AS answer,
                      COUNT(DISTINCT c.dst) AS unique_numbers,
@@ -117,20 +116,13 @@ class ReportsController {
                      (CASE WHEN SUM(c.duration)>0 THEN ROUND(SUM(c.billsec)/SUM(c.duration)*100,2) ELSE 0 END) AS talk_percent,
                      SUM(CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') AND c.billsec>180 THEN 1 ELSE 0 END) AS jackpot,
                      COUNT(DISTINCT CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') AND c.billsec>180 THEN c.dst END) AS unique_jackpot,
-                     0 AS spy_calls, 0 AS spy_duration, 0 AS promt_calls, 0 AS promt_duration, 0 AS echo_calls, 0 AS echo_duration,
                      ROUND(SUM(c.cost_api),6) AS cost
                    FROM calls c
-                   LEFT JOIN users u ON u.exten=c.src
+                   LEFT JOIN agents a ON a.exten = c.src
                    LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
                    WHERE $agentWhere";
-        $sql3 .= ' GROUP BY c.src, u.login, cg.name, u.exten ORDER BY calls DESC';
+        $sql3 .= ' GROUP BY c.src, cg.name ORDER BY calls DESC';
         $stmt = $db->prepare($sql3);
-
-        // Debug: Check parameter counts
-        error_log("Agent Stats - Types: '$agentTypes' (" . strlen($agentTypes) . " chars), Params: " . count($agentParams));
-        error_log("User role: " . ($_SESSION['user']['role'] ?? 'unknown'));
-        error_log("Is groupmember: " . ($this->isGroupMember() ? 'yes' : 'no'));
-
         $stmt->bind_param($agentTypes, ...$agentParams);
         $stmt->execute();
         $agentStats = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
