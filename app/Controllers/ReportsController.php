@@ -107,7 +107,8 @@ class ReportsController {
         $sql3 = "SELECT
                      u.login AS user_login,
                      cg.name AS group_name,
-                     u.exten AS voip_exten,
+                     COALESCE(u.exten, c.src) AS voip_exten,
+                     c.src AS src,
                      COUNT(*) AS calls,
                      SUM(CASE WHEN UPPER(c.disposition) IN ('ANSWERED','ANSWER') THEN 1 ELSE 0 END) AS answer,
                      COUNT(DISTINCT c.dst) AS unique_numbers,
@@ -122,7 +123,7 @@ class ReportsController {
                    LEFT JOIN users u ON u.exten=c.src
                    LEFT JOIN groups cg ON (cg.id=c.group_id OR cg.api_group_id=c.group_id)
                    WHERE $agentWhere";
-        $sql3 .= ' GROUP BY u.login, cg.name, u.exten ORDER BY cost DESC';
+        $sql3 .= ' GROUP BY c.src, u.login, cg.name, u.exten ORDER BY calls DESC';
         $stmt = $db->prepare($sql3);
 
         // Debug: Check parameter counts
@@ -147,12 +148,18 @@ class ReportsController {
             if ($r) $userGroupName = $r['name'];
         }
         foreach ($agentStats as $agent) {
-            $group = $agent['group_name'];
-            if ($this->isSuper() || (!$this->isGroupMember() && $group === $userGroupName)) {
-                $agentsByGroup[$group][] = $agent;
+            $group = $agent['group_name'] ?? '';
+            if ($this->isSuper()) {
+                // Super: gruba göre ayır, grup adı boşsa "Diğer" yap
+                $key = !empty($group) ? $group : 'Diğer';
+                $agentsByGroup[$key][] = $agent;
             } elseif ($this->isGroupMember()) {
                 // Groupmember sadece kendi agent'ını görür
                 $agentsByGroup['Kendi Agentınız'][] = $agent;
+            } else {
+                // Group admin: gruba ait tüm agentları göster
+                // group_name eşleşmesi VEYA agent varsa ekle (group_name null olabilir)
+                $agentsByGroup[$userGroupName ?: 'Grup'][] = $agent;
             }
         }
 

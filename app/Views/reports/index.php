@@ -573,7 +573,8 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
             $aRate    = $aCalls > 0 ? round($aAns/$aCalls*100,1) : 0;
             $rateColor = $aRate >= 70 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : ($aRate >= 40 ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20');
             $barColor  = $aRate >= 70 ? 'bg-emerald-500' : ($aRate >= 40 ? 'bg-amber-500' : 'bg-red-500');
-            $initials  = strtoupper(mb_substr($r['user_login'] ?? 'A', 0, 1));
+            $displayName = $r['user_login'] ?? $r['src'] ?? $r['voip_exten'] ?? 'Agent';
+            $initials  = strtoupper(mb_substr($displayName, 0, 1));
             $avatarGrads = ['from-indigo-500 to-purple-600','from-rose-500 to-pink-600','from-amber-500 to-orange-600','from-cyan-500 to-blue-600','from-emerald-500 to-teal-600'];
             $grad = $avatarGrads[$rank % count($avatarGrads)];
           ?>
@@ -591,8 +592,8 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
                   <?php endif; ?>
                 </div>
                 <div>
-                  <div class="font-semibold text-sm text-slate-800 dark:text-white"><?= htmlspecialchars($r['user_login'] ?? '') ?></div>
-                  <div class="text-xs text-slate-400 font-mono"><?= htmlspecialchars($r['voip_exten'] ?? '') ?></div>
+                  <div class="font-semibold text-sm text-slate-800 dark:text-white"><?= htmlspecialchars($displayName) ?></div>
+                  <div class="text-xs text-slate-400 font-mono"><?= htmlspecialchars($r['voip_exten'] ?? $r['src'] ?? '') ?></div>
                 </div>
               </div>
             </td>
