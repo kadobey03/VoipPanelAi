@@ -168,6 +168,11 @@ $apiConnected = count(array_filter($groups, fn($g) => !empty($g['api_group_name'
            class="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm">
           <i class="fa-solid fa-plus text-xs"></i><?= __('load_balance') ?>
         </a>
+
+        <button onclick="confirmDeleteGroup(<?= (int)$g['id'] ?>, '<?= htmlspecialchars(addslashes($g['name'])) ?>')"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors">
+          <i class="fa-solid fa-trash text-xs"></i><?= __('delete') ?>
+        </button>
         <?php endif; ?>
       </div>
     </div>
@@ -226,6 +231,10 @@ $apiConnected = count(array_filter($groups, fn($g) => !empty($g['api_group_name'
            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm" title="<?= __('load_balance') ?>">
           <i class="fa-solid fa-plus text-xs"></i><?= __('load_balance') ?>
         </a>
+        <button onclick="confirmDeleteGroup(<?= (int)$g['id'] ?>, '<?= htmlspecialchars(addslashes($g['name'])) ?>')"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors" title="Sil">
+          <i class="fa-solid fa-trash text-xs"></i>
+        </button>
         <?php endif; ?>
       </div>
     </div>
@@ -302,6 +311,10 @@ $apiConnected = count(array_filter($groups, fn($g) => !empty($g['api_group_name'
                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
                   <i class="fa-solid fa-plus text-xs"></i><?= __('load_balance') ?>
                 </a>
+                <button onclick="confirmDeleteGroup(<?= (int)$g['id'] ?>, '<?= htmlspecialchars(addslashes($g['name'])) ?>')"
+                        class="w-7 h-7 flex items-center justify-center rounded-md bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 transition-colors" title="Sil">
+                  <i class="fa-solid fa-trash text-xs"></i>
+                </button>
                 <?php endif; ?>
               </div>
             </td>
@@ -491,6 +504,10 @@ function showGroupDetails(index) {
          class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors text-sm">
         <i class="fa-solid fa-plus"></i><?= __('load_balance') ?>
       </a>
+      <button onclick="closeModal(); confirmDeleteGroup(${g.id}, '${g.name.replace(/'/g, \"\\\\'\")}')"
+              class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors text-sm">
+        <i class="fa-solid fa-trash"></i><?= __('delete') ?>
+      </button>
       <?php endif; ?>
     </div>
   `;
@@ -507,6 +524,67 @@ function closeModal() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Delete Group ───────────────────────────────────────────────────────────
+function confirmDeleteGroup(id, name) {
+  // Onay modalı oluştur
+  let overlay = document.getElementById('deleteConfirmOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'deleteConfirmOverlay';
+    overlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 dark:border-slate-700 p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
+          <i class="fa-solid fa-triangle-exclamation text-red-600 dark:text-red-400 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-900 dark:text-white text-lg">Grubu Sil</h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm">Bu işlem geri alınamaz</p>
+        </div>
+      </div>
+      <p class="text-slate-700 dark:text-slate-300 text-sm mb-6">
+        <span class="font-semibold text-red-600 dark:text-red-400">"${name}"</span> grubunu silmek istediğinize emin misiniz?
+        Bu gruba bağlı kullanıcılar gruplarından ayrılacaktır.
+      </p>
+      <div class="flex gap-3">
+        <button onclick="document.getElementById('deleteConfirmOverlay').remove()"
+                class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm">
+          İptal
+        </button>
+        <button onclick="executeDeleteGroup(${id})"
+                class="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors text-sm">
+          <i class="fa-solid fa-trash mr-1.5"></i>Evet, Sil
+        </button>
+      </div>
+    </div>
+  `;
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+}
+
+function executeDeleteGroup(id) {
+  const overlay = document.getElementById('deleteConfirmOverlay');
+  if (overlay) overlay.remove();
+  showToast('Grup siliniyor...', 'loading');
+  fetch('<?= \App\Helpers\Url::to('/groups/delete') ?>', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'id=' + id
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showToast('✓ ' + data.message, 'success');
+      setTimeout(() => { window.location.reload(); }, 1500);
+    } else {
+      showToast('✗ ' + (data.error || 'Silinemedi'), 'error');
+    }
+  })
+  .catch(() => { showToast('✗ Bağlantı hatası', 'error'); });
+}
 </script>
 
 <style>

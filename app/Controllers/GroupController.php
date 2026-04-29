@@ -762,6 +762,70 @@ class GroupController {
     }
 
     /**
+     * Grubu sil (sadece superadmin)
+     */
+    public function delete() {
+        $this->startSession();
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (!isset($_SESSION['user'])) {
+            echo json_encode(['success' => false, 'error' => 'Oturum gerekli']);
+            return;
+        }
+        if (!$this->isSuper()) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Yetkisiz işlem']);
+            return;
+        }
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+            return;
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        if (!$id) {
+            echo json_encode(['success' => false, 'error' => 'Geçersiz grup ID']);
+            return;
+        }
+
+        $db = DB::conn();
+
+        // Grubun var olup olmadığını kontrol et
+        $stmt = $db->prepare('SELECT id, name FROM groups WHERE id = ?');
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $group = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$group) {
+            echo json_encode(['success' => false, 'error' => 'Grup bulunamadı']);
+            return;
+        }
+
+        $db->begin_transaction();
+        try {
+            // İlişkili kullanıcıların group_id'sini null yap
+            $stmt = $db->prepare('UPDATE users SET group_id = NULL WHERE group_id = ?');
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+            $stmt->close();
+
+            // Grubu sil
+            $stmt = $db->prepare('DELETE FROM groups WHERE id = ?');
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+            $stmt->close();
+
+            $db->commit();
+            echo json_encode(['success' => true, 'message' => '"' . $group['name'] . '" grubu silindi']);
+        } catch (\Throwable $e) {
+            $db->rollback();
+            echo json_encode(['success' => false, 'error' => 'Silme hatası: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
      * Tek bir gruba manuel bakiye raporu Telegram bildirimi gönder
      */
     public function sendBalanceReport() {
