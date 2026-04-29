@@ -9,6 +9,13 @@
           <?= __('balance_history') ?>
         </h1>
         <p class="text-slate-600 dark:text-slate-400"><?= __('view_all_balance_transaction_details') ?></p>
+        <div class="flex justify-center mt-4">
+          <a href="<?= \App\Helpers\Url::to('/transactions/export') ?><?= !empty($_SERVER['QUERY_STRING']) ? '?'.$_SERVER['QUERY_STRING'] : '' ?>"
+             class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700/50 text-blue-700 dark:text-blue-300 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors font-medium text-sm">
+            <i class="fa-solid fa-file-csv"></i>
+            <span>CSV Export</span>
+          </a>
+        </div>
       </div>
 
       <!-- Filter Section -->

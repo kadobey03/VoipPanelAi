@@ -9,7 +9,7 @@ class AdminController {
 
     public function impersonate(){
         $this->start(); if (!$this->isSuper()) { http_response_code(403); echo 'Yetkisiz'; return; }
-        $id = (int)($_GET['id'] ?? 0); if(!$id){ \App\Helpers\Url::redirect('/users'); }
+        $id = (int)($_POST['id'] ?? 0); if(!$id){ \App\Helpers\Url::redirect('/users'); }
         $db=DB::conn(); $stmt=$db->prepare('SELECT id, login, role, group_id FROM users WHERE id=?'); $stmt->bind_param('i',$id); $stmt->execute(); $u=$stmt->get_result()->fetch_assoc(); $stmt->close();
         if ($u) { $_SESSION['impersonator'] = $_SESSION['user']; $_SESSION['user']=['id'=>(int)$u['id'],'login'=>$u['login'],'role'=>$u['role'],'group_id'=>$u['group_id']? (int)$u['group_id']:null]; }
         \App\Helpers\Url::redirect('/');

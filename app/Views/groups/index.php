@@ -182,7 +182,7 @@ $apiConnected = count(array_filter($groups, fn($g) => !empty($g['api_group_name'
 </div>
 
 <!-- ═══════════════════════════════════════════════════════ LIST VIEW -->
-<div id="viewList" class="hidden flex flex-col gap-3 mb-8">
+<div id="viewList" class="hidden gap-3 mb-8">
   <?php foreach ($groups as $index => $g): ?>
   <?php $isConnected = !empty($g['api_group_name']); $balance = (float)$g['balance']; ?>
   <div class="group-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700/50 transition-all duration-200 overflow-hidden"

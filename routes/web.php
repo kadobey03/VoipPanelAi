@@ -106,7 +106,7 @@ $router->add('GET', '/profile', 'ProfileController@index');
 $router->add('POST', '/profile', 'ProfileController@index');
 
 // Admin impersonation
-$router->add('GET', '/admin/impersonate', 'AdminController@impersonate'); // ?id=
+$router->add('POST', '/admin/impersonate', 'AdminController@impersonate'); // id in POST
 $router->add('GET', '/admin/impersonate/stop', 'AdminController@stopImpersonate');
 
 // Payment methods (super admin)

@@ -235,6 +235,108 @@ class AgentsController {
             }
         }
 
+        // ------------------------------------------------------------------
+        // Abonelik bilgilerini tek sorguda çek (N+1 önlemi)
+        // ------------------------------------------------------------------
+        $subscriptionsByExten = [];
+        $allExtens = array_column($agents, 'exten');
+        if (!empty($allExtens)) {
+            try {
+                // agent_exten sütunu var mı kontrol et
+                $hasAgentExtenCol = false;
+                try {
+                    $db->query('SELECT agent_exten FROM user_agents LIMIT 1');
+                    $hasAgentExtenCol = true;
+                } catch (\Throwable $e) {}
+
+                if ($hasAgentExtenCol) {
+                    $extPlaceholders = implode(',', array_fill(0, count($allExtens), '?'));
+                    $extTypes        = str_repeat('s', count($allExtens));
+
+                    $groupFilter = '';
+                    $bindParams  = $allExtens;
+                    $bindTypes   = $extTypes;
+
+                    if ($isGroupAdmin && !$isSuper) {
+                        $uGroupId    = $_SESSION['user']['group_id'] ?? 0;
+                        $groupFilter = ' AND ua.group_id = ?';
+                        $bindParams[] = $uGroupId;
+                        $bindTypes   .= 'i';
+                    }
+
+                    $stmt = $db->prepare("
+                        SELECT ua.*, ap.name AS product_name,
+                               ap.subscription_monthly_fee, ap.phone_prefix,
+                               ua.created_at AS subscription_start,
+                               ua.next_subscription_due AS subscription_end
+                        FROM user_agents ua
+                        JOIN agent_products ap ON ua.agent_product_id = ap.id
+                        WHERE ua.agent_exten IN ($extPlaceholders)
+                          AND ua.status = 'active'
+                          $groupFilter
+                        ORDER BY ua.created_at ASC
+                    ");
+                    $stmt->bind_param($bindTypes, ...$bindParams);
+                    $stmt->execute();
+                    $allSubs = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                    $stmt->close();
+
+                    foreach ($allSubs as $sub) {
+                        $key = $sub['agent_exten'];
+                        $subscriptionsByExten[$key][] = $sub;
+                    }
+                } else {
+                    // agent_exten yoksa eski yöntem: user_login → users.login eşleşmesi
+                    // (sadece geriye dönük uyumluluk, yeni kurulumda bu branch çalışmaz)
+                    $loginMap = [];
+                    foreach ($agents as $ag) {
+                        if (!empty($ag['user_login'])) {
+                            $loginMap[$ag['user_login']] = $ag['exten'];
+                        }
+                    }
+                    if (!empty($loginMap)) {
+                        $logins   = array_keys($loginMap);
+                        $lPlaceholders = implode(',', array_fill(0, count($logins), '?'));
+                        $lTypes   = str_repeat('s', count($logins));
+                        $stmt = $db->prepare("
+                            SELECT ua.*, ap.name AS product_name,
+                                   ap.subscription_monthly_fee, ap.phone_prefix,
+                                   ua.created_at AS subscription_start,
+                                   ua.next_subscription_due AS subscription_end,
+                                   u.login AS matched_login
+                            FROM user_agents ua
+                            JOIN agent_products ap ON ua.agent_product_id = ap.id
+                            JOIN users u ON ua.user_id = u.id
+                            WHERE u.login IN ($lPlaceholders)
+                              AND ua.status = 'active'
+                        ");
+                        $stmt->bind_param($lTypes, ...$logins);
+                        $stmt->execute();
+                        $allSubs = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                        $stmt->close();
+                        foreach ($allSubs as $sub) {
+                            $extenKey = $loginMap[$sub['matched_login']] ?? null;
+                            if ($extenKey) {
+                                $subscriptionsByExten[$extenKey][] = $sub;
+                            }
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // agent_products tablosu henüz oluşturulmamış olabilir
+            }
+        }
+
+        // Abonelik ürünlerini modal için tek sorguda çek
+        $agentProducts = [];
+        try {
+            $agentProducts = $db->query(
+                'SELECT id, name, price, subscription_monthly_fee FROM agent_products WHERE is_active = 1 ORDER BY name'
+            )->fetch_all(MYSQLI_ASSOC);
+        } catch (\Throwable $e) {
+            // tablo henüz oluşturulmamış
+        }
+
         // Case-insensitive gruplama ve fallback
         $agentsByGroup = [];
         if ($isSuper) {

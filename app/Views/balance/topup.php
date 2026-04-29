@@ -27,7 +27,64 @@
             </div>
 
             <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 mb-4">
-              <pre class="text-sm text-slate-700 dark:text-slate-300 overflow-auto max-h-48"><?php echo htmlspecialchars(json_encode($balance, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE)); ?></pre>
+              <?php
+                $bal = $balance ?? null;
+                if (is_numeric($bal)):
+              ?>
+                <div class="flex flex-col items-center justify-center py-2">
+                  <span class="text-5xl font-extrabold bg-gradient-to-r from-fuchsia-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+                    $<?= number_format((float)$bal, 2) ?>
+                  </span>
+                  <span class="mt-1 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest"><?= __('current_balance') ?></span>
+                </div>
+              <?php elseif (is_array($bal) || is_object($bal)):
+                $items = (array)$bal;
+                $iconMap = [
+                  'balance'       => ['icon' => 'fa-coins',           'color' => 'text-fuchsia-500'],
+                  'amount'        => ['icon' => 'fa-coins',           'color' => 'text-fuchsia-500'],
+                  'credit'        => ['icon' => 'fa-circle-plus',     'color' => 'text-emerald-500'],
+                  'debit'         => ['icon' => 'fa-circle-minus',    'color' => 'text-red-500'],
+                  'currency'      => ['icon' => 'fa-money-bill',      'color' => 'text-yellow-500'],
+                  'status'        => ['icon' => 'fa-circle-check',    'color' => 'text-blue-500'],
+                  'account'       => ['icon' => 'fa-user',            'color' => 'text-indigo-500'],
+                  'last_updated'  => ['icon' => 'fa-clock',           'color' => 'text-slate-400'],
+                  'updated_at'    => ['icon' => 'fa-clock',           'color' => 'text-slate-400'],
+                  'created_at'    => ['icon' => 'fa-calendar',        'color' => 'text-slate-400'],
+                ];
+              ?>
+                <div class="divide-y divide-slate-200 dark:divide-slate-700">
+                  <?php foreach ($items as $key => $value):
+                    $meta   = $iconMap[$key] ?? ['icon' => 'fa-tag', 'color' => 'text-slate-400'];
+                    $label  = ucwords(str_replace(['_', '-'], ' ', $key));
+                    $isNumericVal = is_numeric($value);
+                    $displayVal   = is_array($value) || is_object($value)
+                      ? htmlspecialchars(json_encode($value, JSON_UNESCAPED_UNICODE))
+                      : htmlspecialchars((string)$value);
+                  ?>
+                    <div class="flex items-center justify-between py-2 first:pt-0 last:pb-0">
+                      <div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                        <i class="fa-solid <?= $meta['icon'] ?> <?= $meta['color'] ?> w-4 text-center"></i>
+                        <span class="text-sm font-medium"><?= $label ?></span>
+                      </div>
+                      <span class="text-sm font-semibold text-slate-800 dark:text-slate-200 <?= $isNumericVal ? 'text-fuchsia-600 dark:text-fuchsia-400 text-base' : '' ?>">
+                        <?= $isNumericVal ? '$'.number_format((float)$value, 2) : $displayVal ?>
+                      </span>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              <?php elseif ($bal !== null): ?>
+                <div class="flex flex-col items-center justify-center py-2">
+                  <span class="text-5xl font-extrabold bg-gradient-to-r from-fuchsia-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+                    <?= htmlspecialchars((string)$bal) ?>
+                  </span>
+                  <span class="mt-1 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest"><?= __('current_balance') ?></span>
+                </div>
+              <?php else: ?>
+                <div class="flex items-center justify-center gap-2 py-4 text-slate-400 dark:text-slate-500">
+                  <i class="fa-solid fa-circle-exclamation"></i>
+                  <span class="text-sm"><?= __('balance_unavailable') ?></span>
+                </div>
+              <?php endif; ?>
             </div>
 
             <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">

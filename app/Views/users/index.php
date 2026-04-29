@@ -246,11 +246,14 @@ $withExten     = count(array_filter($users, fn($u) => !empty($u['exten'])));
 
               <?php if ($isSuperAdmin): ?>
               <!-- Impersonate -->
-              <a href="<?= \App\Helpers\Url::to('/admin/impersonate') ?>?id=<?= (int)$u['id'] ?>"
-                 title="<?= __('login_as_this_user') ?>"
-                 class="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50 transition-colors">
-                <i class="fa-solid fa-right-to-bracket text-xs"></i>
-              </a>
+              <form method="POST" action="<?= \App\Helpers\Url::to('/admin/impersonate') ?>" style="display:inline">
+                <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+                <button type="submit"
+                        title="<?= __('login_as_this_user') ?>"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50 transition-colors">
+                  <i class="fa-solid fa-right-to-bracket text-xs"></i>
+                </button>
+              </form>
 
               <?php if ((int)$u['id'] > 1): ?>
               <!-- Delete -->
@@ -415,10 +418,10 @@ function showUserDetails(index) {
         <i class="fa-solid fa-pen"></i><?= __('edit_user') ?>
       </a>
       <?php if ($isSuperAdmin): ?>
-      <a href="<?= \App\Helpers\Url::to('/admin/impersonate') ?>?id=${u.id}"
-         class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold transition-colors text-sm">
+      <button type="button" onclick="impersonateUser(${u.id})"
+              class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold transition-colors text-sm">
         <i class="fa-solid fa-right-to-bracket"></i><?= __('login_as_user') ?>
-      </a>
+      </button>
       <?php endif; ?>
     </div>
   `;
@@ -476,6 +479,18 @@ function exportUsers() {
   a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
   a.download = `users_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
+}
+
+// ── Impersonate ───────────────────────────────────────────────────────────
+function impersonateUser(id) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '<?= \App\Helpers\Url::to('/admin/impersonate') ?>';
+  const input = document.createElement('input');
+  input.type = 'hidden'; input.name = 'id'; input.value = id;
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
 }
 
 // ── Keyboard ──────────────────────────────────────────────────────────────
