@@ -21,10 +21,23 @@ class UserController {
         $this->requireAuth();
         $mysqli = DB::conn();
         if ($this->isSuperAdmin()) {
-            $res = $mysqli->query('SELECT id, login, role, group_id, agent_id, exten FROM users ORDER BY id DESC');
+            $res = $mysqli->query('
+                SELECT u.id, u.login, u.role, u.group_id, u.agent_id, u.exten,
+                       g.name AS group_name, g.balance AS group_balance
+                FROM users u
+                LEFT JOIN groups g ON g.id = u.group_id
+                ORDER BY u.id DESC
+            ');
         } else {
             $gid = (int)($_SESSION['user']['group_id'] ?? 0);
-            $stmt = $mysqli->prepare('SELECT id, login, role, group_id, agent_id, exten FROM users WHERE group_id=? ORDER BY id DESC');
+            $stmt = $mysqli->prepare('
+                SELECT u.id, u.login, u.role, u.group_id, u.agent_id, u.exten,
+                       g.name AS group_name, g.balance AS group_balance
+                FROM users u
+                LEFT JOIN groups g ON g.id = u.group_id
+                WHERE u.group_id=?
+                ORDER BY u.id DESC
+            ');
             $stmt->bind_param('i', $gid);
             $stmt->execute();
             $res = $stmt->get_result();
