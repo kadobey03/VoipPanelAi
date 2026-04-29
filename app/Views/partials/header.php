@@ -9,6 +9,10 @@ Lang::load(Lang::current());
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="preconnect" href="https://cdn.tailwindcss.com">
+   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
    <meta name="theme-color" content="#3b82f6">
    <link rel="manifest" href="/VoipPanelAi/manifest.json">
    <link rel="icon" href="/VoipPanelAi/favicon.ico" type="image/x-icon">
@@ -19,7 +23,7 @@ Lang::load(Lang::current());
    <meta property="og:image" content="/VoipPanelAi/public/assets/images/seo-image.png">
    <meta property="og:type" content="website">
    <title><?= isset($title) ? htmlspecialchars($title) : __('papam_voip_panel') ?></title>
-   <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://cdn.tailwindcss.com" defer></script>
    <script>
      tailwind.config = {
        darkMode: 'class',
@@ -28,7 +32,8 @@ Lang::load(Lang::current());
        }
      }
    </script>
-   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet">
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet" media="print" onload="this.media='all'">
+   <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet"></noscript>
    <?php if (isset($title) && strpos($title, 'Giriş') !== false): ?>
 
 

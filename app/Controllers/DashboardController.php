@@ -15,13 +15,29 @@ class DashboardController {
         $gid     = (int)($user['group_id'] ?? 0);
 
         // ── API Balance (superadmin only) ────────────────────────────────
-        $api = new ApiClient();
         $balanceValue = null;
         if ($isSuper) {
-            try {
-                $balanceData  = $api->getBalance();
-                $balanceValue = is_array($balanceData) && isset($balanceData['balance']) ? (float)$balanceData['balance'] : null;
-            } catch (\Throwable $e) { $balanceValue = null; }
+            $cacheFile = sys_get_temp_dir() . '/voip_balance_cache.json';
+            $cacheTtl  = 300; // 5 dakika
+            $cacheValid = file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl;
+            if ($cacheValid) {
+                $cached = json_decode(file_get_contents($cacheFile), true);
+                $balanceValue = $cached['balance'] ?? null;
+            } else {
+                try {
+                    $api = new ApiClient();
+                    $balanceData  = $api->getBalance();
+                    $balanceValue = is_array($balanceData) && isset($balanceData['balance']) ? (float)$balanceData['balance'] : null;
+                    file_put_contents($cacheFile, json_encode(['balance' => $balanceValue, 'ts' => time()]));
+                } catch (\Throwable $e) {
+                    $balanceValue = null;
+                    // Eski cache varsa kullan
+                    if (file_exists($cacheFile)) {
+                        $cached = json_decode(file_get_contents($cacheFile), true);
+                        $balanceValue = $cached['balance'] ?? null;
+                    }
+                }
+            }
         }
 
         $db = DB::conn();

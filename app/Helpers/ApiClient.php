@@ -22,7 +22,8 @@ class ApiClient {
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 30); // 30 saniye timeout
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5); // bağlantı timeout
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10); // toplam timeout
             $response = curl_exec($ch);
             if ($response === false) {
                 $err = curl_error($ch);
@@ -37,7 +38,8 @@ class ApiClient {
                 'http' => [
                     'method' => 'POST',
                     'header' => 'Content-Type: application/x-www-form-urlencoded',
-                    'content' => http_build_query($data)
+                    'content' => http_build_query($data),
+                    'timeout' => 10
                 ]
             ];
             $context = stream_context_create($opts);

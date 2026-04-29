@@ -63,31 +63,29 @@ class AgentsController {
     public function index(){
         $this->requireAuth();
 
-        // Auto-migrate: add hidden column if not exists
-        $db = DB::conn();
-        try {
-            $db->query('SELECT hidden FROM users LIMIT 1');
-        } catch (\Throwable $e) {
-            $db->query('ALTER TABLE users ADD COLUMN hidden TINYINT(1) DEFAULT 0');
+        // Auto-migrate: sadece session başına bir kez çalıştır
+        if (!isset($_SESSION['_agents_migrated'])) {
+            $db = DB::conn();
+            try { $db->query('SELECT hidden FROM users LIMIT 1'); } catch (\Throwable $e) {
+                $db->query('ALTER TABLE users ADD COLUMN hidden TINYINT(1) DEFAULT 0');
+            }
+            $db->query('CREATE TABLE IF NOT EXISTS agents (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                exten VARCHAR(20) NOT NULL UNIQUE,
+                user_login VARCHAR(50),
+                group_name VARCHAR(100),
+                active TINYINT(1) DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )');
+            try { $db->query('SELECT agent_id FROM users LIMIT 1'); } catch (\Throwable $e) {
+                $db->query('ALTER TABLE users ADD COLUMN agent_id INT AFTER group_id');
+                $db->query('ALTER TABLE users MODIFY COLUMN role ENUM(\'superadmin\',\'groupadmin\',\'user\') DEFAULT \'groupadmin\'');
+            }
+            $_SESSION['_agents_migrated'] = true;
         }
-        // Auto-migrate: create agents table if not exists
-        $db->query('CREATE TABLE IF NOT EXISTS agents (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            exten VARCHAR(20) NOT NULL UNIQUE,
-            user_login VARCHAR(50),
-            group_name VARCHAR(100),
-            active TINYINT(1) DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )');
 
-        // Auto-migrate: add agent_id to users if not exists
-        try {
-            $db->query('SELECT agent_id FROM users LIMIT 1');
-        } catch (\Throwable $e) {
-            $db->query('ALTER TABLE users ADD COLUMN agent_id INT AFTER group_id');
-            $db->query('ALTER TABLE users MODIFY COLUMN role ENUM(\'superadmin\',\'groupadmin\',\'user\') DEFAULT \'groupadmin\'');
-        }
+        $db = DB::conn();
 
         $isSuper = $this->isSuper();
         $isGroupAdmin = isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'groupadmin';
