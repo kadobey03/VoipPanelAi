@@ -115,8 +115,17 @@ class DashboardController {
             if ($r = $db->query('SELECT COUNT(*) c FROM agents WHERE active=1')) $activeAgents = (int)$r->fetch_assoc()['c'];
             if ($r = $db->query('SELECT COUNT(*) c FROM agents'))               $totalAgents  = (int)$r->fetch_assoc()['c'];
         } else {
-            $stmt = $db->prepare('SELECT COUNT(*) c FROM agents WHERE active=1 AND group_id=?'); $stmt->bind_param('i', $gid); $stmt->execute(); $activeAgents = (int)$stmt->get_result()->fetch_assoc()['c']; $stmt->close();
-            $stmt = $db->prepare('SELECT COUNT(*) c FROM agents WHERE group_id=?');              $stmt->bind_param('i', $gid); $stmt->execute(); $totalAgents  = (int)$stmt->get_result()->fetch_assoc()['c']; $stmt->close();
+            // agents tablosunda group_id yok, group_name ile filtre yapıyoruz
+            $groupName = '';
+            $stmtG = $db->prepare('SELECT name FROM groups WHERE id=?');
+            $stmtG->bind_param('i', $gid); $stmtG->execute();
+            $rowG = $stmtG->get_result()->fetch_assoc(); $stmtG->close();
+            if ($rowG) $groupName = $rowG['name'];
+
+            if (!empty($groupName)) {
+                $stmt = $db->prepare('SELECT COUNT(*) c FROM agents WHERE active=1 AND group_name=?'); $stmt->bind_param('s', $groupName); $stmt->execute(); $activeAgents = (int)$stmt->get_result()->fetch_assoc()['c']; $stmt->close();
+                $stmt = $db->prepare('SELECT COUNT(*) c FROM agents WHERE group_name=?');              $stmt->bind_param('s', $groupName); $stmt->execute(); $totalAgents  = (int)$stmt->get_result()->fetch_assoc()['c']; $stmt->close();
+            }
         }
 
         // ── Last 10 calls ────────────────────────────────────────────────
