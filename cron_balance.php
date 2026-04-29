@@ -70,29 +70,34 @@ try {
     
     echo "Aktif telegram grubu sayısı: " . count($activeGroups) . "\n";
     
+    // MarkdownV2 escape yardımcı fonksiyon
+    $esc = function(string $text): string {
+        return preg_replace('/([_\*\[\]\(\)~`>#+\-=|{}.!\\\\])/', '\\\\$1', $text);
+    };
+
     // Her grup için rapor gönder
     foreach ($activeGroups as $group) {
         try {
-            $groupId = (int)$group['id'];
+            $groupId   = (int)$group['id'];
             $groupName = $group['name'];
-            $balance = (float)$group['balance'];
-            $language = $group['telegram_language'] ?: 'TR';
-            $chatId = trim($group['telegram_chat_id']);
-            
+            $balance   = (float)$group['balance'];
+            $language  = $group['telegram_language'] ?: 'TR';
+            $chatId    = trim($group['telegram_chat_id']);
+
             // Chat ID kontrol et - boş ise atla
             if (empty($chatId)) {
                 echo "⚠ Grup '{$groupName}' için telegram_chat_id boş, atlanıyor\n";
                 $sendFailCount++;
                 continue;
             }
-            
+
             if ($balance <= LOW_BALANCE_USD) {
                 $lowBalanceGroups++;
             }
-            
+
             // Bu grup için günlük istatistikleri çek
             $statsStmt = $db->prepare("
-                SELECT 
+                SELECT
                     COUNT(*) AS total_calls,
                     SUM(CASE WHEN disposition = 'ANSWERED' THEN 1 ELSE 0 END) AS answered_calls,
                     SUM(COALESCE(billsec,0)) AS total_billsec,
@@ -104,89 +109,94 @@ try {
             $statsStmt->execute();
             $statsResult = $statsStmt->get_result()->fetch_assoc();
             $statsStmt->close();
-            
-            $totalCalls = (int)($statsResult['total_calls'] ?? 0);
+
+            $totalCalls    = (int)($statsResult['total_calls']    ?? 0);
             $answeredCalls = (int)($statsResult['answered_calls'] ?? 0);
-            $totalBillsec = (int)($statsResult['total_billsec'] ?? 0);
+            $totalBillsec  = (int)($statsResult['total_billsec']  ?? 0);
             $totalSpending = (float)($statsResult['total_spending'] ?? 0);
-            
             $talkedMinutes = round($totalBillsec / 60, 1);
-            
-            // Telegram bildirimi gönder - Chat ID'yi kontrol et
+
+            // Grup adını ve sayısal değerleri escape et
+            $safeName    = $esc($groupName);
+            $safeBalance = $esc(number_format($balance, 2));
+            $safeCalls   = $totalCalls;
+            $safeAnsw    = $answeredCalls;
+            $safeMin     = $esc((string)$talkedMinutes);
+            $safeSpend   = $esc(number_format($totalSpending, 2));
+            $safeDate    = $esc(date('d.m.Y'));
+            $safeTime    = $esc(date('H:i:s'));
+
             echo "→ Grup '{$groupName}' için mesaj hazırlanıyor (Chat ID: {$chatId})\n";
             $notifier = new TelegramNotifier(null, $chatId, $language);
-            
+
             // Dil bazında mesaj hazırla
             if ($language === 'EN') {
-                $message = "{$greetingEn}\n\n";
+                $safeGreet = $esc($greetingEn);
+                $message  = "{$safeGreet}\n\n";
                 $message .= "📊 *Daily Balance Summary*\n\n";
-                $message .= "Group: *" . $groupName . "*\n";
-                $message .= "Current Balance: *" . number_format($balance, 2) . " USD*\n\n";
-                $message .= "📈 *Today's Statistics:*\n";
-                $message .= "Total Calls: *{$totalCalls}*\n";
-                $message .= "Answered Calls: *{$answeredCalls}*\n";
-                $message .= "Talk Time: *{$talkedMinutes} min*\n";
-                $message .= "Amount Spent: *" . number_format($totalSpending, 2) . " USD*\n\n";
-                $message .= "🌐 You can make online payments through our website to automatically top up your balance and purchase new numbers.\n\n";
-                $message .= "Thank you for choosing us! 🙏";
-                
-                // Düşük bakiye uyarısı
+                $message .= "🏢 *Group:* {$safeName}\n";
+                $message .= "💰 *Balance:* {$safeBalance} USD\n\n";
+                $message .= "📈 *Today's Stats:*\n";
+                $message .= "📞 Total Calls: *{$safeCalls}*\n";
+                $message .= "✅ Answered: *{$safeAnsw}*\n";
+                $message .= "⏱ Talk Time: *{$safeMin} min*\n";
+                $message .= "💸 Spent: *{$safeSpend} USD*\n\n";
+                $message .= "🌐 Top up online to keep your service running\.\n\n";
+                $message .= "Thank you for choosing us\! 🙏\n";
+                $message .= "⏰ {$safeTime}";
+
+                $warnMessage = null;
                 if ($balance <= LOW_BALANCE_USD) {
-                    $warnMessage = "⚠️ *Low Balance Warning!*\n\n";
-                    $warnMessage .= "Group: *{$groupName}*\n";
-                    $warnMessage .= "Current Balance: *" . number_format($balance, 2) . " USD*\n\n";
-                    $warnMessage .= "Please top up your balance as soon as possible. 💳\n\n";
-                    $warnMessage .= "[💰 Top Up Balance](https://crm.akkocbilisim.com/VoipPanelAi/balance/topup)\n\n";
-                    $warnMessage .= "🌐 You can make online payments through our website to automatically top up your balance and purchase new numbers.\n\n";
-                    $warnMessage .= "Thank you for choosing us! 🙏";
+                    $warnMessage  = "⚠️ *Low Balance Warning\!*\n\n";
+                    $warnMessage .= "🏢 *Group:* {$safeName}\n";
+                    $warnMessage .= "💰 *Balance:* {$safeBalance} USD\n\n";
+                    $warnMessage .= "Please top up your balance as soon as possible 💳\n";
                 }
-                
+
             } elseif ($language === 'RU') {
-                $message = "{$greetingRu}\n\n";
+                $safeGreet = $esc($greetingRu);
+                $message  = "{$safeGreet}\n\n";
                 $message .= "📊 *Ежедневная сводка баланса*\n\n";
-                $message .= "Группа: *" . $groupName . "*\n";
-                $message .= "Текущий баланс: *" . number_format($balance, 2) . " USD*\n\n";
+                $message .= "🏢 *Группа:* {$safeName}\n";
+                $message .= "💰 *Баланс:* {$safeBalance} USD\n\n";
                 $message .= "📈 *Статистика за сегодня:*\n";
-                $message .= "Всего звонков: *{$totalCalls}*\n";
-                $message .= "Отвеченных звонков: *{$answeredCalls}*\n";
-                $message .= "Время разговора: *{$talkedMinutes} мин*\n";
-                $message .= "Потрачено: *" . number_format($totalSpending, 2) . " USD*\n\n";
-                $message .= "🌐 Вы можете совершать онлайн-платежи через наш сайт, чтобы автоматически пополнить баланс и купить новые номера.\n\n";
-                $message .= "Спасибо, что выбрали нас! 🙏";
-                
-                // Предупреждение о низком балансе
+                $message .= "📞 Всего звонков: *{$safeCalls}*\n";
+                $message .= "✅ Отвечено: *{$safeAnsw}*\n";
+                $message .= "⏱ Время разговора: *{$safeMin} мин*\n";
+                $message .= "💸 Потрачено: *{$safeSpend} USD*\n\n";
+                $message .= "🌐 Пополните баланс онлайн для бесперебойной работы\.\n\n";
+                $message .= "Спасибо, что выбрали нас\! 🙏\n";
+                $message .= "⏰ {$safeTime}";
+
+                $warnMessage = null;
                 if ($balance <= LOW_BALANCE_USD) {
-                    $warnMessage = "⚠️ *Предупреждение о низком балансе!*\n\n";
-                    $warnMessage .= "Группа: *{$groupName}*\n";
-                    $warnMessage .= "Текущий баланс: *" . number_format($balance, 2) . " USD*\n\n";
-                    $warnMessage .= "Пожалуйста, пополните баланс как можно скорее. 💳\n\n";
-                    $warnMessage .= "[💰 Пополнить Баланс](https://crm.akkocbilisim.com/VoipPanelAi/balance/topup)\n\n";
-                    $warnMessage .= "🌐 Вы можете совершать онлайн-платежи через наш сайт, чтобы автоматически пополнить баланс и купить новые номера.\n\n";
-                    $warnMessage .= "Спасибо, что выбрали нас! 🙏";
+                    $warnMessage  = "⚠️ *Предупреждение о низком балансе\!*\n\n";
+                    $warnMessage .= "🏢 *Группа:* {$safeName}\n";
+                    $warnMessage .= "💰 *Баланс:* {$safeBalance} USD\n\n";
+                    $warnMessage .= "Пожалуйста, пополните баланс как можно скорее 💳\n";
                 }
-                
+
             } else { // TR
-                $message = "{$greeting}\n\n";
+                $safeGreet = $esc($greeting);
+                $message  = "{$safeGreet}\n\n";
                 $message .= "📊 *Günlük Bakiye Özeti*\n\n";
-                $message .= "Grup: *" . $groupName . "*\n";
-                $message .= "Kalan Bakiye: *" . number_format($balance, 2) . " USD*\n\n";
+                $message .= "🏢 *Grup:* {$safeName}\n";
+                $message .= "💰 *Bakiye:* {$safeBalance} USD\n\n";
                 $message .= "📈 *Bugünkü İstatistikler:*\n";
-                $message .= "Toplam Arama: *{$totalCalls}*\n";
-                $message .= "Cevaplanan Arama: *{$answeredCalls}*\n";
-                $message .= "Konuşma Süresi: *{$talkedMinutes} dk*\n";
-                $message .= "Harcanan Tutar: *" . number_format($totalSpending, 2) . " USD*\n\n";
-                $message .= "🌐 Sitemiz üzerinden Online Ödeme Yaparak Otomatik bakiye yükleyebilir, Yeni Numara Satın alabilirsiniz.\n\n";
-                $message .= "Bizi tercih ettiğiniz için teşekkürler! 🙏";
-                
-                // Düşük bakiye uyarısı
+                $message .= "📞 Toplam Arama: *{$safeCalls}*\n";
+                $message .= "✅ Cevaplanan: *{$safeAnsw}*\n";
+                $message .= "⏱ Konuşma: *{$safeMin} dk*\n";
+                $message .= "💸 Harcanan: *{$safeSpend} USD*\n\n";
+                $message .= "🌐 Online ödeme ile bakiye yükleyebilirsiniz\.\n\n";
+                $message .= "Bizi tercih ettiğiniz için teşekkürler\! 🙏\n";
+                $message .= "⏰ {$safeTime}";
+
+                $warnMessage = null;
                 if ($balance <= LOW_BALANCE_USD) {
-                    $warnMessage = "⚠️ *Bakiyeniz Azaldı!*\n\n";
-                    $warnMessage .= "Grup: *{$groupName}*\n";
-                    $warnMessage .= "Kalan Bakiye: *" . number_format($balance, 2) . " USD*\n\n";
-                    $warnMessage .= "Lütfen en kısa sürede bakiye yükleyin. 💳\n\n";
-                    $warnMessage .= "[💰 Bakiye Yükle](https://crm.akkocbilisim.com/VoipPanelAi/balance/topup)\n\n";
-                    $warnMessage .= "🌐 Sitemiz üzerinden Online Ödeme Yaparak Otomatik bakiye yükleyebilir, Yeni Numara Satın alabilirsiniz.\n\n";
-                    $warnMessage .= "Bizi tercih ettiğiniz için teşekkürler! 🙏";
+                    $warnMessage  = "⚠️ *Bakiyeniz Azaldı\!*\n\n";
+                    $warnMessage .= "🏢 *Grup:* {$safeName}\n";
+                    $warnMessage .= "💰 *Bakiye:* {$safeBalance} USD\n\n";
+                    $warnMessage .= "Lütfen en kısa sürede bakiye yükleyin 💳\n";
                 }
             }
             
@@ -198,8 +208,8 @@ try {
                 echo "✓ Grup '{$groupName}' için rapor gönderildi ({$language}) - Chat ID: {$chatId}\n";
                 
                 // Düşük bakiye uyarısı gönder
-                if ($balance <= LOW_BALANCE_USD && isset($warnMessage)) {
-                    sleep(1); // Rate limiting
+                if ($warnMessage !== null) {
+                    sleep(1);
                     if ($notifier->sendMessage($warnMessage)) {
                         echo "⚠ Grup '{$groupName}' için düşük bakiye uyarısı gönderildi\n";
                     } else {
@@ -246,88 +256,41 @@ try {
             $totalBalanceStmt->close();
             $totalBalanceAll = (float)($totalBalanceResult['total_balance'] ?? 0);
             
-            // Admin mesajını hazırla
-            $baseAdminMessage = "{$greeting}\n\n";
+            // Admin özet mesajını hazırla (MarkdownV2 safe)
+            $safeDate2    = $esc(date('d.m.Y'));
+            $safeTime2    = $esc(date('H:i:s'));
+            $safeCostA    = $esc(number_format($totalCost, 2));
+            $safeSalesA   = $esc(number_format($totalSales, 2));
+            $safeProfitA  = $esc(number_format($totalProfit, 2));
+            $safeBalA     = $esc(number_format($totalBalanceAll, 2));
+            $safeGreetA   = $esc($greeting);
+
+            $baseAdminMessage  = "{$safeGreetA}\n\n";
             $baseAdminMessage .= "📈 *Günlük Genel Bakiye Raporu*\n\n";
-            $baseAdminMessage .= "📅 *Tarih:* " . date('d.m.Y') . "\n";
+            $baseAdminMessage .= "📅 *Tarih:* {$safeDate2}\n";
             $baseAdminMessage .= "📊 *Toplam Arama:* {$totalCallsAll}\n";
-            $baseAdminMessage .= "💸 *API Maliyeti:* " . number_format($totalCost, 2) . " USD\n";
-            $baseAdminMessage .= "💰 *Toplam Satış:* " . number_format($totalSales, 2) . " USD\n";
-            $baseAdminMessage .= "🎯 *Net Kâr:* " . number_format($totalProfit, 2) . " USD\n";
-            $baseAdminMessage .= "🏦 *Toplam Bakiye:* " . number_format($totalBalanceAll, 2) . " USD\n";
+            $baseAdminMessage .= "💸 *API Maliyeti:* {$safeCostA} USD\n";
+            $baseAdminMessage .= "💰 *Toplam Satış:* {$safeSalesA} USD\n";
+            $baseAdminMessage .= "🎯 *Net Kâr:* {$safeProfitA} USD\n";
+            $baseAdminMessage .= "🏦 *Toplam Bakiye:* {$safeBalA} USD\n";
             $baseAdminMessage .= "⚠️ *Düşük Bakiye Grubu:* {$lowBalanceGroups}\n";
             $baseAdminMessage .= "✉️ *Mesaj Durumu:* OK {$sendOkCount} / FAIL {$sendFailCount}\n\n";
-            
-            // Her grubun bakiyesini ekle
             $baseAdminMessage .= "💼 *Grup Bakiyeleri:*\n";
-            foreach ($activeGroups as $group) {
-                $groupBalance = number_format((float)$group['balance'], 2);
-                $lowBadge = ((float)$group['balance'] <= LOW_BALANCE_USD) ? " ⚠️" : "";
-                $baseAdminMessage .= "• {$group['name']}: {$groupBalance} USD{$lowBadge}\n";
+            foreach ($activeGroups as $grp) {
+                $grpBal  = $esc(number_format((float)$grp['balance'], 2));
+                $grpName = $esc($grp['name']);
+                $lowBadge = ((float)$grp['balance'] <= LOW_BALANCE_USD) ? " ⚠️" : "";
+                $baseAdminMessage .= "• {$grpName}: {$grpBal} USD{$lowBadge}\n";
             }
-            $baseAdminMessage .= "\n⏰ *Rapor Zamanı:* " . date('H:i:s') . "\n";
-            
-            // 1. Varsayılan admin kanalına gönder
-            $adminNotifier = new TelegramNotifier(); // Varsayılan ayarları kullan
+            $baseAdminMessage .= "\n⏰ *Rapor Zamanı:* {$safeTime2}\n";
+
+            // Varsayılan admin kanalına gönder
+            $adminNotifier = new TelegramNotifier();
             if ($adminNotifier->sendMessage($baseAdminMessage)) {
                 echo "✓ Admin raporu varsayılan kanala gönderildi\n";
             } else {
                 echo "✗ Admin raporu varsayılan kanala gönderilemedi\n";
             }
-            
-            sleep(2); // Rate limiting için bekle
-            
-            // 2. Her gruba kendi dilinde admin raporu gönder
-            $adminSentCount = 0;
-            foreach ($activeGroups as $group) {
-                $chatId = trim($group['telegram_chat_id']);
-                if (empty($chatId)) {
-                    continue; // Bu zaten yukarıda kontrol edildi
-                }
-                
-                $language = $group['telegram_language'] ?: 'TR';
-                $groupAdminNotifier = new TelegramNotifier(null, $chatId, $language);
-                
-                // Dil bazında admin mesajını hazırla
-                if ($language === 'EN') {
-                    $adminMessage = "Good morning! ☀️\n\n";
-                    $adminMessage .= "📈 *Daily General Balance Report*\n\n";
-                    $adminMessage .= "📅 *Date:* " . date('d.m.Y') . "\n";
-                    $adminMessage .= "📊 *Total Calls:* {$totalCallsAll}\n";
-                    $adminMessage .= "💸 *API Cost:* " . number_format($totalCost, 2) . " USD\n";
-                    $adminMessage .= "💰 *Total Sales:* " . number_format($totalSales, 2) . " USD\n";
-                    $adminMessage .= "🎯 *Net Profit:* " . number_format($totalProfit, 2) . " USD\n";
-                    $adminMessage .= "🏦 *Total Balance:* " . number_format($totalBalanceAll, 2) . " USD\n";
-                    $adminMessage .= "⚠️ *Low Balance Groups:* {$lowBalanceGroups}\n";
-                    $adminMessage .= "✉️ *Message Status:* OK {$sendOkCount} / FAIL {$sendFailCount}\n\n";
-                    $adminMessage .= "⏰ *Report Time:* " . date('H:i:s') . "\n";
-                } elseif ($language === 'RU') {
-                    $adminMessage = "Доброе утро! ☀️\n\n";
-                    $adminMessage .= "📈 *Ежедневный общий отчет по балансу*\n\n";
-                    $adminMessage .= "📅 *Дата:* " . date('d.m.Y') . "\n";
-                    $adminMessage .= "📊 *Всего звонков:* {$totalCallsAll}\n";
-                    $adminMessage .= "💸 *Стоимость API:* " . number_format($totalCost, 2) . " USD\n";
-                    $adminMessage .= "💰 *Общие продажи:* " . number_format($totalSales, 2) . " USD\n";
-                    $adminMessage .= "🎯 *Чистая прибыль:* " . number_format($totalProfit, 2) . " USD\n";
-                    $adminMessage .= "🏦 *Общий баланс:* " . number_format($totalBalanceAll, 2) . " USD\n";
-                    $adminMessage .= "⚠️ *Группы с низким балансом:* {$lowBalanceGroups}\n";
-                    $adminMessage .= "✉️ *Статус сообщений:* OK {$sendOkCount} / FAIL {$sendFailCount}\n\n";
-                    $adminMessage .= "⏰ *Время отчета:* " . date('H:i:s') . "\n";
-                } else { // TR
-                    $adminMessage = $baseAdminMessage; // Türkçe zaten hazır
-                }
-                
-                if ($groupAdminNotifier->sendMessage($adminMessage)) {
-                    $adminSentCount++;
-                    echo "✓ Admin raporu '{$group['name']}' grubuna gönderildi ({$language})\n";
-                } else {
-                    echo "✗ Admin raporu '{$group['name']}' grubuna gönderilemedi\n";
-                }
-                
-                sleep(1); // Rate limiting
-            }
-            
-            echo "✓ Admin raporu toplamda " . ($adminSentCount + 1) . " kanala gönderildi\n";
             
         } catch (Exception $e) {
             echo "⚠ Admin raporu gönderilemedi: " . $e->getMessage() . "\n";
@@ -340,53 +303,20 @@ try {
 } catch (Exception $e) {
     echo "❌ HATA: " . $e->getMessage() . "\n";
     echo "Stack trace: " . $e->getTraceAsString() . "\n";
-    
-    // Hata durumunda admin bildirimi gönder
+
+    // Hata durumunda sadece default admin kanalına bildir
     try {
-        // Her gruba kendi dilinde hata bildirimi gönder
-        $stmt = $db->prepare('SELECT id, name, telegram_chat_id, telegram_language, telegram_enabled FROM groups WHERE telegram_enabled = 1 AND telegram_chat_id IS NOT NULL');
-        $stmt->execute();
-        $activeGroups = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-        
-        foreach ($activeGroups as $group) {
-            try {
-                $notifier = new TelegramNotifier(null, $group['telegram_chat_id'], $group['telegram_language'] ?: 'TR');
-                
-                if ($group['telegram_language'] === 'EN') {
-                    $errorMsg = "🚨 *BALANCE CRON JOB ERROR*\n\n";
-                    $errorMsg .= "📅 *Date:* " . date('d.m.Y H:i') . "\n";
-                    $errorMsg .= "❌ *Error:* " . $e->getMessage();
-                } elseif ($group['telegram_language'] === 'RU') {
-                    $errorMsg = "🚨 *ОШИБКА CRON JOB БАЛАНСА*\n\n";
-                    $errorMsg .= "📅 *Дата:* " . date('d.m.Y H:i') . "\n";
-                    $errorMsg .= "❌ *Ошибка:* " . $e->getMessage();
-                } else { // TR
-                    $errorMsg = "🚨 *BAKİYE CRON JOB HATASI*\n\n";
-                    $errorMsg .= "📅 *Tarih:* " . date('d.m.Y H:i') . "\n";
-                    $errorMsg .= "❌ *Hata:* " . $e->getMessage();
-                }
-                
-                $notifier->sendMessage($errorMsg);
-                
-            } catch (Exception $telegramError) {
-                echo "Grup '{$group['name']}' için hata bildirimi gönderilemedi\n";
-            }
-        }
-        
-        // Eğer hiç aktif grup yoksa varsayılan gönder
-        if (empty($activeGroups)) {
-            $notifier = new TelegramNotifier();
-            $errorMsg = "🚨 *BAKİYE CRON JOB HATASI*\n\n";
-            $errorMsg .= "📅 *Tarih:* " . date('d.m.Y H:i') . "\n";
-            $errorMsg .= "❌ *Hata:* " . $e->getMessage();
-            $notifier->sendMessage($errorMsg);
-        }
-        
+        $escFn  = fn(string $t) => preg_replace('/([_\*\[\]\(\)~`>#+\-=|{}.!\\\\])/', '\\\\$1', $t);
+        $safeErr = $escFn($e->getMessage());
+        $safeTs  = $escFn(date('d.m.Y H:i'));
+        $errorMsg  = "🚨 *BAKİYE CRON JOB HATASI*\n\n";
+        $errorMsg .= "📅 *Tarih:* {$safeTs}\n";
+        $errorMsg .= "❌ *Hata:* {$safeErr}\n";
+        (new TelegramNotifier())->sendMessage($errorMsg);
     } catch (Exception $telegramError) {
         echo "Telegram hata bildirimi gönderilemedi: " . $telegramError->getMessage() . "\n";
     }
-    
+
     exit(1);
 }
 

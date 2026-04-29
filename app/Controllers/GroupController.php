@@ -760,4 +760,132 @@ class GroupController {
             echo json_encode(['success' => false, 'error' => 'Kritik sistem hatası']);
         }
     }
+
+    /**
+     * Tek bir gruba manuel bakiye raporu Telegram bildirimi gönder
+     */
+    public function sendBalanceReport() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['user'])) { \App\Helpers\Url::redirect('/login'); return; }
+        if (($_SESSION['user']['role'] ?? '') !== 'superadmin') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Yetkisiz']);
+            return;
+        }
+
+        header('Content-Type: application/json; charset=utf-8');
+
+        $groupId = (int)($_POST['group_id'] ?? 0);
+        if (!$groupId) {
+            echo json_encode(['success' => false, 'error' => 'Geçersiz grup ID']);
+            return;
+        }
+
+        $db = DB::conn();
+
+        // Grup bilgilerini al
+        $stmt = $db->prepare('SELECT id, name, balance, telegram_chat_id, telegram_language, telegram_enabled FROM groups WHERE id = ?');
+        $stmt->bind_param('i', $groupId);
+        $stmt->execute();
+        $group = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$group) {
+            echo json_encode(['success' => false, 'error' => 'Grup bulunamadı']);
+            return;
+        }
+
+        // Telegram ayarları yoksa default kanalı kullan
+        $chatId   = trim($group['telegram_chat_id'] ?? '');
+        $language = $group['telegram_language'] ?: 'TR';
+        $notifier = $chatId
+            ? new TelegramNotifier(null, $chatId, $language)
+            : new TelegramNotifier();
+
+        // Bugünkü istatistikleri al
+        $today = date('Y-m-d');
+        $stmt = $db->prepare("
+            SELECT
+                COUNT(*) AS total_calls,
+                SUM(CASE WHEN disposition = 'ANSWERED' THEN 1 ELSE 0 END) AS answered_calls,
+                SUM(COALESCE(billsec, 0))         AS total_billsec,
+                SUM(COALESCE(amount_charged, 0))  AS total_spending
+            FROM calls
+            WHERE group_id = ? AND DATE(created_at) = ?
+        ");
+        $stmt->bind_param('is', $groupId, $today);
+        $stmt->execute();
+        $stats = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        $totalCalls    = (int)($stats['total_calls']    ?? 0);
+        $answeredCalls = (int)($stats['answered_calls'] ?? 0);
+        $totalBillsec  = (int)($stats['total_billsec']  ?? 0);
+        $totalSpending = (float)($stats['total_spending'] ?? 0);
+        $talkedMinutes = round($totalBillsec / 60, 1);
+        $balance       = (float)$group['balance'];
+
+        // MarkdownV2 escape
+        $esc = fn(string $t) => preg_replace('/([_\*\[\]\(\)~`>#+\-=|{}.!\\\\])/', '\\\\$1', $t);
+
+        $safeName    = $esc($group['name']);
+        $safeBalance = $esc(number_format($balance, 2));
+        $safeSpend   = $esc(number_format($totalSpending, 2));
+        $safeMin     = $esc((string)$talkedMinutes);
+        $safeDate    = $esc(date('d.m.Y'));
+        $safeTime    = $esc(date('H:i:s'));
+
+        $LOW_BALANCE = 10.0;
+        $isLow = $balance <= $LOW_BALANCE;
+
+        // Dile göre mesaj
+        if ($language === 'EN') {
+            $message  = "📊 *Balance Report*\n\n";
+            $message .= "🏢 *Group:* {$safeName}\n";
+            $message .= "💰 *Balance:* {$safeBalance} USD" . ($isLow ? " ⚠️" : "") . "\n\n";
+            $message .= "📈 *Today's Stats \({$safeDate}\):*\n";
+            $message .= "📞 Total Calls: *{$totalCalls}*\n";
+            $message .= "✅ Answered: *{$answeredCalls}*\n";
+            $message .= "⏱ Talk Time: *{$safeMin} min*\n";
+            $message .= "💸 Spent: *{$safeSpend} USD*\n\n";
+            if ($isLow) {
+                $message .= "⚠️ *Low balance\! Please top up soon\.*\n\n";
+            }
+            $message .= "⏰ *Sent:* {$safeTime}";
+        } elseif ($language === 'RU') {
+            $message  = "📊 *Отчёт по балансу*\n\n";
+            $message .= "🏢 *Группа:* {$safeName}\n";
+            $message .= "💰 *Баланс:* {$safeBalance} USD" . ($isLow ? " ⚠️" : "") . "\n\n";
+            $message .= "📈 *Статистика за сегодня \({$safeDate}\):*\n";
+            $message .= "📞 Всего звонков: *{$totalCalls}*\n";
+            $message .= "✅ Отвечено: *{$answeredCalls}*\n";
+            $message .= "⏱ Время разговора: *{$safeMin} мин*\n";
+            $message .= "💸 Потрачено: *{$safeSpend} USD*\n\n";
+            if ($isLow) {
+                $message .= "⚠️ *Низкий баланс\! Пополните как можно скорее\.*\n\n";
+            }
+            $message .= "⏰ *Отправлено:* {$safeTime}";
+        } else { // TR
+            $message  = "📊 *Bakiye Raporu*\n\n";
+            $message .= "🏢 *Grup:* {$safeName}\n";
+            $message .= "💰 *Bakiye:* {$safeBalance} USD" . ($isLow ? " ⚠️" : "") . "\n\n";
+            $message .= "📈 *Bugünkü İstatistikler \({$safeDate}\):*\n";
+            $message .= "📞 Toplam Arama: *{$totalCalls}*\n";
+            $message .= "✅ Cevaplanan: *{$answeredCalls}*\n";
+            $message .= "⏱ Konuşma: *{$safeMin} dk*\n";
+            $message .= "💸 Harcanan: *{$safeSpend} USD*\n\n";
+            if ($isLow) {
+                $message .= "⚠️ *Bakiye düşük\! Lütfen en kısa sürede yükleyin\.*\n\n";
+            }
+            $message .= "⏰ *Gönderildi:* {$safeTime}";
+        }
+
+        $sent = $notifier->sendMessage($message);
+
+        if ($sent) {
+            echo json_encode(['success' => true, 'message' => 'Telegram bildirimi gönderildi']);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Telegram bildirimi gönderilemedi. Bot token veya Chat ID kontrol edin.']);
+        }
+    }
 }

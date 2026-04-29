@@ -166,12 +166,21 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
           <?php endif; ?>
         </div>
 
-        <?php if ($isSuper): ?>
-        <a href="<?= \App\Helpers\Url::to('/groups/topup') ?>?id=<?= (int)$g['id'] ?>"
-           class="inline-flex items-center px-4 py-2 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-200">
-          <i class="fa-solid fa-plus mr-1"></i><?= __('load_balance') ?>
-        </a>
-        <?php endif; ?>
+        <div class="flex items-center gap-2">
+          <?php if ($isSuper): ?>
+          <!-- Telegram Bakiye Mesajı Gönder -->
+          <button onclick="sendBalanceReport(<?= (int)$g['id'] ?>, this)"
+                  title="Telegram'a bakiye raporu gönder"
+                  class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-sky-100 text-sky-800 hover:bg-sky-200 dark:bg-sky-900/50 dark:text-sky-300 dark:hover:bg-sky-900/70 transition-colors duration-200">
+            <i class="fa-brands fa-telegram mr-1"></i>Rapor Gönder
+          </button>
+
+          <a href="<?= \App\Helpers\Url::to('/groups/topup') ?>?id=<?= (int)$g['id'] ?>"
+             class="inline-flex items-center px-4 py-2 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-200">
+            <i class="fa-solid fa-plus mr-1"></i><?= __('load_balance') ?>
+          </a>
+          <?php endif; ?>
+        </div>
       </div>
     </div>
 
@@ -205,6 +214,85 @@ $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'su
 <script>
 // Store groups data for modal
 const groupsData = <?php echo json_encode($groups); ?>;
+
+// Toast bildirimi göster
+function showToast(message, type) {
+  const colors = {
+    success: 'bg-emerald-600',
+    error:   'bg-rose-600',
+    loading: 'bg-sky-600'
+  };
+  const icons = {
+    success: 'fa-check-circle',
+    error:   'fa-times-circle',
+    loading: 'fa-spinner fa-spin'
+  };
+
+  let toast = document.getElementById('balanceReportToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'balanceReportToast';
+    toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-xl text-white text-sm font-medium shadow-2xl transition-all duration-300 translate-y-20 opacity-0';
+    document.body.appendChild(toast);
+  }
+
+  toast.className = toast.className.replace(/bg-\w+-\d+/g, '').trim();
+  toast.classList.add(colors[type] || 'bg-slate-700');
+  toast.innerHTML = `<i class="fa-solid ${icons[type] || 'fa-info-circle'}"></i><span>${message}</span>`;
+
+  // Göster
+  requestAnimationFrame(() => {
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+  });
+
+  if (type !== 'loading') {
+    clearTimeout(toast._hideTimer);
+    toast._hideTimer = setTimeout(() => {
+      toast.classList.add('translate-y-20', 'opacity-0');
+      toast.classList.remove('translate-y-0', 'opacity-100');
+    }, 4000);
+  }
+}
+
+// Telegram bakiye raporu gönder
+function sendBalanceReport(groupId, btn) {
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Gönderiliyor...';
+
+  showToast('Telegram bildirimi gönderiliyor...', 'loading');
+
+  fetch('<?= \App\Helpers\Url::to('/groups/send-balance-report') ?>', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'group_id=' + groupId
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showToast('✓ Telegram bildirimi gönderildi!', 'success');
+      btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Gönderildi!';
+      btn.classList.remove('bg-sky-100', 'text-sky-800', 'hover:bg-sky-200', 'dark:bg-sky-900/50', 'dark:text-sky-300');
+      btn.classList.add('bg-emerald-100', 'text-emerald-800', 'dark:bg-emerald-900/50', 'dark:text-emerald-300');
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+        btn.classList.remove('bg-emerald-100', 'text-emerald-800', 'dark:bg-emerald-900/50', 'dark:text-emerald-300');
+        btn.classList.add('bg-sky-100', 'text-sky-800', 'hover:bg-sky-200', 'dark:bg-sky-900/50', 'dark:text-sky-300');
+      }, 3000);
+    } else {
+      showToast('✗ ' + (data.error || 'Gönderilemedi'), 'error');
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+    }
+  })
+  .catch(err => {
+    showToast('✗ Bağlantı hatası: ' + err.message, 'error');
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  });
+}
 
 // Modal functions
 function showGroupDetails(index) {

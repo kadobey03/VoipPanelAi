@@ -61,26 +61,34 @@ try {
     if ($result['total_checked'] > 0 || !empty($overduePayments)) {
         try {
             $notifier = new TelegramNotifier();
-            $message = "📊 *Günlük Abonelik Raporu* - " . date('d.m.Y') . "\n\n";
+            $date = date('d\.m\.Y'); // MarkdownV2 escape
+            $message = "📊 *Günlük Abonelik Raporu* \- {$date}\n\n";
             $message .= "✅ *Başarılı Ödeme:* {$result['processed']}\n";
             $message .= "❌ *Başarısız Ödeme:* {$result['failed']}\n";
             $message .= "📈 *Aktif Abonelik:* {$stats['active_subscriptions']}\n";
-            $message .= "💰 *Aylık Gelir:* $" . number_format($stats['monthly_revenue'], 2) . "\n";
-            
+            $message .= "💰 *Aylık Gelir:* " . number_format($stats['monthly_revenue'], 2) . " USD\n";
+
             if ($stats['overdue_count'] > 0) {
-                $message .= "\n⚠️ *Vadesi Geçmiş:* {$stats['overdue_count']} ödeme ($" . number_format($stats['overdue_amount'], 2) . ")\n";
+                $message .= "\n⚠️ *Vadesi Geçmiş:* {$stats['overdue_count']} ödeme \(" . number_format($stats['overdue_amount'], 2) . " USD\)\n";
             }
-            
+
             if ($stats['suspended_count'] > 0) {
                 $message .= "🚫 *Askıya Alınan:* {$stats['suspended_count']} agent\n";
             }
-            
+
             if (!empty($result['errors'])) {
-                $message .= "\n🔧 *Hatalar:* " . count($result['errors']) . " adet";
+                $message .= "\n🔧 *Hatalar:* " . count($result['errors']) . " adet\n";
             }
-            
-            $notifier->sendToAdmins($message);
-            
+
+            $message .= "\n⏰ *Zaman:* " . date('H:i:s') . "\n";
+
+            // sendToAdmins yerine sendMessage kullan (default bot/chat'e gönderir)
+            if ($notifier->sendMessage($message)) {
+                echo "✓ Abonelik raporu Telegram'a gönderildi\n";
+            } else {
+                echo "✗ Abonelik raporu Telegram'a gönderilemedi\n";
+            }
+
         } catch (Exception $e) {
             echo "Telegram bildirimi gönderilirken hata: " . $e->getMessage() . "\n";
         }
@@ -95,10 +103,11 @@ try {
     // Hata durumunda admin bildirimi gönder
     try {
         $notifier = new TelegramNotifier();
-        $message = "🚨 *Abonelik Cron Job Hatası*\n\n";
-        $message .= "📅 *Tarih:* " . date('d.m.Y H:i') . "\n";
-        $message .= "❌ *Hata:* " . $e->getMessage() . "\n";
-        $notifier->sendToAdmins($message);
+        $safeErr  = preg_replace('/([_\*\[\]\(\)~`>#+\-=|{}.!\\\\])/', '\\\\$1', $e->getMessage());
+        $message  = "🚨 *Abonelik Cron Job Hatası*\n\n";
+        $message .= "📅 *Tarih:* " . date('d\.m\.Y H:i') . "\n";
+        $message .= "❌ *Hata:* " . $safeErr . "\n";
+        $notifier->sendMessage($message);
     } catch (Exception $telegramError) {
         echo "Telegram hata bildirimi gönderilemedi: " . $telegramError->getMessage() . "\n";
     }

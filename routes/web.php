@@ -32,6 +32,7 @@ $router->add('GET', '/groups/topup', 'GroupController@topup');
 $router->add('POST', '/groups/topup', 'GroupController@topup');
 $router->add('POST', '/groups/cancel-crypto-payment', 'GroupController@cancelCryptoPayment');
 $router->add('GET', '/groups/show', 'GroupController@show');
+$router->add('POST', '/groups/send-balance-report', 'GroupController@sendBalanceReport');
 
 // Calls
 $router->add('GET', '/calls', 'CallsController@index');
