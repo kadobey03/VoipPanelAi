@@ -1,1029 +1,859 @@
-<?php $title=__('reports').' - '.__('papam_voip_panel'); require dirname(__DIR__).'/partials/header.php'; ?>
-<?php $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='superadmin'; ?>
-<?php $isGroupMember = isset($_SESSION['user']) && ($_SESSION['user']['role']??'')==='groupmember'; ?>
+<?php
+$title = __('reports') . ' - ' . __('papam_voip_panel');
+require dirname(__DIR__) . '/partials/header.php';
+
+$isSuper       = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '') === 'superadmin');
+$isGroupAdmin  = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '') === 'groupadmin');
+$isGroupMember = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '') === 'groupmember');
+$canSeeCost    = $isSuper || $isGroupAdmin;
+
+// Aggregate totals
+$totCalls = 0; $totCost = 0.0; $totRev = 0.0; $totProfit = 0.0; $answered = 0; $noans = 0; $busy = 0; $failed = 0; $totBillsec = 0;
+foreach (($summary ?? []) as $row) {
+    $totCalls   += (int)$row['calls'];
+    $totCost    += (float)$row['cost_api'];
+    $totRev     += (float)$row['revenue'];
+    $totProfit  += (float)$row['profit'];
+    $totBillsec += (int)($row['billsec'] ?? 0);
+}
+foreach (($dispRows ?? []) as $d) {
+    $n = (int)$d['n']; $disp = strtoupper($d['d']);
+    if (in_array($disp, ['ANSWERED','ANSWER'])) $answered += $n;
+    elseif (str_contains($disp, 'NO')) $noans += $n;
+    elseif ($disp === 'BUSY') $busy += $n;
+    else $failed += $n;
+}
+if (!$isSuper) {
+    $totCalls = $callsCount ?? 0;
+    $answered = $answerCount ?? 0;
+    $noans    = $noAnswerCount ?? 0;
+}
+$answerRate   = $totCalls > 0 ? round($answered / $totCalls * 100, 1) : 0;
+$profitMargin = $totRev > 0 ? round($totProfit / $totRev * 100, 1) : 0;
+$avgDuration  = $answered > 0 ? round($totBillsec / $answered, 0) : 0;
+$billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%3600)/60));
+?>
 
 <!-- Loading Overlay -->
-<div id="loading-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
-  <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
-    <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
-    <div class="text-lg font-medium text-slate-700 dark:text-slate-300"><?= __('report_preparing') ?></div>
+<div id="loading-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+  <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl min-w-[200px]">
+    <div class="w-12 h-12 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
+    <p class="font-semibold text-slate-700 dark:text-slate-200"><?= __('report_preparing') ?></p>
   </div>
 </div>
 
-<div class="animate-in slide-in-from-left-5 duration-500">
-  <!-- Header Section -->
-  <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
-    <div class="flex items-center gap-3">
-      <div class="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg">
-        <i class="fa-solid fa-chart-line text-white text-2xl"></i>
+<!-- ══════════════ HEADER -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+  <div class="flex items-center gap-4">
+    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30 flex-shrink-0">
+      <i class="fa-solid fa-chart-mixed text-white text-xl"></i>
+    </div>
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800 dark:text-white"><?= __('reports_and_analysis') ?></h1>
+      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+        <?= date('d.m.Y', strtotime($from)) ?> — <?= date('d.m.Y', strtotime($to)) ?>
+        &nbsp;·&nbsp;
+        <span class="text-indigo-600 dark:text-indigo-400 font-medium"><?= number_format($totCalls) ?> çağrı</span>
+      </p>
+    </div>
+  </div>
+  <!-- Export -->
+  <div class="flex items-center gap-2 flex-wrap">
+    <span class="text-xs text-slate-400 font-medium hidden sm:block">Dışa Aktar:</span>
+    <button onclick="exportReport('csv')" class="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-xl text-sm font-semibold transition-all border border-blue-200 dark:border-blue-700/50">
+      <i class="fa-solid fa-file-csv text-sm"></i> CSV
+    </button>
+    <button onclick="exportReport('excel')" class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-xl text-sm font-semibold transition-all border border-emerald-200 dark:border-emerald-700/50">
+      <i class="fa-solid fa-file-excel text-sm"></i> Excel
+    </button>
+    <button onclick="exportReport('pdf')" class="inline-flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 rounded-xl text-sm font-semibold transition-all border border-red-200 dark:border-red-700/50">
+      <i class="fa-solid fa-file-pdf text-sm"></i> PDF
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════ FILTERS -->
+<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 mb-6">
+  <div class="flex items-center gap-2 mb-4">
+    <i class="fa-solid fa-sliders text-indigo-500 text-sm"></i>
+    <span class="font-bold text-slate-700 dark:text-slate-200 text-sm"><?= __('filters') ?></span>
+  </div>
+  <form method="get" id="filterForm">
+    <!-- Quick presets -->
+    <div class="flex flex-wrap gap-2 mb-4" id="presetBtns">
+      <?php foreach ([
+        ['today',     __('today')],
+        ['yesterday', __('yesterday')],
+        ['week',      __('this_week')],
+        ['month',     __('this_month')],
+        ['lastmonth', __('last_month')],
+        ['last7',     'Son 7 Gün'],
+        ['last30',    'Son 30 Gün'],
+      ] as [$key, $label]): ?>
+      <button type="button" onclick="setPreset('<?= $key ?>', this)"
+              class="preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all
+                     bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600
+                     text-slate-600 dark:text-slate-300
+                     hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700
+                     dark:hover:bg-indigo-900/30 dark:hover:border-indigo-600 dark:hover:text-indigo-300">
+        <?= $label ?>
+      </button>
+      <?php endforeach; ?>
+    </div>
+
+    <!-- Inputs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 <?= $isSuper ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-3">
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
+          <i class="fa-solid fa-calendar-day text-emerald-500 mr-1"></i><?= __('start_date') ?>
+        </label>
+        <input type="datetime-local" name="from" id="from-date"
+               value="<?= htmlspecialchars(str_replace(' ', 'T', substr($from, 0, 16))) ?>"
+               class="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
       </div>
       <div>
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-          <?= __('reports_and_analysis') ?>
-        </h1>
-        <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('detailed_call_statistics') ?></p>
+        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
+          <i class="fa-solid fa-calendar-day text-rose-500 mr-1"></i><?= __('end_date') ?>
+        </label>
+        <input type="datetime-local" name="to" id="to-date"
+               value="<?= htmlspecialchars(str_replace(' ', 'T', substr($to, 0, 16))) ?>"
+               class="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
       </div>
-    </div>
-
-    <!-- Export Buttons -->
-    <div class="flex gap-2 flex-wrap">
-      <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
-        <i class="fa-solid fa-file-pdf"></i>
-        <span class="hidden sm:inline">PDF</span>
-      </button>
-      <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
-        <i class="fa-solid fa-file-excel"></i>
-        <span class="hidden sm:inline">Excel</span>
-      </button>
-      <button onclick="exportReport('csv')" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
-        <i class="fa-solid fa-file-csv"></i>
-        <span class="hidden sm:inline">CSV</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Advanced Filters -->
-  <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 dark:border-slate-700/50 p-6 mb-6">
-    <div class="flex items-center gap-2 mb-4">
-      <i class="fa-solid fa-filter text-indigo-600"></i>
-      <h3 class="text-lg font-semibold text-slate-800 dark:text-white"><?= __('filters') ?></h3>
-    </div>
-
-    <form method="get" class="space-y-4">
-      <!-- Predefined Date Ranges -->
-      <div class="flex flex-wrap gap-2 mb-4">
-        <button type="button" onclick="setDateRange('today')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          <?= __('today') ?>
-        </button>
-        <button type="button" onclick="setDateRange('yesterday')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          <?= __('yesterday') ?>
-        </button>
-        <button type="button" onclick="setDateRange('week')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          <?= __('this_week') ?>
-        </button>
-        <button type="button" onclick="setDateRange('month')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          <?= __('this_month') ?>
-        </button>
-        <button type="button" onclick="setDateRange('lastmonth')" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
-          <?= __('last_month') ?>
-        </button>
+      <?php if ($isSuper): ?>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
+          <i class="fa-solid fa-layer-group text-purple-500 mr-1"></i><?= __('group_selection') ?>
+        </label>
+        <input type="number" name="group_id"
+               value="<?= isset($_GET['group_id']) ? (int)$_GET['group_id'] : '' ?>"
+               placeholder="<?= __('group_id_placeholder') ?>"
+               class="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
       </div>
-
-      <!-- Custom Date Inputs -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            <i class="fa-solid fa-calendar-start text-emerald-600 mr-1"></i><?= __('start_date') ?>
-          </label>
-          <input type="datetime-local" name="from" id="from-date"
-                 class="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
-                 value="<?= htmlspecialchars(str_replace(' ', 'T', substr($from,0,16))) ?>">
-        </div>
-
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            <i class="fa-solid fa-calendar-end text-rose-600 mr-1"></i><?= __('end_date') ?>
-          </label>
-          <input type="datetime-local" name="to" id="to-date"
-                 class="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
-                 value="<?= htmlspecialchars(str_replace(' ', 'T', substr($to,0,16))) ?>">
-        </div>
-
-        <?php if ($isSuper): ?>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            <i class="fa-solid fa-users text-purple-600 mr-1"></i><?= __('group_selection') ?>
-          </label>
-          <input type="number" name="group_id"
-                 class="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                 value="<?= isset($_GET['group_id'])? (int)$_GET['group_id'] : '' ?>" placeholder="<?= __('group_id_placeholder') ?>">
-        </div>
-        <?php endif; ?>
-      </div>
-
-      <!-- Apply Filters Button -->
-      <div class="flex justify-end pt-4">
+      <?php endif; ?>
+      <div class="flex items-end">
         <button type="submit"
-                class="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-medium">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <?= __('apply_filters') ?>
+                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-indigo-500/20 transition-all">
+          <i class="fa-solid fa-magnifying-glass"></i><?= __('apply_filters') ?>
         </button>
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
 </div>
 
-  <!-- Statistics Cards -->
-  <?php
-    $totCalls=0;$totCost=0.0;$totRev=0.0;$totProfit=0.0;$answered=0;$noans=0;
-    foreach(($summary??[]) as $row){ $totCalls+=(int)$row['calls']; $totCost+=(float)$row['cost_api']; $totRev+=(float)$row['revenue']; $totProfit+=(float)$row['profit']; }
-    foreach(($dispRows??[]) as $d){ $n=(int)$d['n']; $disp=strtoupper($d['d']); if(in_array($disp,['ANSWERED','ANSWER'])) $answered+=$n; elseif($disp==='NO ANSWER') $noans+=$n; }
-    if(!$isSuper){ $totCalls=$callsCount??0; $answered=$answerCount??0; $noans=$noAnswerCount??0; }
-    $answerRate = $totCalls > 0 ? round(($answered / $totCalls) * 100, 1) : 0;
-  ?>
+<!-- ══════════════ KPI CARDS ROW 1 -->
+<div class="grid grid-cols-2 <?= $canSeeCost ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4 mb-4">
 
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <!-- Total Calls -->
-    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-100">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-phone text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= (int)$totCalls ?>" id="total-calls">0</div>
-          <div class="text-blue-100 text-sm"><?= __('total_calls') ?></div>
-        </div>
+  <!-- Total Calls -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-5 text-white shadow-lg shadow-indigo-500/20">
+    <div class="absolute -right-3 -top-3 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-white/5 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-phone text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide">Toplam Çağrı</span>
       </div>
-      <div class="w-full bg-white/20 rounded-full h-2">
-        <div class="bg-white h-2 rounded-full transition-all duration-1000 ease-out" style="width: 100%"></div>
-      </div>
+      <div class="text-3xl font-black mb-1" id="kpi-total"><?= number_format($totCalls) ?></div>
+      <div class="text-xs opacity-60">Seçilen dönem</div>
     </div>
-
-    <!-- Answered Calls -->
-    <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-200">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-circle-check text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= (int)$answered ?>" id="answered-calls">0</div>
-          <div class="text-emerald-100 text-sm"><?= __('answered_calls') ?></div>
-        </div>
-      </div>
-      <div class="w-full bg-white/20 rounded-full h-2">
-        <div class="bg-white h-2 rounded-full transition-all duration-1000 ease-out" style="width: <?= $totCalls > 0 ? ($answered / $totCalls) * 100 : 0 ?>%"></div>
-      </div>
-    </div>
-
-    <!-- No Answer -->
-    <div class="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-300">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-circle-xmark text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= (int)$noans ?>" id="noanswer-calls">0</div>
-          <div class="text-rose-100 text-sm"><?= __('no_answer_calls') ?></div>
-        </div>
-      </div>
-      <div class="w-full bg-white/20 rounded-full h-2">
-        <div class="bg-white h-2 rounded-full transition-all duration-1000 ease-out" style="width: <?= $totCalls > 0 ? ($noans / $totCalls) * 100 : 0 ?>%"></div>
-      </div>
-    </div>
-
-    <!-- Cost/Answer Rate -->
-    <?php if ($isSuper): ?>
-    <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-400">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-coins text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= number_format((float)$totCost,2) ?>" id="total-cost">0.00</div>
-          <div class="text-amber-100 text-sm"><?= __('total_cost') ?></div>
-        </div>
-      </div>
-      <div class="text-xs text-amber-100 mt-2">
-        <i class="fa-solid fa-chart-line mr-1"></i><?= __('answer_rate') ?>: <span class="font-semibold"><?= $answerRate ?>%</span>
-      </div>
-    </div>
-    <?php elseif (!$isGroupMember): ?>
-    <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-400">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-wallet text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= number_format((float)($spent??0),2) ?>" id="total-spent">0.00</div>
-          <div class="text-amber-100 text-sm"><?= __('spent_amount') ?></div>
-        </div>
-      </div>
-      <div class="text-xs text-amber-100 mt-2">
-        <i class="fa-solid fa-chart-line mr-1"></i><?= __('answer_rate') ?>: <span class="font-semibold"><?= $answerRate ?>%</span>
-      </div>
-    </div>
-    <?php else: ?>
-    <div class="bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-400">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-percent text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= $answerRate ?>" id="answer-rate">0</div>
-          <div class="text-purple-100 text-sm"><?= __('answer_rate_percent') ?></div>
-        </div>
-      </div>
-      <div class="w-full bg-white/20 rounded-full h-2 mt-2">
-        <div class="bg-white h-2 rounded-full transition-all duration-1000 ease-out" style="width: <?= $answerRate ?>%"></div>
-      </div>
-    </div>
-    <?php endif; ?>
   </div>
 
-  <?php if ($isSuper): ?>
-  <!-- Super Admin Additional Stats -->
-  <div class="grid md:grid-cols-3 gap-6 mb-8">
-    <!-- Revenue Card -->
-    <div class="bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-500">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-sack-dollar text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= number_format((float)$totRev,2) ?>" id="total-revenue">0.00</div>
-          <div class="text-emerald-100 text-sm"><?= __('total_revenue') ?></div>
-        </div>
+  <!-- Answered -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl p-5 text-white shadow-lg shadow-emerald-500/20">
+    <div class="absolute -right-3 -top-3 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-circle-check text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide">Cevaplanan</span>
       </div>
-      <div class="flex items-center text-sm text-emerald-100">
-        <i class="fa-solid fa-arrow-up mr-1"></i>
-        <span><?= __('monthly_increase') ?></span>
-      </div>
-    </div>
-
-    <!-- Profit Card -->
-    <div class="bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-600">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-arrow-trend-up text-2xl"></i>
+      <div class="text-3xl font-black mb-1"><?= number_format($answered) ?></div>
+      <div class="text-xs opacity-80">
+        <div class="w-full bg-white/20 rounded-full h-1.5 mt-2 mb-1">
+          <div class="bg-white h-1.5 rounded-full" style="width:<?= $answerRate ?>%"></div>
         </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= number_format((float)$totProfit,2) ?>" id="total-profit">0.00</div>
-          <div class="text-fuchsia-100 text-sm"><?= __('net_profit') ?></div>
-        </div>
-      </div>
-      <div class="flex items-center text-sm text-fuchsia-100">
-        <i class="fa-solid fa-chart-line mr-1"></i>
-        <span><?= __('profitability_rate') ?> <span class="font-semibold">
-          <?= $totRev > 0 ? round(($totProfit / $totRev) * 100, 1) : 0 ?>%
-        </span></span>
-      </div>
-    </div>
-
-    <!-- Groups Overview Card -->
-    <div class="bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-700">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-users text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= count($summary ?? []) ?>" id="total-groups">0</div>
-          <div class="text-slate-100 text-sm"><?= __('active_groups') ?></div>
-        </div>
-      </div>
-      <div class="space-y-2">
-        <?php foreach (array_slice(($summary??[]), 0, 3) as $row): $gid=(int)$row['group_id']; ?>
-          <div class="flex items-center justify-between bg-white/10 rounded-lg p-2">
-            <span class="text-sm truncate"><?= htmlspecialchars($groups[$gid] ?? ('#'.$gid)) ?></span>
-            <span class="font-semibold text-sm text-emerald-300">$<?= number_format((float)$row['profit'],0) ?></span>
-          </div>
-        <?php endforeach; ?>
+        %<?= $answerRate ?> cevap oranı
       </div>
     </div>
   </div>
-  <?php elseif (!$isGroupMember): ?>
-  <!-- Group Admin/User Additional Stats -->
-  <div class="grid md:grid-cols-2 gap-6 mb-8">
-    <!-- Balance Card -->
-    <div class="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-500">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-piggy-bank text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold" data-count="<?= number_format((float)($balance??0),2) ?>" id="remaining-balance">0.00</div>
-          <div class="text-teal-100 text-sm"><?= __('remaining_balance') ?></div>
-        </div>
+
+  <!-- No Answer -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl p-5 text-white shadow-lg shadow-rose-500/20">
+    <div class="absolute -right-3 -top-3 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-phone-slash text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide">Cevapsız</span>
       </div>
-      <div class="flex items-center text-sm text-teal-100">
-        <i class="fa-solid fa-wallet mr-1"></i>
-        <span><?= __('this_month_spent') ?> <span class="font-semibold text-amber-300">
-          $<?= number_format((float)($spent??0),2) ?>
-        </span></span>
+      <div class="text-3xl font-black mb-1"><?= number_format($noans) ?></div>
+      <div class="text-xs opacity-80">
+        <div class="w-full bg-white/20 rounded-full h-1.5 mt-2 mb-1">
+          <div class="bg-white h-1.5 rounded-full" style="width:<?= $totCalls > 0 ? round($noans/$totCalls*100,1) : 0 ?>%"></div>
+        </div>
+        %<?= $totCalls > 0 ? round($noans/$totCalls*100,1) : 0 ?> oran
       </div>
     </div>
+  </div>
 
-    <!-- Summary Overview Card -->
-    <div class="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer group animate-in slide-in-from-bottom-4 duration-500 delay-600">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-200">
-          <i class="fa-solid fa-chart-pie text-2xl"></i>
-        </div>
-        <div class="text-right">
-          <div class="text-2xl font-bold" data-count="<?= $answerRate ?>" id="summary-rate">0</div>
-          <div class="text-indigo-100 text-sm"><?= __('success_rate') ?></div>
-        </div>
+  <?php if ($canSeeCost): ?>
+  <!-- Cost -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 text-white shadow-lg shadow-amber-500/20">
+    <div class="absolute -right-3 -top-3 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-coins text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide"><?= $isSuper ? 'API Maliyet' : 'Harcama' ?></span>
       </div>
-      <div class="grid grid-cols-3 gap-4 mt-4">
-        <div class="text-center">
-          <div class="text-lg font-bold text-emerald-300" data-count="<?= (int)$answered ?>" id="summary-answered">0</div>
-          <div class="text-xs text-indigo-100"><?= __('answered_calls') ?></div>
-        </div>
-        <div class="text-center">
-          <div class="text-lg font-bold text-rose-300" data-count="<?= (int)$noans ?>" id="summary-noans">0</div>
-          <div class="text-xs text-indigo-100"><?= __('no_answer_calls') ?></div>
-        </div>
-        <div class="text-center">
-          <div class="text-lg font-bold text-blue-300" data-count="<?= (int)$totCalls ?>" id="summary-total">0</div>
-          <div class="text-xs text-indigo-100"><?= __('total') ?></div>
-        </div>
+      <div class="text-2xl font-black mb-1">$<?= number_format($isSuper ? $totCost : ($spent ?? 0), 2) ?></div>
+      <div class="text-xs opacity-60">Dönem toplam</div>
+    </div>
+  </div>
+  <?php else: ?>
+  <!-- Answer Rate % -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-5 text-white shadow-lg shadow-violet-500/20">
+    <div class="absolute -right-3 -top-3 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-percent text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide">Cevap Oranı</span>
       </div>
+      <div class="text-3xl font-black mb-1">%<?= $answerRate ?></div>
+      <div class="text-xs opacity-60">Başarı oranı</div>
     </div>
   </div>
   <?php endif; ?>
+</div>
 
-  <!-- Charts Section -->
-  <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 dark:border-slate-700/50 p-6 mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-800">
-    <div class="flex items-center gap-3 mb-6">
-      <div class="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
-        <i class="fa-solid fa-chart-line text-white text-lg"></i>
-      </div>
-      <div>
-        <h3 class="text-xl font-bold text-slate-800 dark:text-white"><?= __('daily_trend_analysis') ?></h3>
-        <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('cost_and_revenue_trends') ?></p>
-      </div>
+<!-- ══════════════ KPI CARDS ROW 2 (extra metrics) -->
+<div class="grid grid-cols-2 <?= $isSuper ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4 mb-6">
+
+  <!-- Avg Duration -->
+  <div class="bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
+      <i class="fa-solid fa-stopwatch text-blue-600 dark:text-blue-400"></i>
     </div>
-    <div class="relative">
-      <canvas id="trend" height="140"></canvas>
-      <div class="absolute top-4 right-4 flex gap-2">
-        <button onclick="toggleChartData('cost')" class="px-3 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-lg text-xs hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors">
-          <?= __('cost') ?>
-        </button>
-        <button onclick="toggleChartData('revenue')" class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors">
-          <?= __('revenue') ?>
-        </button>
-      </div>
+    <div class="min-w-0">
+      <div class="text-lg font-bold text-slate-800 dark:text-white"><?= gmdate('i:s', $avgDuration) ?></div>
+      <div class="text-xs text-slate-400">Ort. Konuşma Süresi</div>
     </div>
   </div>
 
-  <!-- Agent Performance Table -->
-  <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 dark:border-slate-700/50 p-6 mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-900">
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <div class="p-2 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl">
-          <i class="fa-solid fa-users text-white text-lg"></i>
+  <!-- Total Talk Time -->
+  <div class="bg-white dark:bg-slate-800 border border-cyan-200 dark:border-cyan-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center flex-shrink-0">
+      <i class="fa-solid fa-clock text-cyan-600 dark:text-cyan-400"></i>
+    </div>
+    <div class="min-w-0">
+      <div class="text-sm font-bold text-slate-800 dark:text-white"><?= $billsecFmt($totBillsec) ?></div>
+      <div class="text-xs text-slate-400">Toplam Konuşma</div>
+    </div>
+  </div>
+
+  <?php if ($isSuper): ?>
+  <!-- Revenue -->
+  <div class="bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
+      <i class="fa-solid fa-sack-dollar text-emerald-600 dark:text-emerald-400"></i>
+    </div>
+    <div class="min-w-0">
+      <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400">$<?= number_format($totRev, 2) ?></div>
+      <div class="text-xs text-slate-400">Toplam Gelir</div>
+    </div>
+  </div>
+
+  <!-- Net Profit -->
+  <div class="bg-white dark:bg-slate-800 border border-fuchsia-200 dark:border-fuchsia-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-fuchsia-100 dark:bg-fuchsia-900/40 flex items-center justify-center flex-shrink-0">
+      <i class="fa-solid fa-arrow-trend-up text-fuchsia-600 dark:text-fuchsia-400"></i>
+    </div>
+    <div class="min-w-0">
+      <div class="text-lg font-bold text-fuchsia-600 dark:text-fuchsia-400">$<?= number_format($totProfit, 2) ?></div>
+      <div class="text-xs text-slate-400">Net Kâr &nbsp;·&nbsp; %<?= $profitMargin ?> marjin</div>
+    </div>
+  </div>
+  <?php else: ?>
+  <!-- Busy/Failed -->
+  <div class="bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+      <i class="fa-solid fa-signal text-amber-600 dark:text-amber-400"></i>
+    </div>
+    <div class="min-w-0">
+      <div class="text-lg font-bold text-slate-800 dark:text-white"><?= number_format($busy + $failed) ?></div>
+      <div class="text-xs text-slate-400">Meşgul / Başarısız</div>
+    </div>
+  </div>
+  <?php endif; ?>
+</div>
+
+<!-- ══════════════ CHARTS 2-col -->
+<div class="grid lg:grid-cols-3 gap-5 mb-6">
+
+  <!-- Trend Line (2/3) -->
+  <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+    <div class="flex items-start justify-between mb-5">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+            <i class="fa-solid fa-chart-line text-white text-sm"></i>
+          </div>
+          <h3 class="font-bold text-slate-800 dark:text-white"><?= __('daily_trend_analysis') ?></h3>
         </div>
-        <div>
-          <h3 class="text-xl font-bold text-slate-800 dark:text-white"><?= __('agent_performance_summary') ?></h3>
-          <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('detailed_agent_statistics') ?></p>
-        </div>
+        <p class="text-xs text-slate-400 ml-10"><?= __('cost_and_revenue_trends') ?></p>
       </div>
       <div class="flex gap-2">
-        <button onclick="toggleTableView()" class="px-4 py-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-xl hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors flex items-center gap-2">
-          <i class="fa-solid fa-table"></i>
-          <span class="hidden sm:inline"><?= __('view_button') ?></span>
+        <button onclick="toggleDataset('trend',0)" id="btn-cost"
+                class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700/40 transition-all hover:opacity-70">
+          <i class="fa-solid fa-circle text-xs mr-1"></i><?= __('cost') ?>
         </button>
+        <?php if ($isSuper): ?>
+        <button onclick="toggleDataset('trend',1)" id="btn-rev"
+                class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700/40 transition-all hover:opacity-70">
+          <i class="fa-solid fa-circle text-xs mr-1"></i><?= __('revenue') ?>
+        </button>
+        <?php endif; ?>
       </div>
     </div>
-
-    <?php if ($isSuper): ?>
-      <?php foreach (($agentsByGroup ?? []) as $groupName => $agents): ?>
-        <div class="mb-6">
-          <div class="flex items-center gap-2 mb-4 p-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl">
-            <i class="fa-solid fa-user-group text-slate-600 dark:text-slate-300"></i>
-            <h4 class="font-semibold text-slate-800 dark:text-white"><?= htmlspecialchars($groupName) ?></h4>
-            <span class="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs">
-              <?= count($agents) ?> <?= __('agent') ?>
-            </span>
-          </div>
-          <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-600">
-            <table class="min-w-full">
-              <thead class="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600">
-                <tr>
-                  <th class="p-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('agent') ?></th>
-                  <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <i class="fa-solid fa-phone mr-1"></i><?= __('calls_count') ?>
-                  </th>
-                  <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i><?= __('answer_count') ?>
-                  </th>
-                  <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <i class="fa-solid fa-clock mr-1 text-blue-600"></i><?= __('billsec_duration') ?>
-                  </th>
-                  <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <i class="fa-solid fa-coins mr-1 text-amber-600"></i><?= __('cost_amount') ?>
-                  </th>
-                  <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('success_percent') ?></th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-200 dark:divide-slate-600">
-                <?php foreach ($agents as $r):
-                  $successRate = ((int)($r['calls'] ?? 0)) > 0 ? round((((int)($r['answer'] ?? 0)) / ((int)($r['calls'] ?? 0))) * 100, 1) : 0;
-                ?>
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                  <td class="p-4">
-                    <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <span class="text-white text-sm font-semibold">
-                          <?= strtoupper(substr(htmlspecialchars($r['user_login'] ?? ''), 0, 1)) ?>
-                        </span>
-                      </div>
-                      <div>
-                        <div class="font-medium text-slate-900 dark:text-white">
-                          <?= htmlspecialchars($r['user_login'] ?? '') ?>
-                        </div>
-                        <div class="text-xs text-slate-500 dark:text-slate-400">
-                          <?= htmlspecialchars($r['voip_exten'] ?? '') ?>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="p-4 text-center font-semibold text-slate-900 dark:text-white">
-                    <?= (int)($r['calls'] ?? 0) ?>
-                  </td>
-                  <td class="p-4 text-center">
-                    <span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-sm font-semibold">
-                      <?= (int)($r['answer'] ?? 0) ?>
-                    </span>
-                  </td>
-                  <td class="p-4 text-center font-semibold text-slate-900 dark:text-white">
-                    <?= number_format((int)($r['billsec'] ?? 0)) ?>s
-                  </td>
-                  <td class="p-4 text-center font-semibold text-amber-700 dark:text-amber-300">
-                    $<?= number_format((float)($r['cost'] ?? 0),2) ?>
-                  </td>
-                  <td class="p-4 text-center">
-                    <div class="flex items-center justify-center gap-2">
-                      <div class="w-12 bg-slate-200 dark:bg-slate-600 rounded-full h-2">
-                        <div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-1000"
-                             style="width: <?= $successRate ?>%"></div>
-                      </div>
-                      <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        <?= $successRate ?>%
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      <?php endforeach; ?>
-    <?php else: ?>
-      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-600">
-        <table class="min-w-full">
-          <thead class="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600">
-            <tr>
-              <th class="p-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('agent') ?></th>
-              <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                <i class="fa-solid fa-phone mr-1"></i><?= __('calls_count') ?>
-              </th>
-              <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i><?= __('answer_count') ?>
-              </th>
-              <?php if (!$isGroupMember): ?>
-              <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300">
-                <i class="fa-solid fa-clock mr-1 text-blue-600"></i><?= __('billsec_duration') ?>
-              </th>
-              <?php endif; ?>
-              <th class="p-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300"><?= __('success_percent') ?></th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-200 dark:divide-slate-600">
-            <?php foreach (($agentsByGroup[key($agentsByGroup ?? [])] ?? []) as $r):
-              $successRate = ((int)($r['calls'] ?? 0)) > 0 ? round((((int)($r['answer'] ?? 0)) / ((int)($r['calls'] ?? 0))) * 100, 1) : 0;
-            ?>
-            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-              <td class="p-4">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span class="text-white text-sm font-semibold">
-                      <?= strtoupper(substr(htmlspecialchars($r['user_login'] ?? ''), 0, 1)) ?>
-                    </span>
-                  </div>
-                  <div>
-                    <div class="font-medium text-slate-900 dark:text-white">
-                      <?= htmlspecialchars($r['user_login'] ?? '') ?>
-                    </div>
-                    <div class="text-xs text-slate-500 dark:text-slate-400">
-                      <?= htmlspecialchars($r['voip_exten'] ?? '') ?>
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td class="p-4 text-center font-semibold text-slate-900 dark:text-white">
-                <?= (int)($r['calls'] ?? 0) ?>
-              </td>
-              <td class="p-4 text-center">
-                <span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-sm font-semibold">
-                  <?= (int)($r['answer'] ?? 0) ?>
-                </span>
-              </td>
-              <?php if (!$isGroupMember): ?>
-              <td class="p-4 text-center font-semibold text-slate-900 dark:text-white">
-                <?= number_format((int)($r['billsec'] ?? 0)) ?>s
-              </td>
-              <?php endif; ?>
-              <td class="p-4 text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <div class="w-12 bg-slate-200 dark:bg-slate-600 rounded-full h-2">
-                    <div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-1000"
-                         style="width: <?= $successRate ?>%"></div>
-                  </div>
-                  <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <?= $successRate ?>%
-                  </span>
-                </div>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    <?php endif; ?>
+    <div style="height:230px;position:relative">
+      <canvas id="trendChart"></canvas>
+    </div>
   </div>
 
-  <!-- Additional Charts -->
-  <div class="grid lg:grid-cols-2 gap-6 mb-8">
-    <!-- Top Agents Chart -->
-    <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 dark:border-slate-700/50 p-6 animate-in slide-in-from-left-5 duration-500 delay-1000">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
-          <i class="fa-solid fa-trophy text-white text-lg"></i>
-        </div>
-        <div>
-          <h3 class="text-xl font-bold text-slate-800 dark:text-white">
-            <?php if (!$isGroupMember): ?><?= __('top_agents_billsec') ?><?php else: ?><?= __('top_agents_calls') ?><?php endif; ?>
-          </h3>
-          <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('top_performers') ?></p>
-        </div>
+  <!-- Disposition Donut (1/3) -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+    <div class="flex items-center gap-2 mb-5">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center">
+        <i class="fa-solid fa-chart-pie text-white text-sm"></i>
       </div>
-      <div class="relative">
-        <canvas id="topAgents" height="180"></canvas>
-        <div class="absolute top-2 right-2 flex gap-1">
-          <button onclick="changeTopAgentsMetric('calls')" class="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded text-xs hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors">
-            <?= __('calls_count') ?>
-          </button>
-          <?php if (!$isGroupMember): ?>
-          <button onclick="changeTopAgentsMetric('billsec')" class="px-2 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded text-xs hover:bg-purple-200 dark:hover:bg-purple-900/60 transition-colors">
-            <?= __('duration_time') ?>
-          </button>
-          <?php endif; ?>
-        </div>
+      <div>
+        <h3 class="font-bold text-slate-800 dark:text-white text-sm"><?= __('call_status_distribution') ?></h3>
+        <p class="text-xs text-slate-400"><?= __('disposition_analysis') ?></p>
       </div>
     </div>
-
-    <!-- Disposition Distribution Chart -->
-    <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 dark:border-slate-700/50 p-6 animate-in slide-in-from-right-5 duration-500 delay-1100">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="p-2 bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl">
-          <i class="fa-solid fa-chart-pie text-white text-lg"></i>
-        </div>
-        <div>
-          <h3 class="text-xl font-bold text-slate-800 dark:text-white"><?= __('call_status_distribution') ?></h3>
-          <p class="text-slate-500 dark:text-slate-400 text-sm"><?= __('disposition_analysis') ?></p>
-        </div>
+    <div style="height:185px;position:relative">
+      <canvas id="dispChart"></canvas>
+    </div>
+    <!-- Legend pills -->
+    <div class="grid grid-cols-2 gap-1.5 mt-3">
+      <?php
+      $dispMap = [
+        ['ANSWERED', 'bg-emerald-500', 'Cevap',      $answered],
+        ['NO ANSWER','bg-slate-400',   'Cevapsız',   $noans],
+        ['BUSY',     'bg-amber-500',   'Meşgul',     $busy],
+        ['FAILED',   'bg-red-500',     'Başarısız',  $failed],
+      ];
+      foreach ($dispMap as [$key, $color, $label, $val]): ?>
+      <div class="flex items-center gap-1.5">
+        <div class="w-2.5 h-2.5 rounded-full <?= $color ?> flex-shrink-0"></div>
+        <span class="text-xs text-slate-500 dark:text-slate-400 truncate"><?= $label ?>: <strong class="text-slate-700 dark:text-slate-200"><?= number_format($val) ?></strong></span>
       </div>
-      <div class="relative">
-        <canvas id="dispChart" height="180"></canvas>
-        <div class="absolute top-2 right-2">
-          <button onclick="toggleDispChart()" class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-            <i class="fa-solid fa-rotate"></i>
-          </button>
-        </div>
-      </div>
+      <?php endforeach; ?>
     </div>
   </div>
 </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    // ===== UTILITY FUNCTIONS =====
-    function animateNumber(element, targetValue, duration = 1000) {
-      const startValue = 0;
-      const startTime = performance.now();
+<!-- ══════════════ CALL COUNT BAR + TOP AGENTS -->
+<div class="grid lg:grid-cols-2 gap-5 mb-6">
 
-      function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
+  <!-- Daily Call Count Bar -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+    <div class="flex items-center gap-2 mb-5">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+        <i class="fa-solid fa-bars-staggered text-white text-sm"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-800 dark:text-white text-sm"><?= __('daily_call_count') ?></h3>
+        <p class="text-xs text-slate-400">Günlük çağrı sayısı trendi</p>
+      </div>
+    </div>
+    <div style="height:210px;position:relative">
+      <canvas id="callsBar"></canvas>
+    </div>
+  </div>
 
-        const currentValue = startValue + (targetValue - startValue) * progress;
-        element.textContent = typeof targetValue === 'number' && targetValue % 1 === 0
-          ? Math.floor(currentValue).toLocaleString('tr-TR')
-          : currentValue.toFixed(2).replace('.', ',');
+  <!-- Top Agents Bar -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+    <div class="flex items-start justify-between mb-5">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+          <i class="fa-solid fa-trophy text-white text-sm"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-800 dark:text-white text-sm">Top 10 Agent</h3>
+          <p class="text-xs text-slate-400">En aktif agentler</p>
+        </div>
+      </div>
+      <div class="flex gap-1.5">
+        <button onclick="switchAgentMetric('calls')" id="btn-agent-calls"
+                class="agent-metric-btn active px-2 py-1 rounded-lg text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/40">
+          Çağrı
+        </button>
+        <button onclick="switchAgentMetric('billsec')" id="btn-agent-billsec"
+                class="agent-metric-btn px-2 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+          Süre
+        </button>
+      </div>
+    </div>
+    <div style="height:210px;position:relative">
+      <canvas id="topAgentsChart"></canvas>
+    </div>
+  </div>
+</div>
 
-        if (progress < 1) {
-          requestAnimationFrame(update);
-        }
-      }
+<!-- ══════════════ SUPERADMIN GROUP TABLE -->
+<?php if ($isSuper && !empty($summary)): ?>
+<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mb-6">
+  <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
+        <i class="fa-solid fa-layer-group text-white text-sm"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-800 dark:text-white text-sm">Grup Bazlı Özet</h3>
+        <p class="text-xs text-slate-400"><?= count($summary) ?> grup</p>
+      </div>
+    </div>
+    <!-- Sort hint -->
+    <span class="text-xs text-slate-400 hidden sm:block">Kâra göre sıralı</span>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-slate-50 dark:bg-slate-700/50">
+          <th class="px-5 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Grup</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Çağrı</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cevap %</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Maliyet</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Gelir</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Kâr</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Kâr %</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+        <?php
+        usort($summary, fn($a,$b) => (float)$b['profit'] <=> (float)$a['profit']);
+        foreach ($summary as $i => $row):
+          $gid = (int)$row['group_id'];
+          $gCalls  = (int)$row['calls'];
+          $gAns    = (int)($row['answer'] ?? 0);
+          $gRate   = $gCalls > 0 ? round($gAns/$gCalls*100,1) : 0;
+          $gCost   = (float)$row['cost_api'];
+          $gRev    = (float)$row['revenue'];
+          $gProfit = (float)$row['profit'];
+          $gMargin = $gRev > 0 ? round($gProfit/$gRev*100,1) : 0;
+          $profitColor = $gProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400';
+        ?>
+        <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-700/20 transition-colors">
+          <td class="px-5 py-3.5">
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                <?= $i + 1 ?>
+              </div>
+              <div>
+                <div class="font-semibold text-sm text-slate-800 dark:text-white"><?= htmlspecialchars($groups[$gid] ?? ('#'.$gid)) ?></div>
+                <div class="text-xs text-slate-400">ID: <?= $gid ?></div>
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-3.5 text-center">
+            <span class="font-bold text-slate-700 dark:text-slate-200"><?= number_format($gCalls) ?></span>
+          </td>
+          <td class="px-4 py-3.5 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <div class="w-12 bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 hidden sm:block">
+                <div class="h-1.5 rounded-full transition-all duration-700
+                  <?= $gRate >= 70 ? 'bg-emerald-500' : ($gRate >= 40 ? 'bg-amber-500' : 'bg-red-500') ?>"
+                  style="width:<?= $gRate ?>%"></div>
+              </div>
+              <span class="font-semibold text-sm <?= $gRate >= 70 ? 'text-emerald-600 dark:text-emerald-400' : ($gRate >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-red-500 dark:text-red-400') ?>">
+                %<?= $gRate ?>
+              </span>
+            </div>
+          </td>
+          <td class="px-4 py-3.5 text-center font-semibold text-sm text-amber-600 dark:text-amber-400">$<?= number_format($gCost, 2) ?></td>
+          <td class="px-4 py-3.5 text-center font-semibold text-sm text-blue-600 dark:text-blue-400">$<?= number_format($gRev, 2) ?></td>
+          <td class="px-4 py-3.5 text-center">
+            <span class="font-bold text-sm <?= $profitColor ?>">
+              <?= $gProfit >= 0 ? '+' : '' ?>$<?= number_format($gProfit, 2) ?>
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-center">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold
+              <?= $gMargin >= 20 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                 : ($gMargin >= 5 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                 : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400') ?>">
+              %<?= $gMargin ?>
+            </span>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+      <!-- Footer totals -->
+      <tfoot>
+        <tr class="bg-slate-50 dark:bg-slate-700/50 border-t-2 border-slate-200 dark:border-slate-600">
+          <td class="px-5 py-3 font-bold text-sm text-slate-700 dark:text-slate-200">TOPLAM</td>
+          <td class="px-4 py-3 text-center font-bold text-sm text-slate-700 dark:text-slate-200"><?= number_format($totCalls) ?></td>
+          <td class="px-4 py-3 text-center font-bold text-sm text-slate-700 dark:text-slate-200">%<?= $answerRate ?></td>
+          <td class="px-4 py-3 text-center font-bold text-sm text-amber-600 dark:text-amber-400">$<?= number_format($totCost, 2) ?></td>
+          <td class="px-4 py-3 text-center font-bold text-sm text-blue-600 dark:text-blue-400">$<?= number_format($totRev, 2) ?></td>
+          <td class="px-4 py-3 text-center font-bold text-sm text-emerald-600 dark:text-emerald-400">$<?= number_format($totProfit, 2) ?></td>
+          <td class="px-4 py-3 text-center font-bold text-sm text-fuchsia-600 dark:text-fuchsia-400">%<?= $profitMargin ?></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+<?php endif; ?>
 
-      requestAnimationFrame(update);
-    }
+<!-- ══════════════ AGENT PERFORMANCE TABLE -->
+<?php $hasAgents = !empty($agentsByGroup); ?>
+<?php if ($hasAgents): ?>
+<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mb-6">
+  <div class="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
+        <i class="fa-solid fa-headset text-white text-sm"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-800 dark:text-white text-sm"><?= __('agent_performance_summary') ?></h3>
+        <p class="text-xs text-slate-400">Agent bazlı detaylı istatistikler</p>
+      </div>
+    </div>
+    <!-- Search -->
+    <div class="relative hidden sm:block">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+      <input type="text" id="agentSearch" placeholder="Agent ara..."
+             class="pl-8 pr-3 py-2 text-xs border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-40"
+             oninput="filterAgentTable(this.value)">
+    </div>
+  </div>
 
-    function showLoading() {
-      document.getElementById('loading-overlay').classList.remove('hidden');
-    }
+  <?php foreach (($agentsByGroup ?? []) as $groupName => $agents): ?>
+  <div class="mb-0 group-block">
+    <?php if ($isSuper): ?>
+    <div class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-slate-50 to-slate-100/50 dark:from-slate-700/40 dark:to-slate-700/20 border-b border-slate-100 dark:border-slate-700/50">
+      <i class="fa-solid fa-folder-open text-slate-400 text-sm"></i>
+      <span class="font-bold text-sm text-slate-700 dark:text-slate-200"><?= htmlspecialchars($groupName) ?></span>
+      <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-semibold"><?= count($agents) ?> agent</span>
+    </div>
+    <?php endif; ?>
+    <div class="overflow-x-auto">
+      <table class="min-w-full agent-table">
+        <thead>
+          <tr class="bg-slate-50/50 dark:bg-slate-700/30">
+            <th class="px-5 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Agent</th>
+            <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              <i class="fa-solid fa-phone text-indigo-400 mr-1"></i>Çağrı
+            </th>
+            <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              <i class="fa-solid fa-check text-emerald-400 mr-1"></i>Cevap
+            </th>
+            <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              <i class="fa-solid fa-phone-slash text-red-400 mr-1"></i>Cevapsız
+            </th>
+            <?php if (!$isGroupMember): ?>
+            <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              <i class="fa-solid fa-clock text-blue-400 mr-1"></i>Süre
+            </th>
+            <?php endif; ?>
+            <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cevap %</th>
+            <?php if ($canSeeCost): ?>
+            <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              <i class="fa-solid fa-coins text-amber-400 mr-1"></i>Maliyet
+            </th>
+            <?php endif; ?>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+          <?php
+          usort($agents, fn($a,$b) => (int)$b['calls'] <=> (int)$a['calls']);
+          foreach ($agents as $rank => $r):
+            $aCalls   = (int)($r['calls']   ?? 0);
+            $aAns     = (int)($r['answer']  ?? 0);
+            $aNoAns   = $aCalls - $aAns;
+            $aBill    = (int)($r['billsec'] ?? 0);
+            $aCost    = (float)($r['cost']  ?? 0);
+            $aRate    = $aCalls > 0 ? round($aAns/$aCalls*100,1) : 0;
+            $rateColor = $aRate >= 70 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : ($aRate >= 40 ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20');
+            $barColor  = $aRate >= 70 ? 'bg-emerald-500' : ($aRate >= 40 ? 'bg-amber-500' : 'bg-red-500');
+            $initials  = strtoupper(mb_substr($r['user_login'] ?? 'A', 0, 1));
+            $avatarGrads = ['from-indigo-500 to-purple-600','from-rose-500 to-pink-600','from-amber-500 to-orange-600','from-cyan-500 to-blue-600','from-emerald-500 to-teal-600'];
+            $grad = $avatarGrads[$rank % count($avatarGrads)];
+          ?>
+          <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-700/20 transition-colors agent-row">
+            <td class="px-5 py-3 agent-name">
+              <div class="flex items-center gap-3">
+                <div class="relative flex-shrink-0">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br <?= $grad ?> flex items-center justify-center text-white text-xs font-bold">
+                    <?= $initials ?>
+                  </div>
+                  <?php if ($rank === 0): ?>
+                  <div class="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-star text-white" style="font-size:7px"></i>
+                  </div>
+                  <?php endif; ?>
+                </div>
+                <div>
+                  <div class="font-semibold text-sm text-slate-800 dark:text-white"><?= htmlspecialchars($r['user_login'] ?? '') ?></div>
+                  <div class="text-xs text-slate-400 font-mono"><?= htmlspecialchars($r['voip_exten'] ?? '') ?></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-center font-bold text-sm text-slate-700 dark:text-slate-200"><?= number_format($aCalls) ?></td>
+            <td class="px-4 py-3 text-center">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                <?= number_format($aAns) ?>
+              </span>
+            </td>
+            <td class="px-4 py-3 text-center">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                <?= number_format($aNoAns) ?>
+              </span>
+            </td>
+            <?php if (!$isGroupMember): ?>
+            <td class="px-4 py-3 text-center font-mono text-xs text-slate-600 dark:text-slate-300"><?= gmdate('H:i:s', $aBill) ?></td>
+            <?php endif; ?>
+            <td class="px-4 py-3">
+              <div class="flex items-center justify-center gap-2">
+                <div class="w-14 bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 hidden sm:block">
+                  <div class="<?= $barColor ?> h-1.5 rounded-full transition-all duration-700" style="width:<?= $aRate ?>%"></div>
+                </div>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold <?= $rateColor ?>">
+                  %<?= $aRate ?>
+                </span>
+              </div>
+            </td>
+            <?php if ($canSeeCost): ?>
+            <td class="px-4 py-3 text-center font-semibold text-xs text-amber-600 dark:text-amber-400">
+              $<?= number_format($aCost, 2) ?>
+            </td>
+            <?php endif; ?>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <?php endforeach; ?>
+</div>
+<?php endif; ?>
 
-    function hideLoading() {
-      document.getElementById('loading-overlay').classList.add('hidden');
-    }
+<!-- ══════════════ SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const isDark   = document.documentElement.classList.contains('dark');
+const gridC    = isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.05)';
+const textC    = isDark ? '#94a3b8' : '#64748b';
+const tipOpts  = { backgroundColor:'rgba(15,23,42,.92)', titleColor:'#fff', bodyColor:'#e2e8f0', borderColor:'rgba(255,255,255,.1)', borderWidth:1, cornerRadius:10, padding:10 };
 
-    // ===== DATE RANGE FUNCTIONS =====
-    function setDateRange(range) {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      let fromDate, toDate;
+// ── Data from PHP
+const trendData = <?= json_encode(array_map(fn($t) => [
+  'd'       => $t['d'],
+  'cost'    => (float)$t['cost'],
+  'revenue' => (float)$t['revenue'],
+  'calls'   => (int)($t['calls'] ?? 0),
+], $trend ?? []), JSON_UNESCAPED_UNICODE) ?>;
 
-      switch(range) {
-        case 'today':
-          fromDate = toDate = today;
-          break;
-        case 'yesterday':
-          fromDate = toDate = new Date(today);
-          fromDate.setDate(fromDate.getDate() - 1);
-          toDate.setDate(toDate.getDate() - 1);
-          break;
-        case 'week':
-          fromDate = new Date(today);
-          fromDate.setDate(fromDate.getDate() - today.getDay());
-          toDate = new Date(today);
-          break;
-        case 'month':
-          fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
-          toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-          break;
-        case 'lastmonth':
-          fromDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-          toDate = new Date(today.getFullYear(), today.getMonth(), 0);
-          break;
-      }
+const allAgentData = <?= json_encode($allAgents ?? [], JSON_UNESCAPED_UNICODE) ?>;
+const dispData     = <?= json_encode($dispRows ?? [], JSON_UNESCAPED_UNICODE) ?>;
 
-      document.getElementById('from-date').value = fromDate.toISOString().slice(0, 16);
-      document.getElementById('to-date').value = toDate.toISOString().slice(0, 16);
+let trendChart, agentChart, callsBarChart, dispChart;
 
-      // Add visual feedback
-      const buttons = document.querySelectorAll('[onclick*="setDateRange"]');
-      buttons.forEach(btn => btn.classList.remove('ring-2', 'ring-indigo-500'));
-      event.target.classList.add('ring-2', 'ring-indigo-500');
-    }
-
-    // ===== EXPORT FUNCTIONS =====
-    function exportReport(type) {
-      showLoading();
-
-      const formData = new FormData();
-      formData.append('export_type', type);
-      formData.append('from', document.getElementById('from-date').value);
-      formData.append('to', document.getElementById('to-date').value);
-      formData.append('group_id', document.querySelector('input[name="group_id"]')?.value || '');
-
-      fetch('/reports/export', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.blob())
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `rapor_${new Date().toISOString().split('T')[0]}.${type}`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      })
-      .catch(error => {
-        console.error('Export error:', error);
-        alert('<?= __('export_error') ?>');
-      })
-      .finally(() => {
-        hideLoading();
-      });
-    }
-
-    // ===== CHART MANAGEMENT =====
-    let trendChart, topAgentsChart, dispChart;
-
-    // Initialize Charts
-    function initCharts() {
-      initTrendChart();
-      initTopAgentsChart();
-      initDispChart();
-    }
-
-    function initTrendChart() {
-      const labels = <?= json_encode(array_map(function($t){return $t['d'];}, $trend ?? []), JSON_UNESCAPED_UNICODE) ?>;
-      const cost = <?= json_encode(array_map(function($t){return (float)$t['cost'];}, $trend ?? [])) ?>;
-      const revenue = <?= json_encode(array_map(function($t){return (float)$t['revenue'];}, $trend ?? [])) ?>;
-
-      const ctx = document.getElementById('trend').getContext('2d');
-      trendChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: '<?= __('cost') ?>',
-              data: cost,
-              borderColor: 'rgba(239,68,68,1)',
-              backgroundColor: 'rgba(239,68,68,0.1)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.4,
-              pointBackgroundColor: 'rgba(239,68,68,1)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2,
-              pointRadius: 6,
-              pointHoverRadius: 8
-            },
-            {
-              label: '<?= __('revenue') ?>',
-              data: revenue,
-              borderColor: 'rgba(16,185,129,1)',
-              backgroundColor: 'rgba(16,185,129,0.1)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.4,
-              pointBackgroundColor: 'rgba(16,185,129,1)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2,
-              pointRadius: 6,
-              pointHoverRadius: 8
-            }
-          ]
+// ── Trend Chart
+(function() {
+  const labels  = trendData.map(t => t.d);
+  const cost    = trendData.map(t => t.cost);
+  const revenue = trendData.map(t => t.revenue);
+  const ctx = document.getElementById('trendChart');
+  if (!ctx) return;
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Maliyet', data: cost,
+          borderColor:'rgba(239,68,68,1)', backgroundColor:'rgba(239,68,68,.1)',
+          borderWidth:2.5, fill:true, tension:.4,
+          pointBackgroundColor:'rgba(239,68,68,1)', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top',
-              labels: {
-                usePointStyle: true,
-                padding: 20
-              }
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0,0,0,0.8)',
-              titleColor: '#fff',
-              bodyColor: '#fff',
-              cornerRadius: 8,
-              displayColors: true
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(0,0,0,0.05)'
-              },
-              ticks: {
-                callback: function(value) {
-                  return '$' + value.toFixed(2);
-                }
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              }
-            }
-          },
-          animation: {
-            duration: 1000,
-            easing: 'easeOutQuart'
-          }
-        }
-      });
-    }
-
-    function initTopAgentsChart() {
-      const agentStats = <?= json_encode($allAgents ?? [], JSON_UNESCAPED_UNICODE) ?>;
-
-      <?php if ($isGroupMember): ?>
-      const topAgents = (agentStats||[]).slice().sort((a,b)=>(+b.calls)-(+a.calls)).slice(0,10);
-      const aLabels = topAgents.map(a=> (a.user_login||a.voip_exten||'agent'));
-      const aData = topAgents.map(a=> +a.calls||0);
-      const metric = 'calls';
-      <?php else: ?>
-      const topAgents = (agentStats||[]).slice().sort((a,b)=>(+b.billsec)-(+a.billsec)).slice(0,10);
-      const aLabels = topAgents.map(a=> (a.user_login||a.voip_exten||'agent'));
-      const aData = topAgents.map(a=> +a.billsec||0);
-      const metric = 'billsec';
-      <?php endif; ?>
-
-      const ctx = document.getElementById('topAgents').getContext('2d');
-      topAgentsChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: aLabels,
-          datasets: [{
-            label: metric === 'calls' ? '<?= __('calls_count') ?>' : '<?= __('billsec_duration') ?>',
-            data: aData,
-            backgroundColor: [
-              'rgba(59,130,246,0.8)',
-              'rgba(16,185,129,0.8)',
-              'rgba(245,158,11,0.8)',
-              'rgba(239,68,68,0.8)',
-              'rgba(139,92,246,0.8)',
-              'rgba(236,72,153,0.8)',
-              'rgba(6,182,212,0.8)',
-              'rgba(34,197,94,0.8)',
-              'rgba(251,146,60,0.8)',
-              'rgba(168,85,247,0.8)'
-            ],
-            borderRadius: 8,
-            borderWidth: 0,
-            hoverBackgroundColor: [
-              'rgba(59,130,246,1)',
-              'rgba(16,185,129,1)',
-              'rgba(245,158,11,1)',
-              'rgba(239,68,68,1)',
-              'rgba(139,92,246,1)',
-              'rgba(236,72,153,1)',
-              'rgba(6,182,212,1)',
-              'rgba(34,197,94,1)',
-              'rgba(251,146,60,1)',
-              'rgba(168,85,247,1)'
-            ]
-          }]
+        <?php if ($isSuper): ?>
+        {
+          label: 'Gelir', data: revenue,
+          borderColor:'rgba(16,185,129,1)', backgroundColor:'rgba(16,185,129,.1)',
+          borderWidth:2.5, fill:true, tension:.4,
+          pointBackgroundColor:'rgba(16,185,129,1)', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0,0,0,0.8)',
-              cornerRadius: 8,
-              callbacks: {
-                label: function(context) {
-                  return context.parsed.y + (metric === 'calls' ? ' <?= __('calls_text') ?>' : ' <?= __('seconds_text') ?>');
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(0,0,0,0.05)'
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              },
-              ticks: {
-                maxRotation: 45,
-                minRotation: 45
-              }
-            }
-          },
-          animation: {
-            duration: 1000,
-            easing: 'easeOutQuart',
-            delay: function(context) {
-              return context.dataIndex * 100;
-            }
-          }
-        }
-      });
+        <?php endif; ?>
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ display:false }, tooltip:{ ...tipOpts, callbacks:{ label: c => c.dataset.label+': $'+c.parsed.y.toFixed(2) } } },
+      scales:{
+        y:{ beginAtZero:true, grid:{ color:gridC }, ticks:{ color:textC, font:{size:11}, callback: v=>'$'+v.toFixed(2) } },
+        x:{ grid:{ display:false }, ticks:{ color:textC, font:{size:11} } }
+      },
+      animation:{ duration:1200, easing:'easeInOutQuart' }
     }
+  });
+})();
 
-    function initDispChart() {
-      const disp = <?= json_encode($dispRows ?? [], JSON_UNESCAPED_UNICODE) ?>;
-      const dLabels = (disp||[]).map(x=>x.d);
-      const dData = (disp||[]).map(x=>+x.n||0);
-
-      const ctx = document.getElementById('dispChart').getContext('2d');
-      dispChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: dLabels,
-          datasets: [{
-            data: dData,
-            backgroundColor: [
-              '#10b981',
-              '#ef4444',
-              '#f59e0b',
-              '#3b82f6',
-              '#8b5cf6',
-              '#ec4899',
-              '#06b6d4',
-              '#84cc16'
-            ],
-            borderWidth: 0,
-            hoverBorderWidth: 2,
-            hoverBorderColor: '#fff'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                padding: 20,
-                usePointStyle: true
-              }
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0,0,0,0.8)',
-              cornerRadius: 8,
-              callbacks: {
-                label: function(context) {
-                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                  const percentage = ((context.parsed / total) * 100).toFixed(1);
-                  return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
-                }
-              }
-            }
-          },
-          animation: {
-            animateScale: true,
-            duration: 1000,
-            easing: 'easeOutQuart'
-          }
-        }
-      });
+// ── Calls Bar
+(function() {
+  const labels = trendData.map(t => t.d);
+  const calls  = trendData.map(t => t.calls);
+  const ctx = document.getElementById('callsBar');
+  if (!ctx) return;
+  callsBarChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Çağrı', data:calls,
+        backgroundColor:'rgba(99,102,241,.75)', borderColor:'rgba(99,102,241,1)',
+        borderWidth:1.5, borderRadius:6, borderSkipped:false,
+        hoverBackgroundColor:'rgba(99,102,241,1)',
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ ...tipOpts, callbacks:{ label: c=>'Çağrı: '+c.parsed.y } } },
+      scales:{
+        y:{ beginAtZero:true, grid:{ color:gridC }, ticks:{ color:textC, font:{size:11} } },
+        x:{ grid:{ display:false }, ticks:{ color:textC, font:{size:11} } }
+      },
+      animation:{ duration:1200, easing:'easeInOutQuart', delay: c => c.dataIndex * 60 }
     }
+  });
+})();
 
-    // Chart control functions
-    function toggleChartData(type) {
-      if (!trendChart) return;
-
-      const datasetIndex = type === 'cost' ? 0 : 1;
-      const meta = trendChart.getDatasetMeta(datasetIndex);
-      meta.hidden = meta.hidden === null ? !trendChart.data.datasets[datasetIndex].hidden : null;
-
-      trendChart.update();
+// ── Disposition Donut
+(function() {
+  const labels = dispData.map(d => d.d);
+  const data   = dispData.map(d => +d.n||0);
+  const ctx = document.getElementById('dispChart');
+  if (!ctx) return;
+  dispChart = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels,
+      datasets:[{ data, backgroundColor:['rgba(16,185,129,.85)','rgba(148,163,184,.85)','rgba(245,158,11,.85)','rgba(239,68,68,.85)','rgba(99,102,241,.85)'], borderColor:isDark?'#1e293b':'#fff', borderWidth:3, hoverOffset:6 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'68%',
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ ...tipOpts, callbacks:{ label: c => { const total=c.dataset.data.reduce((a,b)=>a+b,0); return c.label+': '+c.parsed+' (%'+((c.parsed/total)*100).toFixed(1)+')'; } } }
+      },
+      animation:{ animateRotate:true, duration:1200 }
     }
+  });
+})();
 
-    function changeTopAgentsMetric(metric) {
-      if (!topAgentsChart) return;
-
-      const agentStats = <?= json_encode($allAgents ?? [], JSON_UNESCAPED_UNICODE) ?>;
-      const sorted = agentStats.slice().sort((a,b)=>(+b[metric])-(+a[metric])).slice(0,10);
-      const labels = sorted.map(a=> (a.user_login||a.voip_exten||'agent'));
-      const data = sorted.map(a=> +a[metric]||0);
-
-      topAgentsChart.data.labels = labels;
-      topAgentsChart.data.datasets[0].data = data;
-      topAgentsChart.data.datasets[0].label = metric === 'calls' ? '<?= __('calls_count') ?>' : '<?= __('billsec_duration') ?>';
-      topAgentsChart.update();
+// ── Top Agents
+function buildAgentChart(metric) {
+  const sorted = [...allAgentData].sort((a,b)=>(+b[metric])-(+a[metric])).slice(0,10);
+  const labels = sorted.map(a => a.user_login || a.voip_exten || 'agent');
+  const data   = sorted.map(a => +a[metric]||0);
+  const colors = ['rgba(99,102,241,.8)','rgba(16,185,129,.8)','rgba(245,158,11,.8)','rgba(239,68,68,.8)','rgba(139,92,246,.8)','rgba(236,72,153,.8)','rgba(6,182,212,.8)','rgba(34,197,94,.8)','rgba(251,146,60,.8)','rgba(168,85,247,.8)'];
+  const ctx = document.getElementById('topAgentsChart');
+  if (!ctx) return;
+  if (agentChart) agentChart.destroy();
+  agentChart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[{ label:metric==='calls'?'Çağrı':'Süre (sn)', data, backgroundColor:colors, borderRadius:6, borderWidth:0, hoverBackgroundColor:colors.map(c=>c.replace('.8','.95')) }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{ display:false }, tooltip:{ ...tipOpts, callbacks:{ label: c=>c.parsed.x+(metric==='calls'?' çağrı':' sn') } } },
+      scales:{
+        x:{ beginAtZero:true, grid:{ color:gridC }, ticks:{ color:textC, font:{size:11} } },
+        y:{ grid:{ display:false }, ticks:{ color:textC, font:{size:11,weight:'600'} } }
+      },
+      animation:{ duration:900, easing:'easeInOutQuart', delay: c=>c.dataIndex*60 }
     }
+  });
+}
+buildAgentChart('calls');
 
-    function toggleDispChart() {
-      if (!dispChart) return;
+function switchAgentMetric(metric) {
+  buildAgentChart(metric);
+  document.querySelectorAll('.agent-metric-btn').forEach(b => {
+    b.className = b.className.replace(/bg-indigo-100[^\s]*/g,'').replace(/text-indigo-600[^\s]*/g,'').replace(/border-indigo-200[^\s]*/g,'').replace(/dark:bg-indigo-900[^\s]*/g,'').replace(/dark:text-indigo-300[^\s]*/g,'').replace(/dark:border-indigo-700[^\s]*/g,'').trim();
+    b.classList.add('bg-slate-100','dark:bg-slate-700','text-slate-500','dark:text-slate-400','border-slate-200','dark:border-slate-600');
+  });
+  const active = document.getElementById('btn-agent-'+metric);
+  if (active) {
+    active.classList.remove('bg-slate-100','dark:bg-slate-700','text-slate-500','dark:text-slate-400','border-slate-200','dark:border-slate-600');
+    active.classList.add('bg-indigo-100','dark:bg-indigo-900/30','text-indigo-600','dark:text-indigo-300','border-indigo-200','dark:border-indigo-700/40');
+  }
+}
 
-      // Rotate colors
-      const colors = dispChart.data.datasets[0].backgroundColor;
-      colors.unshift(colors.pop());
-      dispChart.update();
-    }
+// ── Toggle dataset visibility
+function toggleDataset(chartName, idx) {
+  const chart = chartName === 'trend' ? trendChart : null;
+  if (!chart) return;
+  const meta = chart.getDatasetMeta(idx);
+  meta.hidden = !meta.hidden;
+  chart.update();
+  const btn = idx === 0 ? document.getElementById('btn-cost') : document.getElementById('btn-rev');
+  if (btn) btn.style.opacity = meta.hidden ? '.4' : '1';
+}
 
-    function toggleTableView() {
-      // Simple table view toggle - could be expanded
-      alert('<?= __('table_view_changed') ?>');
-    }
+// ── Date presets
+function setPreset(range, btn) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  let f, t;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  switch(range) {
+    case 'today':     f = t = today; break;
+    case 'yesterday': const y=new Date(today); y.setDate(y.getDate()-1); f=t=y; break;
+    case 'week':      f=new Date(today); f.setDate(f.getDate()-today.getDay()); t=today; break;
+    case 'month':     f=new Date(today.getFullYear(),today.getMonth(),1); t=today; break;
+    case 'lastmonth': f=new Date(today.getFullYear(),today.getMonth()-1,1); t=new Date(today.getFullYear(),today.getMonth(),0); break;
+    case 'last7':     f=new Date(today); f.setDate(f.getDate()-6); t=today; break;
+    case 'last30':    f=new Date(today); f.setDate(f.getDate()-29); t=today; break;
+    default: return;
+  }
+  document.getElementById('from-date').value = fmt(f)+'T00:00';
+  document.getElementById('to-date').value   = fmt(t)+'T23:59';
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('bg-indigo-600','text-white','border-indigo-600'));
+  if (btn) { btn.classList.add('bg-indigo-600','text-white','border-indigo-600'); }
+}
 
-    // ===== INITIALIZATION =====
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initialize charts
-      initCharts();
+// ── Agent search
+function filterAgentTable(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('.agent-row').forEach(row => {
+    const name = row.querySelector('.agent-name')?.textContent.toLowerCase() || '';
+    row.style.display = name.includes(q) ? '' : 'none';
+  });
+}
 
-      // Animate numbers
-      document.querySelectorAll('[data-count]').forEach(element => {
-        const targetValue = parseFloat(element.getAttribute('data-count')) || 0;
-        animateNumber(element, targetValue);
-      });
+// ── Export
+function exportReport(type) {
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  const from = document.getElementById('from-date').value;
+  const to   = document.getElementById('to-date').value;
+  const gid  = document.querySelector('input[name="group_id"]')?.value || '';
+  const url  = `/VoipPanelAi/reports/export?type=${type}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&group_id=${gid}`;
+  const a = document.createElement('a');
+  a.href = url; a.download = `rapor_${new Date().toISOString().split('T')[0]}.${type}`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => document.getElementById('loading-overlay').classList.add('hidden'), 1500);
+}
 
-      // Hide loading on page load
-      hideLoading();
+// ── Form submit loader
+document.getElementById('filterForm').addEventListener('submit', () => {
+  document.getElementById('loading-overlay').classList.remove('hidden');
+});
 
-      // Add smooth scrolling for better UX
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-          e.preventDefault();
-          document.querySelector(this.getAttribute('href')).scrollIntoView({
-            behavior: 'smooth'
-          });
-        });
-      });
-    });
+// ── Resize charts
+window.addEventListener('resize', () => {
+  setTimeout(() => {
+    [trendChart, agentChart, callsBarChart, dispChart].forEach(c => c?.resize());
+  }, 200);
+}, {passive:true});
+</script>
 
-    // ===== FORM SUBMISSION HANDLING =====
-    document.querySelector('form').addEventListener('submit', function() {
-      showLoading();
-    });
-
-    // ===== RESPONSIVE HANDLING =====
-    window.addEventListener('resize', function() {
-      // Re-initialize charts on resize for better responsiveness
-      setTimeout(() => {
-        if (trendChart) trendChart.resize();
-        if (topAgentsChart) topAgentsChart.resize();
-        if (dispChart) dispChart.resize();
-      }, 250);
-    });
-  </script>
-<?php require dirname(__DIR__).'/partials/footer.php'; ?>
+<?php require dirname(__DIR__) . '/partials/footer.php'; ?>
