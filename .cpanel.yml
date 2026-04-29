@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/qoreamigds/crm.akkocbilisim.com/VoipPanelAi
+    - /bin/cp -R ./ $DEPLOYPATH
