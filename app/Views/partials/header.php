@@ -516,20 +516,16 @@ Lang::load(Lang::current());
       function toggleTheme() {
         const isCurrentlyDark = document.documentElement.classList.contains('dark');
         
-        console.log('Current theme:', isCurrentlyDark ? 'dark' : 'light');
-        
         if (isCurrentlyDark) {
           // Switch to light mode
           document.documentElement.classList.remove('dark');
           document.body.classList.remove('dark');
           localStorage.setItem('theme', 'light');
-          console.log('Switched to light mode');
         } else {
           // Switch to dark mode
           document.documentElement.classList.add('dark');
           document.body.classList.add('dark');
           localStorage.setItem('theme', 'dark');
-          console.log('Switched to dark mode');
         }
 
         // Force a repaint
@@ -552,8 +548,7 @@ Lang::load(Lang::current());
             themeIcon.className = 'fa-solid fa-moon text-white text-base';
           }
         }
-        console.log('Icon updated, isDark:', isDark);
-      }
+        }
 
       // Theme toggle buttons
       const themeBtn = document.getElementById('toggle-theme');
@@ -659,19 +654,6 @@ Lang::load(Lang::current());
         });
       }
 
-      // Initialize theme icon on load
-      function updateThemeIcon() {
-        const isDark = document.documentElement.classList.contains('dark');
-        const themeIcon = document.querySelector('#toggle-theme i');
-        if (themeIcon) {
-          if (isDark) {
-            themeIcon.className = 'fa-solid fa-sun text-yellow-400 text-base';
-          } else {
-            themeIcon.className = 'fa-solid fa-moon text-white text-base';
-          }
-        }
-      }
-      
       // Set initial theme icon
       updateThemeIcon();
 

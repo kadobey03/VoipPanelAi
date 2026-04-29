@@ -27,6 +27,7 @@ class AuthController {
                 $stmt->close();
 
                 if ($user && Security::verify($password, $user['password'])) {
+                    session_regenerate_id(true);
                     $_SESSION['user'] = [
                         'id' => (int)$user['id'],
                         'login' => $user['login'],

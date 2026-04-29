@@ -471,6 +471,7 @@ class CallsController {
     }
 
     public function syncCallStats(){
+        $this->requireAuth();
         // Only for cron or superadmin, but assume cron
         $api = new ApiClient();
         $db = DB::conn();

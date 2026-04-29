@@ -174,7 +174,7 @@ $billsecFmt    = function(int $s): string { return sprintf('%dsa %02ddak', floor
 </div>
 
 <!-- ══════════════════════════════════════════════════ TODAY STATS -->
-<?php if ($todayTotal > 0 || true): ?>
+<?php if ($todayTotal > 0): ?>
 <div class="mb-6">
   <div class="flex items-center gap-2 mb-3">
     <i class="fa-solid fa-sun text-amber-500"></i>

@@ -645,7 +645,6 @@ class GroupController {
             
             // Read and decode input
             $inputData = file_get_contents('php://input');
-            error_log('GroupController::cancelCryptoPayment - Raw input: ' . $inputData);
             
             $input = json_decode($inputData, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
@@ -656,8 +655,6 @@ class GroupController {
             
             $paymentId = (int)($input['payment_id'] ?? 0);
             $groupId = (int)($input['group_id'] ?? 0);
-            
-            error_log('GroupController::cancelCryptoPayment - Parsed: paymentId=' . $paymentId . ', groupId=' . $groupId);
             
             if (!$paymentId || !$groupId) {
                 echo json_encode(['success' => false, 'error' => 'Eksik parametreler']);
@@ -672,8 +669,6 @@ class GroupController {
             
             $db = DB::conn();
             $userId = (int)($_SESSION['user']['id'] ?? 0);
-            
-            error_log('GroupController::cancelCryptoPayment - userId=' . $userId);
             
             $db->begin_transaction();
             
@@ -690,8 +685,6 @@ class GroupController {
             $stmt->execute();
             $payment = $stmt->get_result()->fetch_assoc();
             $stmt->close();
-            
-            error_log('GroupController::cancelCryptoPayment - Found payment: ' . json_encode($payment));
             
             if (!$payment) {
                 $db->rollback();
@@ -711,8 +704,6 @@ class GroupController {
             $stmt->bind_param('si', $cancelledStatus, $paymentId);
             $executeResult2 = $stmt->execute();
             $stmt->close();
-            
-            error_log('GroupController::cancelCryptoPayment - Update results: ' . $executeResult1 . ', ' . $executeResult2);
             
             $db->commit();
             
@@ -747,7 +738,6 @@ class GroupController {
                 // Don't fail the cancellation if Telegram fails
             }
             
-            error_log('GroupController::cancelCryptoPayment - Success');
             echo json_encode(['success' => true, 'message' => 'Ödeme başarıyla iptal edildi']);
             
         } catch (\Exception $e) {
