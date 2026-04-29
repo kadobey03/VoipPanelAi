@@ -263,25 +263,25 @@ footer{border-top:1px solid var(--border);padding:36px 0}
     <div class="grid-dots"></div>
   </div>
   <div class="hero-inner">
-    <div class="badge"><div class="badge-dot"></div> Profesyonel VoIP Yönetim Platformu</div>
+    <div class="badge"><div class="badge-dot"></div> Çağrı Merkezleri İçin VoIP Hat Sağlayıcı</div>
 
     <h1 class="hero-title">
-      Çağrı Merkezinizi<br>
-      <span class="grad-text">Tam Kontrol Altına</span><br>
-      Alın
+      Çağrı Merkezinize<br>
+      <span class="grad-text">Kaliteli VoIP Hat</span><br>
+      Sağlıyoruz
     </h1>
 
     <p class="hero-sub">
-      Gerçek zamanlı çağrı izleme, otomatik faturalandırma ve gelişmiş
-      raporlama ile çağrı merkezinizi bir üst seviyeye taşıyın.
+      Çağrı merkeziniz için yüksek kaliteli, kesintisiz VoIP telefon hattı.
+      Dakika başı sabit ücret, sürpriz fatura yok. Kendi panelinizden tam kontrol.
     </p>
 
     <div class="hero-btns">
-      <a href="/VoipPanelAi/register" class="btn-primary">
-        <i class="fa-solid fa-rocket"></i>Ücretsiz Başla<i class="fa-solid fa-arrow-right"></i>
+      <a href="https://t.me/lionmw" target="_blank" class="btn-primary">
+        <i class="fa-brands fa-telegram"></i>Hemen İletişime Geç<i class="fa-solid fa-arrow-right"></i>
       </a>
       <a href="/VoipPanelAi/" class="btn-ghost">
-        <i class="fa-solid fa-right-to-bracket"></i>Giriş Yap
+        <i class="fa-solid fa-right-to-bracket"></i>Panel Girişi
       </a>
     </div>
 
@@ -292,9 +292,9 @@ footer{border-top:1px solid var(--border);padding:36px 0}
     <div class="hero-stats">
       <div class="stat"><div class="stat-num" data-target="99.9" data-dec="1">0</div><div class="stat-label">% Uptime</div></div>
       <div class="stat-div"></div>
-      <div class="stat"><div class="stat-num" data-target="500" data-suf="K+">0</div><div class="stat-label">Günlük Çağrı</div></div>
+      <div class="stat"><div class="stat-num" data-target="0.35" data-dec="2" data-pre="$">0</div><div class="stat-label">Sabit Dakika Ücreti</div></div>
       <div class="stat-div"></div>
-      <div class="stat"><div class="stat-num" data-target="150" data-suf="+">0</div><div class="stat-label">Aktif Müşteri</div></div>
+      <div class="stat"><div class="stat-num" data-target="100" data-suf="+">0</div><div class="stat-label">Aktif Müşteri</div></div>
       <div class="stat-div"></div>
       <div class="stat"><div class="stat-num" data-target="24" data-suf="/7">0</div><div class="stat-label">Teknik Destek</div></div>
     </div>
@@ -310,7 +310,7 @@ footer{border-top:1px solid var(--border);padding:36px 0}
         <div class="pdot" style="background:#ef4444"></div>
         <div class="pdot" style="background:#f59e0b"></div>
         <div class="pdot" style="background:#22c55e"></div>
-        <div class="purl">crm.akkocbilisim.com/VoipPanelAi</div>
+        <div class="purl">panel.papamvoip.com</div>
       </div>
       <div class="preview-content">
         <div class="p-sidebar">
@@ -355,22 +355,22 @@ footer{border-top:1px solid var(--border);padding:36px 0}
 <section class="section" id="features">
   <div class="container">
     <div class="reveal" style="max-width:600px">
-      <div class="sec-badge"><i class="fa-solid fa-sparkles"></i> Özellikler</div>
-      <h2 class="sec-title">Her şey tek platformda,<br><span class="grad-text">eksiksiz kontrol</span></h2>
-      <p class="sec-sub">Çağrı merkezinizi yönetmek için ihtiyaç duyduğunuz tüm araçlar.</p>
+      <div class="sec-badge"><i class="fa-solid fa-sparkles"></i> Neler Sunuyoruz</div>
+      <h2 class="sec-title">Çağrı merkeziniz için<br><span class="grad-text">eksiksiz VoIP çözümü</span></h2>
+      <p class="sec-sub">Sadece hat satmıyoruz — yönetim paneli, raporlama ve destek dahil tam bir sistem sağlıyoruz.</p>
     </div>
     <div class="feat-grid">
       <?php
       $feats=[
-        ['linear-gradient(135deg,#7c3aed,#6366f1)','fa-chart-line','Gerçek Zamanlı Analitik','Çağrı istatistiklerini anlık izleyin. Cevap oranları, süreler ve maliyet analizlerini dakika dakika takip edin.'],
-        ['linear-gradient(135deg,#10b981,#06b6d4)','fa-layer-group','Çoklu Grup Yönetimi','Sınırsız grup oluşturun, her gruba bağımsız bakiye ve kota tanımlayın. Farklı ekipleri tek panel üzerinden yönetin.'],
-        ['linear-gradient(135deg,#f59e0b,#ef4444)','fa-bolt','Otomatik Faturalandırma','Saniye bazında faturalandırma, margin yönetimi ve otomatik bakiye uyarıları ile finansal kontrolü elinizde tutun.'],
-        ['linear-gradient(135deg,#06b6d4,#3b82f6)','fa-headset','Agent Yönetimi','Agentleri ekleyin, aktif/pasif yapın ve abonelik planları ile maliyetleri optimize edin.'],
-        ['linear-gradient(135deg,#7c3aed,#ec4899)','fa-brands fa-telegram','Telegram Bildirimleri','Bakiye düştüğünde veya kritik anlarda anında Telegram bildirimi alın. @lionmw'],
-        ['linear-gradient(135deg,#10b981,#22c55e)','fa-shield-halved','Güvenli Ödeme Sistemi','USDT/TRC20 kripto ödeme desteği, güvenli bakiye yükleme ve tam işlem geçmişi.'],
-        ['linear-gradient(135deg,#f59e0b,#fbbf24)','fa-table-list','Detaylı CDR Raporları','Tüm çağrı kayıtlarını filtreleyin, sıralayın ve CSV olarak indirin. Tarih, agent, grup filtresi.'],
-        ['linear-gradient(135deg,#6366f1,#06b6d4)','fa-globe','Çok Dilli Destek','Türkçe, İngilizce ve Rusça dil desteği. Kullanıcılarınız kendi dillerinde çalışabilir.'],
-        ['linear-gradient(135deg,#ec4899,#f43f5e)','fa-mobile-screen','Mobil Uyumlu Tasarım','Her cihazda mükemmel çalışan responsive tasarım. Telefon, tablet ve masaüstünde sorunsuz.'],
+        ['linear-gradient(135deg,#7c3aed,#6366f1)','fa-phone-volume','Yüksek Kaliteli VoIP Hat','Çağrı merkeziniz için kristal netliğinde ses kalitesi. Kesintisiz, düşük gecikmeli hat altyapısı ile müşterilerinizle sorunsuz iletişim kurun.'],
+        ['linear-gradient(135deg,#10b981,#06b6d4)','fa-layer-group','Çoklu Grup Yönetimi','Her müşteriniz veya departmanınız için ayrı grup oluşturun. Bağımsız bakiye, kota ve hat yönetimi tek panelden.'],
+        ['linear-gradient(135deg,#f59e0b,#ef4444)','fa-coins','Dakika Başı Sabit Ücret','$0.35/dk sabit fiyat, gizli ücret yok. Saniye bazında faturalandırma ile sadece konuştuğunuz kadar ödeyin.'],
+        ['linear-gradient(135deg,#06b6d4,#3b82f6)','fa-headset','Agent Takibi','Hangi agent ne kadar konuştu, ne kadar maliyet oluştu? Detaylı agent bazlı raporlarla tam görünürlük.'],
+        ['linear-gradient(135deg,#7c3aed,#ec4899)','fa-brands fa-telegram','Anlık Bildirimler','Bakiye düştüğünde, ödeme geldiğinde veya hatta sorun oluştuğunda anında Telegram bildirimi.'],
+        ['linear-gradient(135deg,#10b981,#22c55e)','fa-shield-halved','Kripto Ödeme Desteği','USDT/TRC20 ile güvenli ve hızlı bakiye yükleme. Anlık işlem takibi ve otomatik onay.'],
+        ['linear-gradient(135deg,#f59e0b,#fbbf24)','fa-table-list','Detaylı CDR Kayıtları','Tüm çağrı kayıtlarını görün, filtreleyin ve indirin. Tarih, agent, numara ve süreye göre sorgulama.'],
+        ['linear-gradient(135deg,#6366f1,#06b6d4)','fa-globe','Çok Dilli Panel','Türkçe, İngilizce ve Rusça dil desteği. Farklı ülkelerdeki ekipleriniz kendi dilinde çalışabilir.'],
+        ['linear-gradient(135deg,#ec4899,#f43f5e)','fa-bolt','Hızlı Kurulum','Başvurun, $100 kurulum ücretini ödeyin, 24 saat içinde hattınız aktif olsun. Sıfır teknik bilgi gerekmiyor.'],
       ];
       foreach($feats as $i=>[$bg,$icon,$title,$desc]):
         $d=['','d1','d2'][$i%3];
@@ -390,22 +390,22 @@ footer{border-top:1px solid var(--border);padding:36px 0}
   <div class="container">
     <div class="reveal" style="text-align:center">
       <div class="sec-badge" style="display:inline-flex"><i class="fa-solid fa-map"></i> Nasıl Çalışır</div>
-      <h2 class="sec-title" style="margin-top:10px">Dakikalar içinde <span class="grad-text">hazır</span></h2>
-      <p class="sec-sub" style="margin:0 auto">Karmaşık kurulum gerektirmez. Hesabınızı açın ve hemen başlayın.</p>
+      <h2 class="sec-title" style="margin-top:10px">Hat almak <span class="grad-text">çok kolay</span></h2>
+      <p class="sec-sub" style="margin:0 auto">Sadece 4 adımda çağrı merkeziniz VoIP hattına kavuşuyor.</p>
     </div>
     <div class="steps-grid">
       <?php
       $steps=[
-        ['Hesap Oluşturun','Hızlı kayıt formu ile dakikalar içinde hesabınızı açın.','fa-user-plus'],
-        ['API Bağlantısı','VoIP sağlayıcınızın API bilgilerini girin, sistemi entegre edin.','fa-plug'],
-        ['Grup & Agent','Ekiplerinizi gruplar halinde organize edin, agentleri ekleyin.','fa-users-gear'],
-        ['Yayına Geçin','Her şey hazır! Çağrılarınızı gerçek zamanlı izlemeye başlayın.','fa-rocket'],
+        ['Telegram\'dan Ulaşın','@lionmw veya @Itsupportemre üzerinden iletişime geçin, ihtiyacınızı anlatın.','fa-brands fa-telegram'],
+        ['Kurulum Ödemesi','Tek seferlik $100 kurulum ücretini USDT/TRC20 ile gönderin.','fa-coins'],
+        ['Panel Kurulumu','24 saat içinde paneliniz hazır, kullanıcılar ve gruplar oluşturuluyor.','fa-users-gear'],
+        ['Aramaya Başlayın','Hattınız aktif! Dakika başı $0.35 sabit fiyatla arama yapın, bakiyenizi takip edin.','fa-phone-volume'],
       ];
       foreach($steps as $i=>[$t,$d,$ic]):
       ?>
       <div class="step-card reveal d<?=$i+1?>">
         <div class="step-num"><?=$i+1?></div>
-        <div class="step-icon"><i class="fa-solid <?=$ic?>"></i></div>
+        <div class="step-icon"><i class="<?=$ic?>"></i></div>
         <div class="step-title"><?=$t?></div>
         <div class="step-desc"><?=$d?></div>
       </div>
@@ -467,52 +467,64 @@ footer{border-top:1px solid var(--border);padding:36px 0}
   <div class="container">
     <div class="reveal" style="text-align:center">
       <div class="sec-badge" style="display:inline-flex"><i class="fa-solid fa-tag"></i> Fiyatlandırma</div>
-      <h2 class="sec-title" style="margin-top:10px">İhtiyacınıza uygun <span class="grad-text">plan seçin</span></h2>
-      <p class="sec-sub" style="margin:0 auto">Tüm planlar 14 gün ücretsiz deneme içerir. Kredi kartı gerekmez.</p>
+      <h2 class="sec-title" style="margin-top:10px">Şeffaf ve <span class="grad-text">basit fiyatlandırma</span></h2>
+      <p class="sec-sub" style="margin:0 auto">Gizli ücret yok. Tek seferlik kurulum + kullandığın kadar öde.</p>
     </div>
-    <div class="pricing-grid">
-      <div class="p-card-wrap reveal d1">
-        <div class="p-name">STARTER</div>
-        <div class="p-price">$49<span class="p-price-sub">/ay</span></div>
-        <div class="p-desc">Küçük ekipler için ideal başlangıç</div>
-        <ul class="p-features">
-          <li><i class="fa-solid fa-check y"></i>5 Agent</li>
-          <li><i class="fa-solid fa-check y"></i>2 Grup</li>
-          <li><i class="fa-solid fa-check y"></i>CDR Raporları</li>
-          <li><i class="fa-solid fa-check y"></i>Email Destek</li>
-          <li class="no"><i class="fa-solid fa-xmark n"></i>Telegram Bildirim</li>
-          <li class="no"><i class="fa-solid fa-xmark n"></i>API Entegrasyon</li>
+
+    <!-- 2 fiyat kartı -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:56px;max-width:700px;margin-left:auto;margin-right:auto">
+
+      <!-- Kurulum -->
+      <div class="p-card-wrap reveal d1" style="text-align:center">
+        <div style="width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,#7c3aed,#6366f1);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 30px rgba(124,58,237,.4)">
+          <i class="fa-solid fa-rocket" style="color:#fff;font-size:24px"></i>
+        </div>
+        <div class="p-name">TEK SEFERLİK</div>
+        <div class="p-price" style="font-size:3.5rem">$100<span class="p-price-sub" style="font-size:15px"> kurulum</span></div>
+        <div class="p-desc" style="margin-bottom:22px">Panel kurulumu ve yapılandırma ücreti</div>
+        <ul class="p-features" style="text-align:left">
+          <li><i class="fa-solid fa-check y"></i>Tam panel kurulumu</li>
+          <li><i class="fa-solid fa-check y"></i>API entegrasyonu</li>
+          <li><i class="fa-solid fa-check y"></i>Grup & kullanıcı yapılandırması</li>
+          <li><i class="fa-solid fa-check y"></i>Başlangıç eğitimi</li>
         </ul>
-        <a href="https://t.me/lionmw" target="_blank" class="btn-p out">Teklif Al</a>
+        <a href="https://t.me/lionmw" target="_blank" class="btn-p out">Bilgi Al →</a>
       </div>
-      <div class="p-card-wrap pop reveal d2">
-        <div class="pop-badge">🔥 En Popüler</div>
-        <div class="p-name">PROFESSIONAL</div>
-        <div class="p-price">$149<span class="p-price-sub">/ay</span></div>
-        <div class="p-desc">Büyüyen işletmeler için tam paket</div>
-        <ul class="p-features">
-          <li><i class="fa-solid fa-check y"></i>25 Agent</li>
-          <li><i class="fa-solid fa-check y"></i>Sınırsız Grup</li>
-          <li><i class="fa-solid fa-check y"></i>Gelişmiş CDR Raporları</li>
-          <li><i class="fa-solid fa-check y"></i>Telegram Bildirim</li>
-          <li><i class="fa-solid fa-check y"></i>API Entegrasyon</li>
-          <li><i class="fa-solid fa-check y"></i>Kripto Ödeme (USDT)</li>
+
+      <!-- Dakika ücreti -->
+      <div class="p-card-wrap pop reveal d2" style="text-align:center">
+        <div class="pop-badge">💡 Kullandığın Kadar Öde</div>
+        <div style="width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,#06b6d4,#10b981);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 30px rgba(6,182,212,.4)">
+          <i class="fa-solid fa-phone" style="color:#fff;font-size:24px"></i>
+        </div>
+        <div class="p-name">DAKİKA ÜCRETİ</div>
+        <div class="p-price" style="font-size:3.5rem">$0.35<span class="p-price-sub" style="font-size:15px"> /dk</span></div>
+        <div class="p-desc" style="margin-bottom:22px">Her dakika için sabit ücret, sürpriz yok</div>
+        <ul class="p-features" style="text-align:left">
+          <li><i class="fa-solid fa-check y"></i>Saniye bazında faturalandırma</li>
+          <li><i class="fa-solid fa-check y"></i>Gerçek zamanlı bakiye takibi</li>
+          <li><i class="fa-solid fa-check y"></i>Otomatik bakiye uyarısı</li>
+          <li><i class="fa-solid fa-check y"></i>USDT / TRC20 ödeme desteği</li>
         </ul>
-        <a href="https://t.me/lionmw" target="_blank" class="btn-p prim">Demo Talep Et</a>
+        <a href="https://t.me/lionmw" target="_blank" class="btn-p prim">Hemen Başla</a>
       </div>
-      <div class="p-card-wrap reveal d3">
-        <div class="p-name">ENTERPRISE</div>
-        <div class="p-price">Özel<span class="p-price-sub"> fiyat</span></div>
-        <div class="p-desc">Kurumsal müşteriler için özel çözüm</div>
-        <ul class="p-features">
-          <li><i class="fa-solid fa-check y"></i>Sınırsız Agent</li>
-          <li><i class="fa-solid fa-check y"></i>Sınırsız Grup</li>
-          <li><i class="fa-solid fa-check y"></i>White-label Seçeneği</li>
-          <li><i class="fa-solid fa-check y"></i>Özel Entegrasyonlar</li>
-          <li><i class="fa-solid fa-check y"></i>SLA Garantisi</li>
-          <li><i class="fa-solid fa-check y"></i>7/24 Öncelikli Destek</li>
-        </ul>
-        <a href="https://t.me/lionmw" target="_blank" class="btn-p out">Bize Ulaşın</a>
+
+    </div>
+
+    <!-- Örnek hesap -->
+    <div class="reveal" style="margin-top:40px;max-width:700px;margin-left:auto;margin-right:auto">
+      <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:16px;padding:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fa-solid fa-calculator" style="color:#c4b5fd;font-size:18px"></i>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px">Örnek Hesaplama</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6">
+            Günde <strong style="color:#c4b5fd">100 dakika</strong> konuşma →
+            <strong style="color:#10b981">100 × $0.35 = $35/gün</strong> &nbsp;·&nbsp;
+            Aylık yaklaşık <strong style="color:#10b981">~$1,050</strong>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -538,8 +550,8 @@ footer{border-top:1px solid var(--border);padding:36px 0}
 <section class="cta-section">
   <div class="container">
     <div class="cta-box reveal">
-      <h2 class="cta-title">Bugün başlayın,<br><span class="grad-text">farkı hemen görün</span></h2>
-      <p class="cta-sub">Dakikalar içinde kurulum yapın, anında sonuç görün. 14 gün ücretsiz deneyin.</p>
+      <h2 class="cta-title">Çağrı merkezinize<br><span class="grad-text">kaliteli hat sağlayalım</span></h2>
+      <p class="cta-sub">Telegram'dan ulaşın, $100 kurulum ücreti ile panelinizi kurun. 24 saat içinde aktif.</p>
       <div class="cta-btns">
         <a href="/VoipPanelAi/register" class="btn-primary" style="font-size:15px;padding:15px 38px">
           <i class="fa-solid fa-rocket"></i>Ücretsiz Hesap Aç<i class="fa-solid fa-arrow-right"></i>
@@ -596,7 +608,7 @@ function runCounters(){
     let v=0,dur=1800,step=16,inc=target/(dur/step);
     const t=setInterval(()=>{
       v=Math.min(v+inc,target);
-      el.textContent=(dec?v.toFixed(dec):Math.floor(v))+suf;
+      const pre=el.dataset.pre||''; el.textContent=pre+(dec?v.toFixed(dec):Math.floor(v))+suf;
       if(v>=target)clearInterval(t);
     },step);
   });
