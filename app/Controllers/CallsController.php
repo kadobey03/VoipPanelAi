@@ -74,7 +74,8 @@ class CallsController {
         $sortCol     = in_array($_GET['sort'] ?? '', ['start','duration','billsec','amount_charged','cost_api']) ? $_GET['sort'] : 'start';
         $sortDir     = strtoupper($_GET['dir'] ?? 'DESC') === 'ASC' ? 'ASC' : 'DESC';
         $page        = max(1, (int)($_GET['page'] ?? 1));
-        $per         = in_array((int)($_GET['per'] ?? 25), [10,25,50,100,200]) ? (int)$_GET['per'] : 25;
+        $perRaw      = (int)($_GET['per'] ?? 25);
+        $per         = in_array($perRaw, [10,25,50,100,200]) ? $perRaw : 25;
         $offset      = ($page - 1) * $per;
         $selectedGroup = $isSuper ? (isset($_GET['group_id']) && $_GET['group_id'] !== '' ? (int)$_GET['group_id'] : null) : (int)($user['group_id'] ?? 0);
 
