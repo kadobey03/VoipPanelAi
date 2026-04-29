@@ -170,6 +170,25 @@ class DB {
 
         }
 
+        // crypto_payments commission columns
+        $hasCryptoPayments = false;
+        $res = $db->query("SHOW TABLES LIKE 'crypto_payments'");
+        if ($res) { $hasCryptoPayments = $res->num_rows > 0; $res->free(); }
+        if ($hasCryptoPayments) {
+            if (!$hasCol('crypto_payments', 'commission_percent')) {
+                $db->query('ALTER TABLE `crypto_payments` ADD COLUMN `commission_percent` DECIMAL(5,2) DEFAULT 2.00 AFTER `amount_requested`');
+            }
+            if (!$hasCol('crypto_payments', 'commission_amount')) {
+                $db->query('ALTER TABLE `crypto_payments` ADD COLUMN `commission_amount` DECIMAL(12,4) DEFAULT 0.0000 AFTER `commission_percent`');
+            }
+            if (!$hasCol('crypto_payments', 'amount_with_commission')) {
+                $db->query('ALTER TABLE `crypto_payments` ADD COLUMN `amount_with_commission` DECIMAL(12,4) DEFAULT 0.0000 AFTER `commission_amount`');
+            }
+        }
+
+        // transactions type enum — include agent_purchase, agent_subscription, commission
+        $db->query("ALTER TABLE `transactions` MODIFY COLUMN `type` ENUM('topup','debit_call','debit_call_stat','adjust','agent_purchase','agent_subscription','commission') NOT NULL");
+
         // users table migrations
         if (!$hasCol('users', 'agent_id')) {
             $db->query('ALTER TABLE `users` ADD COLUMN `agent_id` INT NULL AFTER `group_id`');

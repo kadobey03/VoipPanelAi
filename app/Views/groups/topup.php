@@ -36,10 +36,25 @@
       <!-- Payment Amount -->
       <div class="bg-white dark:bg-gray-800 p-6 border-x border-gray-200 dark:border-gray-700">
         <div class="text-center mb-6">
-          <div class="text-3xl font-bold text-green-600 mb-2">
-            <?= number_format($cryptoPaymentData['amount'], 2) ?> USDT
+          <div class="text-3xl font-bold text-green-600 mb-1">
+            <?= number_format($cryptoPaymentData['amount_with_commission'] ?? ($cryptoPaymentData['amount'] * 1.02), 2) ?> USDT
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">TRC20 Network</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Gönderilecek Toplam (TRC20 Network)</div>
+          <!-- Commission breakdown -->
+          <div class="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 text-sm text-left">
+            <div class="flex justify-between text-gray-700 dark:text-gray-300 mb-1">
+              <span>Yüklenecek Bakiye</span>
+              <span class="font-medium"><?= number_format((float)$cryptoPaymentData['amount'], 2) ?> USDT</span>
+            </div>
+            <div class="flex justify-between text-amber-700 dark:text-amber-400 mb-1">
+              <span>İşlem Komisyonu (%<?= number_format((float)($cryptoPaymentData['commission_percent'] ?? 2), 2) ?>)</span>
+              <span class="font-medium">+ <?= number_format((float)($cryptoPaymentData['commission_amount'] ?? $cryptoPaymentData['amount'] * 0.02), 2) ?> USDT</span>
+            </div>
+            <div class="border-t border-amber-300 dark:border-amber-600 pt-1 mt-1 flex justify-between font-bold text-gray-900 dark:text-white">
+              <span>Gönderilecek Toplam</span>
+              <span><?= number_format((float)($cryptoPaymentData['amount_with_commission'] ?? $cryptoPaymentData['amount'] * 1.02), 2) ?> USDT</span>
+            </div>
+          </div>
         </div>
 
         <!-- Wallet Address -->
@@ -176,7 +191,11 @@
           <label class="block text-sm mb-1">Ödeme Yöntemi</label>
           <select id="method_id" name="method_id" class="w-full border rounded p-2 bg-white dark:bg-gray-800" required>
             <?php foreach ($methods as $m): ?>
-              <option value="<?= (int)$m['id'] ?>" data-name="<?= htmlspecialchars($m['name']) ?>" data-p="<?= (float)$m['fee_percent'] ?>" data-f="<?= (float)$m['fee_fixed'] ?>"><?= htmlspecialchars($m['name']) ?> (<?= htmlspecialchars($m['method_type']) ?>)</option>
+              <option value="<?= (int)$m['id'] ?>"
+                      data-name="<?= htmlspecialchars($m['name']) ?>"
+                      data-type="<?= htmlspecialchars($m['method_type']) ?>"
+                      data-p="<?= (float)$m['fee_percent'] ?>"
+                      data-f="<?= (float)$m['fee_fixed'] ?>"><?= htmlspecialchars($m['name']) ?> (<?= htmlspecialchars($m['method_type']) ?>)</option>
             <?php endforeach; ?>
           </select>
           <input type="hidden" name="method" id="method_name" value="">
@@ -192,10 +211,7 @@
         <input id="amount" type="number" step="0.01" min="0.01" name="amount" class="w-full border rounded p-2 bg-white dark:bg-gray-800" required>
       </div>
       <?php if (!isset($_SESSION['user']) || $_SESSION['user']['role']!=='superadmin'): ?>
-      <div id="feeSection" class="bg-slate-50 dark:bg-slate-900 p-3 rounded text-sm">
-        <div>Komisyon: <span id="feeText">0</span></div>
-        <div>Ödenecek Toplam: <strong id="totalText">0</strong></div>
-      </div>
+      <div id="feeSection" style="display:none"></div>
       <div id="noteSection">
         <label class="block text-sm mb-1">Açıklama (opsiyonel)</label>
         <input name="note" class="w-full border rounded p-2 bg-white dark:bg-gray-800" placeholder="Not/ek açıklama">
@@ -218,37 +234,90 @@
   <?php if (!isset($_SESSION['user']) || $_SESSION['user']['role']!=='superadmin'): ?>
   <script>
     (function(){
-      // Hide unnecessary sections for all payment gateways (auto payment)
-      var feeSection = document.getElementById('feeSection');
-      var noteSection = document.getElementById('noteSection');
+      var noteSection    = document.getElementById('noteSection');
       var receiptSection = document.getElementById('receiptSection');
-      var submitBtn = document.getElementById('submitBtn');
+      var submitBtn      = document.getElementById('submitBtn');
       
-      if (feeSection) feeSection.style.display = 'none';
-      if (noteSection) noteSection.style.display = 'none';
+      if (noteSection)    noteSection.style.display    = 'none';
       if (receiptSection) receiptSection.style.display = 'none';
-      if (submitBtn) submitBtn.textContent = 'İlerle';
-      
-      function calc(){
-        var sel=document.getElementById('method_id'); if(!sel) return;
-        var p=parseFloat(sel.options[sel.selectedIndex].getAttribute('data-p')||'0');
-        var f=parseFloat(sel.options[sel.selectedIndex].getAttribute('data-f')||'0');
-        var name=sel.options[sel.selectedIndex].getAttribute('data-name')||'';
-        var amt=parseFloat(document.getElementById('amount').value||'0');
-        var fee= (amt * (p/100.0)) + f; var total = amt + fee;
-        
-        // For internal calculation (even if not displayed)
-        if (document.getElementById('feeText')) {
-          document.getElementById('feeText').textContent = fee.toFixed(2) + ' ('+p.toFixed(2)+'% + '+f.toFixed(2)+')';
-        }
-        if (document.getElementById('totalText')) {
-          document.getElementById('totalText').textContent = total.toFixed(2);
-        }
-        
-        var mn=document.getElementById('method_name'); if(mn) mn.value=name;
+      if (submitBtn)      submitBtn.textContent         = 'İlerle';
+
+      // USDT %2 platform komisyonu (sabit)
+      var CRYPTO_COMMISSION_PERCENT = 2.00;
+
+      function isCryptoMethod() {
+        var sel = document.getElementById('method_id');
+        if (!sel) return false;
+        var opt = sel.options[sel.selectedIndex];
+        return (opt.getAttribute('data-type') || '').toLowerCase() === 'cryptocurrency';
       }
-      var el=document.getElementById('method_id'); if(el){ el.addEventListener('change',calc); }
-      var am=document.getElementById('amount'); if(am){ am.addEventListener('input',calc); }
+
+      function calc(){
+        var sel = document.getElementById('method_id'); if (!sel) return;
+        var opt  = sel.options[sel.selectedIndex];
+        var name = opt.getAttribute('data-name') || '';
+        var p    = parseFloat(opt.getAttribute('data-p') || '0');
+        var f    = parseFloat(opt.getAttribute('data-f') || '0');
+        var amt  = parseFloat(document.getElementById('amount').value || '0');
+
+        var mn = document.getElementById('method_name'); if (mn) mn.value = name;
+
+        var feeSection = document.getElementById('feeSection');
+        if (!feeSection) return;
+
+        if (isCryptoMethod() && amt > 0) {
+          // USDT kripto ödemesi: %2 platform komisyonu göster
+          var commAmount = amt * (CRYPTO_COMMISSION_PERCENT / 100.0);
+          var total      = amt + commAmount;
+
+          feeSection.style.display = 'block';
+          feeSection.innerHTML =
+            '<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 text-sm">' +
+              '<div class="flex justify-between text-gray-700 dark:text-gray-300 mb-1">' +
+                '<span>Yüklenecek Bakiye</span>' +
+                '<span class="font-medium">' + amt.toFixed(2) + ' USDT</span>' +
+              '</div>' +
+              '<div class="flex justify-between text-amber-700 dark:text-amber-400 mb-1">' +
+                '<span>Platform Komisyonu (%' + CRYPTO_COMMISSION_PERCENT.toFixed(2) + ')</span>' +
+                '<span class="font-medium">+ ' + commAmount.toFixed(2) + ' USDT</span>' +
+              '</div>' +
+              '<div class="border-t border-amber-300 dark:border-amber-600 pt-1 mt-1 flex justify-between font-bold text-gray-900 dark:text-white">' +
+                '<span>Göndereceğiniz Toplam</span>' +
+                '<span>' + total.toFixed(2) + ' USDT</span>' +
+              '</div>' +
+            '</div>';
+        } else if (amt > 0) {
+          // Diğer yöntemler: ödeme yönteminin kendi komisyonu
+          var fee   = (amt * (p / 100.0)) + f;
+          var total = amt + fee;
+
+          if (fee > 0) {
+            feeSection.style.display = 'block';
+            feeSection.innerHTML =
+              '<div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-3 text-sm">' +
+                '<div class="flex justify-between text-gray-600 dark:text-gray-400 mb-1">' +
+                  '<span>Tutar</span><span>' + amt.toFixed(2) + '</span>' +
+                '</div>' +
+                '<div class="flex justify-between text-gray-600 dark:text-gray-400 mb-1">' +
+                  '<span>Komisyon (' + p.toFixed(2) + '% + ' + f.toFixed(2) + ')</span>' +
+                  '<span>+ ' + fee.toFixed(2) + '</span>' +
+                '</div>' +
+                '<div class="flex justify-between font-bold text-gray-900 dark:text-white border-t border-slate-300 pt-1 mt-1">' +
+                  '<span>Toplam</span><span>' + total.toFixed(2) + '</span>' +
+                '</div>' +
+              '</div>';
+          } else {
+            feeSection.style.display = 'none';
+          }
+        } else {
+          feeSection.style.display = 'none';
+        }
+      }
+
+      var el = document.getElementById('method_id');
+      if (el) { el.addEventListener('change', calc); }
+      var am = document.getElementById('amount');
+      if (am) { am.addEventListener('input', calc); }
       calc();
     })();
   </script>

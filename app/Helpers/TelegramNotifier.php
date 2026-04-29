@@ -46,43 +46,57 @@ class TelegramNotifier
      */
     public function sendPaymentNotification($groupName, $amount, $paymentId, $transactionId = null, $balanceBefore = null, $balanceAfter = null)
     {
+        $safeGroup = $this->escape($groupName);
+
         $message = "🎉 *ÖDEME ONAYLANDI*\n\n";
-        $message .= "💰 *Tutar:* {$amount} USDT\n";
-        $message .= "👥 *Grup:* {$groupName}\n";
-        $message .= "🆔 *Payment ID:* {$paymentId}\n";
-        
+        $message .= "👥 *Grup:* " . $safeGroup . "\n";
+        $message .= "🆔 *Ödeme ID:* \#{$paymentId}\n";
+        $message .= "💰 *Net Tutar:* " . number_format((float)$amount, 2) . " USDT\n";
+
         if ($transactionId) {
-            $message .= "📝 *Transaction ID:* {$transactionId}\n";
+            $message .= "📝 *İşlem ID:* {$transactionId}\n";
         }
-        
+
         if ($balanceBefore !== null && $balanceAfter !== null) {
-            $message .= "📊 *Önceki Bakiye:* " . number_format($balanceBefore, 2) . " USDT\n";
-            $message .= "📈 *Sonraki Bakiye:* " . number_format($balanceAfter, 2) . " USDT\n";
+            $message .= "📊 *Önceki Bakiye:* " . number_format((float)$balanceBefore, 2) . " USDT\n";
+            $message .= "📈 *Yeni Bakiye:* " . number_format((float)$balanceAfter, 2) . " USDT\n";
         }
-        
-        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
-        $message .= "🚀 *Durum:* Bakiye hesaba eklendi\n";
-        
+
+        $message .= "⏰ *Zaman:* " . $this->escape(date('d.m.Y H:i:s')) . "\n";
+        $message .= "✅ *Durum:* Bakiye hesaba eklendi\n";
+
         return $this->sendMessage($message);
     }
     
     /**
      * Yeni ödeme talebi oluşturulduğunda bildirim gönder
      */
-    public function sendPaymentRequestNotification($groupName, $amount, $paymentId, $currentBalance = null)
+    public function sendPaymentRequestNotification($groupName, $totalAmount, $paymentId, $currentBalance = null, $netAmount = null, $commissionPercent = null, $commissionAmount = null)
     {
-        $message = "💸 *YENİ ÖDEME TALEBİ*\n\n";
-        $message .= "💰 *Tutar:* {$amount} USDT\n";
-        $message .= "👥 *Grup:* {$groupName}\n";
-        $message .= "🆔 *Payment ID:* {$paymentId}\n";
-        
-        if ($currentBalance !== null) {
-            $message .= "📊 *Mevcut Bakiye:* " . number_format($currentBalance, 2) . " USDT\n";
+        $safeGroup = $this->escape($groupName);
+
+        $message = "💸 *YENİ USDT ÖDEME TALEBİ*\n\n";
+        $message .= "👥 *Grup:* " . $safeGroup . "\n";
+        $message .= "🆔 *Ödeme ID:* \#{$paymentId}\n";
+
+        if ($netAmount !== null && $commissionPercent !== null && $commissionAmount !== null) {
+            $message .= "\n";
+            $message .= "💵 *Yüklenecek Bakiye:* " . number_format((float)$netAmount, 2) . " USDT\n";
+            $message .= "💸 *Komisyon (%{$commissionPercent}):* \\+" . number_format((float)$commissionAmount, 2) . " USDT\n";
+            $message .= "💰 *Gönderilecek Toplam:* " . number_format((float)$totalAmount, 2) . " USDT\n";
+        } else {
+            $message .= "💰 *Tutar:* " . number_format((float)$totalAmount, 2) . " USDT\n";
         }
-        
+
+        if ($currentBalance !== null) {
+            $message .= "📊 *Mevcut Bakiye:* " . number_format((float)$currentBalance, 2) . " USDT\n";
+        }
+
+        $message .= "\n";
         $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
-        $message .= "⏳ *Durum:* Ödeme bekleniyor...\n";
-        
+        $message .= "🔗 *Network:* TRC20\n";
+        $message .= "⏳ *Durum:* Ödeme bekleniyor\\.\\.\\.\n";
+
         return $this->sendMessage($message);
     }
     
@@ -91,40 +105,44 @@ class TelegramNotifier
      */
     public function sendPaymentCancelledNotification($groupName, $amount, $paymentId, $currentBalance = null)
     {
+        $safeGroup = $this->escape($groupName);
+
         $message = "❌ *ÖDEME İPTAL EDİLDİ*\n\n";
-        $message .= "💰 *Tutar:* {$amount} USDT\n";
-        $message .= "👥 *Grup:* {$groupName}\n";
-        $message .= "🆔 *Payment ID:* {$paymentId}\n";
-        
+        $message .= "👥 *Grup:* " . $safeGroup . "\n";
+        $message .= "🆔 *Ödeme ID:* \#{$paymentId}\n";
+        $message .= "💰 *Tutar:* " . number_format((float)$amount, 2) . " USDT\n";
+
         if ($currentBalance !== null) {
-            $message .= "📊 *Mevcut Bakiye:* " . number_format($currentBalance, 2) . " USDT\n";
+            $message .= "📊 *Mevcut Bakiye:* " . number_format((float)$currentBalance, 2) . " USDT\n";
         }
-        
-        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
+
+        $message .= "⏰ *Zaman:* " . $this->escape(date('d.m.Y H:i:s')) . "\n";
         $message .= "🚫 *Durum:* Kullanıcı tarafından iptal edildi\n";
         $message .= "📞 *Aksiyon:* Müşteriyi arayarak iptal sebebini öğrenin\n";
-        
+
         return $this->sendMessage($message);
     }
-    
+
     /**
      * Ödeme süresi dolduğunda bildirim gönder
      */
     public function sendPaymentExpiredNotification($groupName, $amount, $paymentId, $currentBalance = null)
     {
+        $safeGroup = $this->escape($groupName);
+
         $message = "⏰ *ÖDEME SÜRESİ DOLDU*\n\n";
-        $message .= "💰 *Tutar:* {$amount} USDT\n";
-        $message .= "👥 *Grup:* {$groupName}\n";
-        $message .= "🆔 *Payment ID:* {$paymentId}\n";
-        
+        $message .= "👥 *Grup:* " . $safeGroup . "\n";
+        $message .= "🆔 *Ödeme ID:* \#{$paymentId}\n";
+        $message .= "💰 *Tutar:* " . number_format((float)$amount, 2) . " USDT\n";
+
         if ($currentBalance !== null) {
-            $message .= "📊 *Mevcut Bakiye:* " . number_format($currentBalance, 2) . " USDT\n";
+            $message .= "📊 *Mevcut Bakiye:* " . number_format((float)$currentBalance, 2) . " USDT\n";
         }
-        
-        $message .= "⏰ *Zaman:* " . date('d.m.Y H:i:s') . "\n";
-        $message .= "⌛ *Durum:* Ödeme süresi doldu (10 dakika)\n";
+
+        $message .= "⏰ *Zaman:* " . $this->escape(date('d.m.Y H:i:s')) . "\n";
+        $message .= "⌛ *Durum:* Ödeme süresi doldu\n";
         $message .= "📞 *Aksiyon:* Müşteriyi arayarak durumu kontrol edin\n";
-        
+
         return $this->sendMessage($message);
     }
     
@@ -312,100 +330,121 @@ class TelegramNotifier
     }
     
     /**
+     * Özel karakterleri MarkdownV2 için escape et
+     */
+    private function escape($text)
+    {
+        // MarkdownV2'de kaçırılması gereken karakterler
+        return preg_replace('/([_\*\[\]\(\)~`>#+\-=|{}.!\\\\])/', '\\\\$1', (string)$text);
+    }
+
+    /**
      * Telegram'a mesaj gönder - PUBLIC metod
+     * MarkdownV2 parse_mode kullanır; önce cURL dener, fallback olarak file_get_contents
      */
     public function sendMessage($message)
     {
-        // Chat ID kontrolü
         if (empty($this->chatId)) {
             error_log('Telegram notification failed: Chat ID is empty');
             return false;
         }
-        
-        $url = "https://api.telegram.org/bot{$this->botToken}/sendMessage";
-        
-        $data = [
-            'chat_id' => $this->chatId,
-            'text' => $message,
-            'parse_mode' => 'Markdown',
-            'disable_web_page_preview' => true
-        ];
-        
-        // İlk file_get_contents ile dene
-        $options = [
-            'http' => [
-                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-                'method' => 'POST',
-                'content' => http_build_query($data),
-                'timeout' => 30
-            ]
-        ];
-        
-        $context = stream_context_create($options);
-        $result = @file_get_contents($url, false, $context);
-        
-        if ($result === false) {
-            error_log("Telegram notification failed - connection error to chat_id: {$this->chatId}");
-            // cURL fallback dene
-            return $this->sendMessageCurl($message);
-        }
-        
-        $response = json_decode($result, true);
-        
-        if (!$response || !$response['ok']) {
-            $errorMsg = $response['description'] ?? 'Unknown error';
-            error_log("Telegram notification failed to chat_id {$this->chatId}: {$errorMsg}");
-            error_log("Full response: " . $result);
+
+        if (empty($this->botToken)) {
+            error_log('Telegram notification failed: Bot token is empty');
             return false;
         }
-        
-        error_log("Telegram notification sent successfully to chat_id: {$this->chatId}");
+
+        // Önce cURL ile dene (daha güvenilir)
+        $result = $this->sendMessageCurl($message);
+        if ($result) {
+            return true;
+        }
+
+        // cURL başarısız olduysa file_get_contents ile dene
+        $url = "https://api.telegram.org/bot{$this->botToken}/sendMessage";
+        $data = [
+            'chat_id'                  => $this->chatId,
+            'text'                     => $message,
+            'parse_mode'               => 'MarkdownV2',
+            'disable_web_page_preview' => true,
+        ];
+
+        $options = [
+            'http' => [
+                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method'  => 'POST',
+                'content' => http_build_query($data),
+                'timeout' => 15,
+            ]
+        ];
+
+        $context = stream_context_create($options);
+        $raw = @file_get_contents($url, false, $context);
+
+        if ($raw === false) {
+            error_log("Telegram notification failed (both cURL and file_get_contents) to chat_id: {$this->chatId}");
+            return false;
+        }
+
+        $response = json_decode($raw, true);
+        if (!$response || !$response['ok']) {
+            $errorMsg = $response['description'] ?? 'Unknown error';
+            error_log("Telegram file_get_contents failed to chat_id {$this->chatId}: {$errorMsg}");
+            return false;
+        }
+
+        error_log("Telegram notification sent successfully (fallback) to chat_id: {$this->chatId}");
         return true;
     }
     
     /**
-     * cURL ile Telegram'a mesaj gönder (fallback)
+     * cURL ile Telegram'a mesaj gönder (birincil yöntem)
      */
     private function sendMessageCurl($message)
     {
+        if (!function_exists('curl_init')) {
+            error_log('Telegram cURL: curl extension not available');
+            return false;
+        }
+
         $url = "https://api.telegram.org/bot{$this->botToken}/sendMessage";
-        
+
         $data = [
-            'chat_id' => $this->chatId,
-            'text' => $message,
-            'parse_mode' => 'Markdown',
-            'disable_web_page_preview' => true
+            'chat_id'                  => $this->chatId,
+            'text'                     => $message,
+            'parse_mode'               => 'MarkdownV2',
+            'disable_web_page_preview' => true,
         ];
-        
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($ch, CURLOPT_USERAGENT, 'VoipPanel-Bot/1.0');
-        
-        $result = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        $result    = curl_exec($ch);
+        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError = curl_error($ch);
         curl_close($ch);
-        
+
         if ($result === false || $httpCode !== 200) {
-            error_log("Telegram cURL notification failed to chat_id {$this->chatId} - HTTP: {$httpCode}, Error: {$curlError}");
+            error_log("Telegram cURL failed to chat_id {$this->chatId} - HTTP: {$httpCode}, cURL error: {$curlError}");
             return false;
         }
-        
+
         $response = json_decode($result, true);
-        
         if (!$response || !$response['ok']) {
             $errorMsg = $response['description'] ?? 'Unknown error';
-            error_log("Telegram cURL notification failed to chat_id {$this->chatId}: {$errorMsg}");
-            error_log("Full cURL response: " . $result);
+            error_log("Telegram cURL API error to chat_id {$this->chatId}: {$errorMsg} | message: " . substr($message, 0, 200));
             return false;
         }
-        
-        error_log("Telegram notification sent successfully via cURL to chat_id: {$this->chatId}");
+
+        error_log("Telegram sent OK via cURL to chat_id: {$this->chatId}");
         return true;
     }
 }

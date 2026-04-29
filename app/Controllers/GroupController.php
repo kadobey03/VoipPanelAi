@@ -326,35 +326,44 @@ class GroupController {
             
             $walletAddress = trim($paymentMethod['details']);
             
-            // Debug: Log the wallet address
-            error_log("Debug - Wallet address from payment method: '" . $walletAddress . "'");
-            error_log("Debug - Wallet address length: " . strlen($walletAddress));
-            
             // Validate wallet address
             $addressCheck = $security->validateTronAddress($walletAddress);
-            error_log("Debug - Validation result: " . json_encode($addressCheck));
             
             if (!$addressCheck['valid']) {
-                return ['success' => false, 'error' => 'Debug: Wallet adresi: "' . $walletAddress . '" - Validation: ' . json_encode($addressCheck)];
+                return ['success' => false, 'error' => 'Geçersiz TRON wallet adresi. Lütfen yönetici ile iletişime geçin.'];
             }
+            
+            // Calculate %2 USDT commission
+            // User pays: amount + commission → balance credited: amount (net)
+            $commissionPercent = 2.00;
+            $commissionAmount  = round($amount * ($commissionPercent / 100.0), 4);
+            $amountWithCommission = round($amount + $commissionAmount, 4);
             
             $db->begin_transaction();
             
             // Get timeout from settings (default 10 minutes)
             $timeout = $this->getSetting('crypto_payment_timeout') ?: 10;
             
-            // Create crypto payment record without wallet_id (use only wallet_address)
+            // Create crypto payment record
             $stmt = $db->prepare(
-                'INSERT INTO crypto_payments (group_id, user_id, amount_requested, currency, blockchain, network, wallet_address, status, expired_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
+                'INSERT INTO crypto_payments
+                    (group_id, user_id, amount_requested, commission_percent, commission_amount, amount_with_commission,
+                     currency, blockchain, network, wallet_address, status, expired_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))'
             );
             
-            $currency = 'USDT';
+            $currency   = 'USDT';
             $blockchain = 'TRON';
-            $network = 'TRC20';
-            $status = 'pending';
+            $network    = 'TRC20';
+            $status     = 'pending';
             
-            $stmt->bind_param('iidsssssi', $groupId, $userId, $amount, $currency, $blockchain, $network, $walletAddress, $status, $timeout);
+            $stmt->bind_param(
+                'iidddssssssi',
+                $groupId, $userId,
+                $amount, $commissionPercent, $commissionAmount, $amountWithCommission,
+                $currency, $blockchain, $network, $walletAddress,
+                $status, $timeout
+            );
             
             if ($stmt->execute()) {
                 $paymentId = $stmt->insert_id;
@@ -375,7 +384,6 @@ class GroupController {
                 
                 // Send Telegram notification for new payment request
                 try {
-                    // Get group name and current balance for notification
                     $groupName = 'Bilinmeyen Grup';
                     $currentBalance = 0;
                     $stmt = $db->prepare('SELECT name, balance FROM groups WHERE id = ?');
@@ -383,17 +391,23 @@ class GroupController {
                     $stmt->execute();
                     $groupResult = $stmt->get_result()->fetch_assoc();
                     if ($groupResult) {
-                        $groupName = $groupResult['name'];
+                        $groupName    = $groupResult['name'];
                         $currentBalance = (float)$groupResult['balance'];
                     }
                     $stmt->close();
-                    
+
                     $telegram = new TelegramNotifier();
-                    $telegram->sendPaymentRequestNotification($groupName, $amount, $paymentId, $currentBalance);
-                    error_log("Telegram payment request notification sent for payment ID: $paymentId");
+                    $telegram->sendPaymentRequestNotification(
+                        $groupName,
+                        $amountWithCommission,
+                        $paymentId,
+                        $currentBalance,
+                        $amount,
+                        $commissionPercent,
+                        $commissionAmount
+                    );
                 } catch (\Exception $e) {
                     error_log('Telegram payment request notification failed: ' . $e->getMessage());
-                    // Don't fail the payment creation if Telegram fails
                 }
                 
                 $createdAt = date('Y-m-d H:i:s');
@@ -402,14 +416,17 @@ class GroupController {
                 return [
                     'success' => true,
                     'data' => [
-                        'payment_id' => $paymentId,
-                        'wallet_address' => $walletAddress,
-                        'amount' => $amount,
-                        'currency' => $currency,
-                        'network' => $network,
-                        'created_at' => $createdAt,
-                        'expires_at' => $expiresAt,
-                        'timeout_minutes' => $timeout
+                        'payment_id'           => $paymentId,
+                        'wallet_address'       => $walletAddress,
+                        'amount'               => $amount,
+                        'commission_percent'   => $commissionPercent,
+                        'commission_amount'    => $commissionAmount,
+                        'amount_with_commission' => $amountWithCommission,
+                        'currency'             => $currency,
+                        'network'              => $network,
+                        'created_at'           => $createdAt,
+                        'expires_at'           => $expiresAt,
+                        'timeout_minutes'      => $timeout
                     ]
                 ];
             }
@@ -494,14 +511,17 @@ class GroupController {
             $timeoutMinutes = ($expiryAt - $createdAt) / 60;
             
             return [
-                'payment_id' => $payment['id'],
-                'wallet_address' => $payment['wallet_address'],
-                'amount' => $payment['amount_requested'],
-                'currency' => $payment['currency'],
-                'network' => $payment['network'],
-                'created_at' => $payment['created_at'],
-                'expires_at' => $payment['expired_at'],
-                'timeout_minutes' => (int)$timeoutMinutes
+                'payment_id'             => $payment['id'],
+                'wallet_address'         => $payment['wallet_address'],
+                'amount'                 => $payment['amount_requested'],
+                'commission_percent'     => (float)($payment['commission_percent'] ?? 2.00),
+                'commission_amount'      => (float)($payment['commission_amount'] ?? round($payment['amount_requested'] * 0.02, 4)),
+                'amount_with_commission' => (float)($payment['amount_with_commission'] ?? round($payment['amount_requested'] * 1.02, 4)),
+                'currency'               => $payment['currency'],
+                'network'                => $payment['network'],
+                'created_at'             => $payment['created_at'],
+                'expires_at'             => $payment['expired_at'],
+                'timeout_minutes'        => (int)$timeoutMinutes
             ];
             
         } catch (\Exception $e) {
@@ -583,13 +603,16 @@ class GroupController {
             $timeoutMinutes = ($expiryAt - $createdAt) / 60;
             
             return [
-                'payment_id' => $payment['id'],
-                'wallet_address' => $payment['wallet_address'],
-                'amount' => $payment['amount_requested'],
-                'currency' => $payment['currency'],
-                'network' => $payment['network'],
-                'expires_at' => $payment['expired_at'],
-                'timeout_minutes' => (int)$timeoutMinutes
+                'payment_id'             => $payment['id'],
+                'wallet_address'         => $payment['wallet_address'],
+                'amount'                 => $payment['amount_requested'],
+                'commission_percent'     => (float)($payment['commission_percent'] ?? 2.00),
+                'commission_amount'      => (float)($payment['commission_amount'] ?? round($payment['amount_requested'] * 0.02, 4)),
+                'amount_with_commission' => (float)($payment['amount_with_commission'] ?? round($payment['amount_requested'] * 1.02, 4)),
+                'currency'               => $payment['currency'],
+                'network'                => $payment['network'],
+                'expires_at'             => $payment['expired_at'],
+                'timeout_minutes'        => (int)$timeoutMinutes
             ];
             
         } catch (\Exception $e) {

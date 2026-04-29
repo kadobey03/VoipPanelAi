@@ -210,14 +210,14 @@ class TopupController {
         $db->begin_transaction();
         
         try {
-            // Get payment details
+            // Get payment details (including commission fields)
             $stmt = $db->prepare(
                 'SELECT cp.*, tr.group_id, tr.user_id
                  FROM crypto_payments cp
                  JOIN topup_requests tr ON tr.crypto_payment_id = cp.id
                  WHERE cp.id = ? AND cp.status IN (?, ?)'
             );
-            $statusPending = 'pending';
+            $statusPending    = 'pending';
             $statusConfirming = 'confirming';
             $stmt->bind_param('iss', $paymentId, $statusPending, $statusConfirming);
             $stmt->execute();
@@ -228,20 +228,26 @@ class TopupController {
                 throw new \Exception('Payment not found or already processed');
             }
             
+            // Net amount credited to balance = amount_requested (what user wanted to load)
+            // Commission was already paid on top by the user (amount_with_commission)
+            $netAmount         = (float)$payment['amount_requested'];
+            $commissionPercent = (float)($payment['commission_percent'] ?? 2.00);
+            $commissionAmount  = (float)($payment['commission_amount']  ?? round($netAmount * ($commissionPercent / 100.0), 4));
+            
             // Get group info for Telegram notification
-            $groupName = 'Bilinmeyen Grup';
+            $groupName    = 'Bilinmeyen Grup';
             $balanceBefore = 0;
             $stmt = $db->prepare('SELECT name, balance FROM groups WHERE id = ?');
             $stmt->bind_param('i', $payment['group_id']);
             $stmt->execute();
             $groupResult = $stmt->get_result()->fetch_assoc();
             if ($groupResult) {
-                $groupName = $groupResult['name'];
+                $groupName    = $groupResult['name'];
                 $balanceBefore = (float)$groupResult['balance'];
             }
             $stmt->close();
             
-            // Update crypto payment
+            // Update crypto payment — store actual received amount, mark completed
             $stmt = $db->prepare(
                 'UPDATE crypto_payments
                  SET status = ?, amount_received = ?, transaction_hash = ?, confirmed_at = NOW()
@@ -252,29 +258,42 @@ class TopupController {
             $stmt->execute();
             $stmt->close();
             
-            // Update group balance
+            // Credit only the NET amount (without commission) to the group balance
             $stmt = $db->prepare('UPDATE groups SET balance = balance + ? WHERE id = ?');
-            $stmt->bind_param('di', $amount, $payment['group_id']);
+            $stmt->bind_param('di', $netAmount, $payment['group_id']);
             $stmt->execute();
             $stmt->close();
             
-            // Create transaction record
+            // Transaction record: net topup
             $stmt = $db->prepare(
                 'INSERT INTO transactions (group_id, type, amount, reference, description)
                  VALUES (?, ?, ?, ?, ?)'
             );
-            $type = 'topup';
-            $reference = 'crypto#' . $paymentId;
-            $description = 'USDT TRC20 manual approval - TX: ' . substr($txHash, 0, 10) . '...';
-            
-            $stmt->bind_param('isdss', $payment['group_id'], $type, $amount, $reference, $description);
+            $type        = 'topup';
+            $reference   = 'crypto#' . $paymentId;
+            $description = 'USDT TRC20 - Net yükleme - TX: ' . substr($txHash, 0, 10) . '...';
+            $stmt->bind_param('isdss', $payment['group_id'], $type, $netAmount, $reference, $description);
             $stmt->execute();
             $transactionId = $db->insert_id;
             $stmt->close();
             
+            // Transaction record: commission fee (debit style — negative amount)
+            if ($commissionAmount > 0) {
+                $stmt = $db->prepare(
+                    'INSERT INTO transactions (group_id, type, amount, reference, description)
+                     VALUES (?, ?, ?, ?, ?)'
+                );
+                $commType    = 'commission';
+                $commRef     = 'crypto#' . $paymentId . '/commission';
+                $commDesc    = '%' . number_format($commissionPercent, 2) . ' USDT komisyon - TX: ' . substr($txHash, 0, 10) . '...';
+                $stmt->bind_param('isdss', $payment['group_id'], $commType, $commissionAmount, $commRef, $commDesc);
+                $stmt->execute();
+                $stmt->close();
+            }
+            
             // Update topup request
             $adminId = (int)($_SESSION['user']['id'] ?? 0);
-            $now = date('Y-m-d H:i:s');
+            $now     = date('Y-m-d H:i:s');
             $stmt = $db->prepare(
                 'UPDATE topup_requests
                  SET status = ?, approved_at = ?, approved_by = ?, crypto_transaction_hash = ?
@@ -289,13 +308,11 @@ class TopupController {
             
             // Send Telegram notification for manual approval
             try {
-                $balanceAfter = $balanceBefore + $amount;
+                $balanceAfter = $balanceBefore + $netAmount;
                 $telegram = new TelegramNotifier();
-                $telegram->sendPaymentNotification($groupName, $amount, $paymentId, $transactionId, $balanceBefore, $balanceAfter);
-                error_log("Telegram manual approval notification sent for payment ID: $paymentId");
+                $telegram->sendPaymentNotification($groupName, $netAmount, $paymentId, $transactionId, $balanceBefore, $balanceAfter);
             } catch (\Exception $e) {
                 error_log('Telegram manual approval notification failed: ' . $e->getMessage());
-                // Don't fail the approval if Telegram fails
             }
             
             \App\Helpers\Url::redirect('/topups?success=crypto_approved');
