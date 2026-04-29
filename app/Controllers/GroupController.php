@@ -396,7 +396,7 @@ class GroupController {
                     }
                     $stmt->close();
 
-                    $telegram = new TelegramNotifier();
+                    $telegram = TelegramNotifier::forGroup($groupId);
                     $telegram->sendPaymentRequestNotification(
                         $groupName,
                         $amountWithCommission,
@@ -494,9 +494,8 @@ class GroupController {
                         }
                         $stmt->close();
                         
-                        $telegram = new TelegramNotifier();
+                        $telegram = TelegramNotifier::forGroup($groupId);
                         $telegram->sendPaymentExpiredNotification($groupName, $amount, $paymentId, $currentBalance);
-                        error_log("Telegram payment expiration notification sent for payment ID: $paymentId");
                     } catch (\Exception $e) {
                         error_log('Telegram payment expiration notification failed: ' . $e->getMessage());
                         // Don't fail the expiration if Telegram fails
@@ -730,9 +729,8 @@ class GroupController {
                 }
                 $stmt->close();
                 
-                $telegram = new TelegramNotifier();
+                $telegram = TelegramNotifier::forGroup($groupId);
                 $telegram->sendPaymentCancelledNotification($groupName, $amount, $paymentId, $currentBalance);
-                error_log("Telegram payment cancellation notification sent for payment ID: $paymentId");
             } catch (\Exception $e) {
                 error_log('Telegram payment cancellation notification failed: ' . $e->getMessage());
                 // Don't fail the cancellation if Telegram fails
