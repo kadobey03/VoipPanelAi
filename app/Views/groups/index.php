@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $title = __('groups') . ' - ' . __('papam_voip_panel');
 require dirname(__DIR__).'/partials/header.php';
 $isSuper = isset($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'superadmin';
@@ -169,7 +169,8 @@ $apiConnected = count(array_filter($groups, fn($g) => !empty($g['api_group_name'
           <i class="fa-solid fa-plus text-xs"></i><?= __('load_balance') ?>
         </a>
 
-        <button onclick="confirmDeleteGroup(<?= (int)$g['id'] ?>, '<?= htmlspecialchars(addslashes($g['name'])) ?>')"
+        <button data-delete-id="<?= (int)$g['id'] ?>" data-delete-name="<?= htmlspecialchars($g['name']) ?>"
+                onclick="confirmDeleteGroup(this.dataset.deleteId, this.dataset.deleteName)"
                 class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors">
           <i class="fa-solid fa-trash text-xs"></i><?= __('delete') ?>
         </button>
@@ -231,7 +232,8 @@ $apiConnected = count(array_filter($groups, fn($g) => !empty($g['api_group_name'
            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm" title="<?= __('load_balance') ?>">
           <i class="fa-solid fa-plus text-xs"></i><?= __('load_balance') ?>
         </a>
-        <button onclick="confirmDeleteGroup(<?= (int)$g['id'] ?>, '<?= htmlspecialchars(addslashes($g['name'])) ?>')"
+        <button data-delete-id="<?= (int)$g['id'] ?>" data-delete-name="<?= htmlspecialchars($g['name']) ?>"
+                onclick="confirmDeleteGroup(this.dataset.deleteId, this.dataset.deleteName)"
                 class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors" title="Sil">
           <i class="fa-solid fa-trash text-xs"></i>
         </button>
@@ -311,7 +313,8 @@ $apiConnected = count(array_filter($groups, fn($g) => !empty($g['api_group_name'
                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
                   <i class="fa-solid fa-plus text-xs"></i><?= __('load_balance') ?>
                 </a>
-                <button onclick="confirmDeleteGroup(<?= (int)$g['id'] ?>, '<?= htmlspecialchars(addslashes($g['name'])) ?>')"
+                <button data-delete-id="<?= (int)$g['id'] ?>" data-delete-name="<?= htmlspecialchars($g['name']) ?>"
+                        onclick="confirmDeleteGroup(this.dataset.deleteId, this.dataset.deleteName)"
                         class="w-7 h-7 flex items-center justify-center rounded-md bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 transition-colors" title="Sil">
                   <i class="fa-solid fa-trash text-xs"></i>
                 </button>
@@ -360,7 +363,10 @@ $apiConnected = count(array_filter($groups, fn($g) => !empty($g['api_group_name'
 </div>
 
 <script>
-const groupsData = <?php echo json_encode($groups); ?>;
+const groupsData = <?php
+  $json = json_encode($groups, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
+  echo str_replace(["\xe2\x80\xa8", "\xe2\x80\xa9"], ['\\u2028', '\\u2029'], $json);
+?>;
 
 // ── View Toggle ────────────────────────────────────────────────────────────
 const VIEWS = ['cards', 'list', 'table'];
@@ -504,7 +510,7 @@ function showGroupDetails(index) {
          class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors text-sm">
         <i class="fa-solid fa-plus"></i><?= __('load_balance') ?>
       </a>
-      <button onclick="closeModal(); confirmDeleteGroup(${g.id}, '${g.name.replace(/'/g, \"\\\\'\")}')"
+      <button onclick="closeModal(); confirmDeleteGroup(g.id, g.name)"
               class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors text-sm">
         <i class="fa-solid fa-trash"></i><?= __('delete') ?>
       </button>
@@ -527,44 +533,47 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 // ── Delete Group ───────────────────────────────────────────────────────────
 function confirmDeleteGroup(id, name) {
-  // Onay modalı oluştur
-  let overlay = document.getElementById('deleteConfirmOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'deleteConfirmOverlay';
-    overlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4';
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML = `
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 dark:border-slate-700 p-6">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
-          <i class="fa-solid fa-triangle-exclamation text-red-600 dark:text-red-400 text-xl"></i>
-        </div>
-        <div>
-          <h3 class="font-bold text-slate-900 dark:text-white text-lg">Grubu Sil</h3>
-          <p class="text-slate-500 dark:text-slate-400 text-sm">Bu işlem geri alınamaz</p>
-        </div>
-      </div>
-      <p class="text-slate-700 dark:text-slate-300 text-sm mb-6">
-        <span class="font-semibold text-red-600 dark:text-red-400">"${name}"</span> grubunu silmek istediğinize emin misiniz?
-        Bu gruba bağlı kullanıcılar gruplarından ayrılacaktır.
-      </p>
-      <div class="flex gap-3">
-        <button onclick="document.getElementById('deleteConfirmOverlay').remove()"
-                class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm">
-          İptal
-        </button>
-        <button onclick="executeDeleteGroup(${id})"
-                class="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors text-sm">
-          <i class="fa-solid fa-trash mr-1.5"></i>Evet, Sil
-        </button>
-      </div>
-    </div>
-  `;
+  var overlay = document.createElement('div');
+  overlay.id = 'deleteConfirmOverlay';
+  overlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4';
+
+  var box = document.createElement('div');
+  box.className = 'bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 dark:border-slate-700 p-6';
+
+  var header = document.createElement('div');
+  header.className = 'flex items-center gap-3 mb-4';
+  header.innerHTML = '<div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-triangle-exclamation text-red-600 dark:text-red-400 text-xl"></i></div><div><h3 class="font-bold text-slate-900 dark:text-white text-lg">Grubu Sil</h3><p class="text-slate-500 dark:text-slate-400 text-sm">Bu islem geri alinamaz</p></div>';
+  box.appendChild(header);
+
+  var msg = document.createElement('p');
+  msg.className = 'text-slate-700 dark:text-slate-300 text-sm mb-6';
+  var nameSpan = document.createElement('span');
+  nameSpan.className = 'font-semibold text-red-600 dark:text-red-400';
+  nameSpan.textContent = '"' + name + '"';
+  msg.appendChild(nameSpan);
+  msg.append(' grubunu silmek istediginize emin misiniz? Bu gruba bagli kullanicilar gruplardan ayrilacaktir.');
+  box.appendChild(msg);
+
+  var btnRow = document.createElement('div');
+  btnRow.className = 'flex gap-3';
+
+  var btnCancel = document.createElement('button');
+  btnCancel.className = 'flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm';
+  btnCancel.textContent = 'Iptal';
+  btnCancel.onclick = function() { overlay.remove(); };
+
+  var btnConfirm = document.createElement('button');
+  btnConfirm.className = 'flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors text-sm';
+  btnConfirm.innerHTML = '<i class="fa-solid fa-trash mr-1.5"></i>Evet, Sil';
+  btnConfirm.onclick = function() { overlay.remove(); executeDeleteGroup(id); };
+
+  btnRow.appendChild(btnCancel);
+  btnRow.appendChild(btnConfirm);
+  box.appendChild(btnRow);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
 }
-
 function executeDeleteGroup(id) {
   const overlay = document.getElementById('deleteConfirmOverlay');
   if (overlay) overlay.remove();
