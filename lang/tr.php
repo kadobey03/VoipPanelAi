@@ -753,4 +753,18 @@ return [
     'username_exists' => 'Bu kullanıcı adı zaten kullanılıyor',
     'registration_success' => 'Kayıt başarılı! Panel\'e yönlendiriliyorsunuz...',
     'registration_error' => 'Kayıt sırasında hata oluştu',
+
+    // CDR History - new keys
+    'all_dispositions' => 'Tüm Durumlar',
+    'quick_date'       => 'Hızlı Tarih',
+    'missed'           => 'Cevapsız',
+    'total_talk_time'  => 'Toplam Konuşma',
+    'cdr_total_billed' => 'Toplam Tahsil',
+    'cdr_api_cost'     => 'API Maliyet',
+    'cdr_shown'        => 'gösteriliyor',
+    'cdr_per_page'     => 'kayıt/sayfa',
+    'cdr_total'        => 'toplam',
+    'cdr_page_results' => 'bu aralıkta',
+    'go_to_page'       => 'Sayfaya git:',
+    'go'               => 'Git',
 ];

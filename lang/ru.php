@@ -727,4 +727,18 @@ return [
     'save_failed' => 'Не удалось сохранить',
     'updated' => 'Обновлено',
     'update_failed_short' => 'Не удалось обновить',
+
+    // CDR History - new keys
+    'all_dispositions' => 'Все статусы',
+    'quick_date'       => 'Быстрая дата',
+    'missed'           => 'Пропущено',
+    'total_talk_time'  => 'Всего разговоров',
+    'cdr_total_billed' => 'Итого начислено',
+    'cdr_api_cost'     => 'Стоимость API',
+    'cdr_shown'        => 'показано',
+    'cdr_per_page'     => 'на стр.',
+    'cdr_total'        => 'всего',
+    'cdr_page_results' => 'в диапазоне',
+    'go_to_page'       => 'Перейти на стр.:',
+    'go'               => 'Перейти',
 ];

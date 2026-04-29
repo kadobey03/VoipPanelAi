@@ -49,127 +49,114 @@ class CallsController {
             $stmt->execute();
             $r = $stmt->get_result()->fetch_assoc();
             if ($r) {
-                // Session'ı tamamen güncel verilerle güncelle - eski veriyi temizle
                 if ($r['exten']) {
                     $_SESSION['user']['exten'] = $r['exten'];
                     $user['exten'] = $r['exten'];
                 } else {
-                    // Exten yoksa session'dan da kaldır
                     unset($_SESSION['user']['exten']);
                     unset($user['exten']);
                 }
-                
                 if ($r['agent_id']) {
                     $_SESSION['user']['agent_id'] = $r['agent_id'];
                     $user['agent_id'] = $r['agent_id'];
                 }
-                
-                // Group ID'yi de güncelle
                 $_SESSION['user']['group_id'] = $r['group_id'];
                 $user['group_id'] = $r['group_id'];
             }
             $stmt->close();
         }
-        $from = date('Y-m-d H:i:s', strtotime($_GET['from'] ?? '-1 day'));
-        $to   = date('Y-m-d H:i:s', strtotime($_GET['to']   ?? 'now'));
-        $src  = trim($_GET['src']  ?? '');
-        $dst  = trim($_GET['dst']  ?? '');
-        $page = max(1, (int)($_GET['page'] ?? 1));
-        $per  = min(200, max(10, (int)($_GET['per'] ?? 100)));
-        $offset = ($page-1)*$per;
-        $selectedGroup = $isSuper ? (isset($_GET['group_id']) && $_GET['group_id']!=='' ? (int)$_GET['group_id'] : null) : (int)($user['group_id'] ?? 0);
 
-        $where = 'start BETWEEN ? AND ?';
-        $types = 'ss';
+        $from        = date('Y-m-d H:i:s', strtotime($_GET['from'] ?? '-1 day'));
+        $to          = date('Y-m-d H:i:s', strtotime($_GET['to']   ?? 'now'));
+        $src         = trim($_GET['src']         ?? '');
+        $dst         = trim($_GET['dst']         ?? '');
+        $disposition = trim($_GET['disposition'] ?? '');
+        $sortCol     = in_array($_GET['sort'] ?? '', ['start','duration','billsec','amount_charged','cost_api']) ? $_GET['sort'] : 'start';
+        $sortDir     = strtoupper($_GET['dir'] ?? 'DESC') === 'ASC' ? 'ASC' : 'DESC';
+        $page        = max(1, (int)($_GET['page'] ?? 1));
+        $per         = in_array((int)($_GET['per'] ?? 25), [10,25,50,100,200]) ? (int)$_GET['per'] : 25;
+        $offset      = ($page - 1) * $per;
+        $selectedGroup = $isSuper ? (isset($_GET['group_id']) && $_GET['group_id'] !== '' ? (int)$_GET['group_id'] : null) : (int)($user['group_id'] ?? 0);
+
+        $where  = 'start BETWEEN ? AND ?';
+        $types  = 'ss';
         $params = [$from, $to];
+
         // Role based filtering
         if ($isSuper) {
-            // Superadmin: tüm grupları görebilir, ek filtreleme yok
+            // tüm gruplar
         } elseif ($isGroupAdmin) {
-            // Group admin: sadece kendi grubunun çağrıları
             $userGroupId = (int)($user['group_id'] ?? 0);
-            
             if ($userGroupId > 0) {
-                // API'den gelen çağrılarda group_id farklı olabilir, bu yüzden hem local group_id hem de api_group_id kontrol et
                 $stmt = $db->prepare('SELECT api_group_id FROM groups WHERE id=?');
                 $stmt->bind_param('i', $userGroupId);
                 $stmt->execute();
-                $result = $stmt->get_result();
-                $groupData = $result->fetch_assoc();
+                $groupData = $stmt->get_result()->fetch_assoc();
                 $stmt->close();
-                
                 if ($groupData && !empty($groupData['api_group_id'])) {
-                    // Hem local grup ID'si hem de API grup ID'si ile eşleşenleri al
                     $apiGroupId = (int)$groupData['api_group_id'];
                     $where .= ' AND (group_id=? OR group_id=?)';
                     $types .= 'ii';
                     $params[] = $userGroupId;
                     $params[] = $apiGroupId;
                 } else {
-                    // Sadece local grup ID'si
                     $where .= ' AND group_id=?';
                     $types .= 'i';
                     $params[] = $userGroupId;
                 }
             } else {
-                // Grup ID yoksa hiçbir kayıt gösterme
                 $where .= ' AND 1=0';
             }
         } elseif ($isGroupMember) {
-            // Group member: sadece kendi agent'ının (exten) çağrıları
             $userGroupId = (int)($user['group_id'] ?? 0);
-            $userExten = trim($user['exten'] ?? '');
-            
-            // Önce grup kontrolü
-            if ($userGroupId > 0) {
-                $where .= ' AND group_id=?';
-                $types.='i';
-                $params[] = $userGroupId;
-            }
-            
-            // Sonra exten kontrolü - bu çok kritik
-            if (!empty($userExten)) {
-                $where .= ' AND src=?';
-                $types.='s';
-                $params[] = $userExten;
-            } else {
-                // Exten bilgisi yoksa hiçbir kayıt gösterme (güvenlik)
-                $where .= ' AND 1=0';
-            }
+            $userExten   = trim($user['exten'] ?? '');
+            if ($userGroupId > 0) { $where .= ' AND group_id=?'; $types .= 'i'; $params[] = $userGroupId; }
+            if (!empty($userExten)) { $where .= ' AND src=?'; $types .= 's'; $params[] = $userExten; }
+            else { $where .= ' AND 1=0'; }
         } else {
-            // Legacy user role: kendi extension'ı
             if (($user['role'] ?? '') === 'user') {
-                $where .= ' AND src=?';
-                $types.='s';
-                $params[] = $user['exten'] ?? '';
+                $where .= ' AND src=?'; $types .= 's'; $params[] = $user['exten'] ?? '';
             } else {
-                // Diğer roller için grup bazlı filtreleme
-                $where .= ' AND group_id=?';
-                $types.='i';
-                $params[] = (int)($user['group_id'] ?? 0);
+                $where .= ' AND group_id=?'; $types .= 'i'; $params[] = (int)($user['group_id'] ?? 0);
             }
         }
-        if ($isSuper && $selectedGroup) { $where .= ' AND group_id=?'; $types.='i'; $params[] = $selectedGroup; }
-        if ($src !== '') { $where .= ' AND src LIKE ?'; $types.='s'; $params[] = $src.'%'; }
-        if ($dst !== '') { $where .= ' AND dst LIKE ?'; $types.='s'; $params[] = $dst.'%'; }
 
-        // Count
-        $stmt = $db->prepare("SELECT COUNT(*) c FROM calls WHERE $where");
-        $stmt->bind_param($types, ...$params);
-        $stmt->execute(); $total = (int)$stmt->get_result()->fetch_assoc()['c']; $stmt->close();
-        $totalPages = max(1, (int)ceil($total / $per)); if ($page > $totalPages) { $page = $totalPages; $offset = ($page-1)*$per; }
+        if ($isSuper && $selectedGroup)  { $where .= ' AND group_id=?';        $types .= 'i'; $params[] = $selectedGroup; }
+        if ($src !== '')                  { $where .= ' AND src LIKE ?';         $types .= 's'; $params[] = $src . '%'; }
+        if ($dst !== '')                  { $where .= ' AND dst LIKE ?';         $types .= 's'; $params[] = $dst . '%'; }
+        if ($disposition !== '')          { $where .= ' AND disposition LIKE ?'; $types .= 's'; $params[] = $disposition . '%'; }
+
+        // Aggregate stats for the filtered result set
+        $stmtStat = $db->prepare("SELECT COUNT(*) total, SUM(IF(UPPER(disposition)='ANSWERED',1,0)) answered, SUM(IF(UPPER(disposition) IN ('NO ANSWER','NO_ANSWER'),1,0)) no_answer, SUM(IF(UPPER(disposition)='BUSY',1,0)) busy, SUM(IF(UPPER(disposition)='FAILED',1,0)) failed, SUM(billsec) total_billsec, SUM(cost_api) total_cost_api, SUM(amount_charged) total_charged FROM calls WHERE $where");
+        $stmtStat->bind_param($types, ...$params);
+        $stmtStat->execute();
+        $stats = $stmtStat->get_result()->fetch_assoc();
+        $stmtStat->close();
+        $totalCalls = (int)($stats['total'] ?? 0);
+
+        // Count for pagination
+        $totalPages = max(1, (int)ceil($totalCalls / $per));
+        if ($page > $totalPages) { $page = $totalPages; $offset = ($page - 1) * $per; }
 
         // Data
-        $stmt = $db->prepare("SELECT call_id, src, dst, start, duration, billsec, disposition, group_id, user_id, cost_api, margin_percent, amount_charged FROM calls WHERE $where ORDER BY start DESC LIMIT $per OFFSET $offset");
+        $stmt = $db->prepare("SELECT call_id, src, dst, start, duration, billsec, disposition, group_id, user_id, cost_api, margin_percent, amount_charged FROM calls WHERE $where ORDER BY $sortCol $sortDir LIMIT $per OFFSET $offset");
         $stmt->bind_param($types, ...$params);
-        $stmt->execute(); $res = $stmt->get_result();
-        $calls=[]; while($row=$res->fetch_assoc()){$calls[]=$row;} $stmt->close();
+        $stmt->execute();
+        $res   = $stmt->get_result();
+        $calls = [];
+        while ($row = $res->fetch_assoc()) { $calls[] = $row; }
+        $stmt->close();
 
-        // groups map for display (and options for super admin)
-        $groupNamesById=[]; $groupNamesByApi=[]; $groups=[];
-        if($r=$db->query('SELECT id, api_group_id, name FROM groups ORDER BY name')){ while($rw=$r->fetch_assoc()){ $groupNamesById[(int)$rw['id']]=$rw['name']; if(!empty($rw['api_group_id'])){$groupNamesByApi[(int)$rw['api_group_id']]=$rw['name'];} $groups[]=$rw; } }
+        // Groups map
+        $groupNamesById = []; $groupNamesByApi = []; $groups = [];
+        if ($r = $db->query('SELECT id, api_group_id, name FROM groups ORDER BY name')) {
+            while ($rw = $r->fetch_assoc()) {
+                $groupNamesById[(int)$rw['id']] = $rw['name'];
+                if (!empty($rw['api_group_id'])) { $groupNamesByApi[(int)$rw['api_group_id']] = $rw['name']; }
+                $groups[] = $rw;
+            }
+        }
 
-        // Pass role variables to view
         require __DIR__.'/../Views/calls/history.php';
     }
 

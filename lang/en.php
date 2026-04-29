@@ -746,4 +746,18 @@ return [
     'username_exists' => 'This username is already taken',
     'registration_success' => 'Registration successful! Redirecting to panel...',
     'registration_error' => 'An error occurred during registration',
+
+    // CDR History - new keys
+    'all_dispositions' => 'All Statuses',
+    'quick_date'       => 'Quick Date',
+    'missed'           => 'Missed',
+    'total_talk_time'  => 'Total Talk Time',
+    'cdr_total_billed' => 'Total Billed',
+    'cdr_api_cost'     => 'API Cost',
+    'cdr_shown'        => 'shown',
+    'cdr_per_page'     => 'per page',
+    'cdr_total'        => 'total',
+    'cdr_page_results' => 'in this range',
+    'go_to_page'       => 'Go to page:',
+    'go'               => 'Go',
 ];
