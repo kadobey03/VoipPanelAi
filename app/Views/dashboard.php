@@ -1,996 +1,607 @@
 <?php
-$title=__('dashboard_title').' - '.__('papam_voip_panel');
-require __DIR__.'/partials/header.php';
+$title = __('dashboard_title') . ' - ' . __('papam_voip_panel');
+require __DIR__ . '/partials/header.php';
 
-$isSuper = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '')==='superadmin');
-$isGroupMember = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '')==='groupmember');
-$user = $_SESSION['user'] ?? [];
-$currentHour = (int)date('H');
-$greeting = $currentHour < 12 ? __('good_morning') : ($currentHour < 18 ? __('good_afternoon') : __('good_evening'));
+$isSuper       = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '') === 'superadmin');
+$isGroupAdmin  = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '') === 'groupadmin');
+$isGroupMember = isset($_SESSION['user']) && (($_SESSION['user']['role'] ?? '') === 'groupmember');
+$user          = $_SESSION['user'] ?? [];
+$currentHour   = (int)date('H');
+$greeting      = $currentHour < 12 ? __('good_morning') : ($currentHour < 18 ? __('good_afternoon') : __('good_evening'));
+$canSeeCost    = $isSuper || $isGroupAdmin;
+$billsecFmt    = function(int $s): string { return sprintf('%dsa %02ddak', floor($s/3600), floor(($s%3600)/60)); };
 ?>
 
-<!-- Hero Section -->
-<section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 mb-8 text-white">
-  <!-- Background Pattern -->
-  <div class="absolute inset-0 bg-black/10"></div>
-  <div class="absolute inset-0 opacity-10">
-    <div class="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full blur-xl"></div>
-    <div class="absolute bottom-10 right-10 w-48 h-48 bg-white/20 rounded-full blur-2xl"></div>
-    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-  </div>
+<!-- ══════════════════════════════════════════════════ HERO -->
+<section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 mb-6 text-white">
+  <div class="absolute inset-0 bg-black/10 pointer-events-none"></div>
+  <div class="absolute -top-16 -right-16 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-10 -left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
 
-  <!-- Content -->
-  <div class="relative px-8 py-12 lg:px-12 lg:py-16">
-    <div class="max-w-4xl mx-auto text-center">
-      <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-6">
-        <i class="fa-solid fa-wave-square text-3xl animate-pulse"></i>
+  <div class="relative px-6 py-8 lg:px-10">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <!-- Left: greeting -->
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl font-bold flex-shrink-0">
+          <?= strtoupper(mb_substr($user['login'] ?? 'U', 0, 1)) ?>
+        </div>
+        <div>
+          <p class="text-white/70 text-sm font-medium"><?= $greeting ?></p>
+          <h1 class="text-2xl lg:text-3xl font-bold text-white"><?= htmlspecialchars($user['login'] ?? '') ?></h1>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/20 rounded-full text-xs font-semibold">
+              <i class="fa-solid fa-shield text-xs"></i><?= ucfirst($user['role'] ?? '') ?>
+            </span>
+            <?php if (!$isSuper && !empty($ownGroupName)): ?>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/15 rounded-full text-xs">
+              <i class="fa-solid fa-users text-xs"></i><?= htmlspecialchars($ownGroupName) ?>
+            </span>
+            <?php endif; ?>
+          </div>
+        </div>
       </div>
 
-      <h1 class="text-4xl lg:text-5xl font-bold mb-4">
-        <?= $greeting ?>, <span class="text-yellow-300"><?= htmlspecialchars($user['login'] ?? '') ?></span>!
-      </h1>
-
-      <p class="text-xl lg:text-2xl text-white/80 mb-8 font-light">
-        <?= __('welcome_to_panel') ?>
-      </p>
-
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
-        <div class="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+      <!-- Right: time + date -->
+      <div class="flex items-center gap-3 text-sm">
+        <div class="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2.5">
           <i class="fa-solid fa-calendar-days text-yellow-300"></i>
-          <span><?= date('d.m.Y') ?></span>
+          <span class="font-medium"><?= date('d.m.Y') ?></span>
         </div>
-        <div class="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+        <div class="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2.5">
           <i class="fa-solid fa-clock text-green-300"></i>
-          <span id="currentTime"><?= date('H:i:s') ?></span>
-        </div>
-        <div class="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-          <i class="fa-solid fa-shield text-blue-300"></i>
-          <span><?= ucfirst($user['role'] ?? '') ?></span>
+          <span id="currentTime" class="font-mono font-medium"><?= date('H:i:s') ?></span>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Decorative Elements -->
-  <div class="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
 </section>
 
-<!-- Low Balance Warning for Group Admins -->
+<!-- ══════════════════════════════════════════════════ LOW BALANCE WARNING -->
 <?php if (!$isSuper && !$isGroupMember && isset($ownGroupBalance) && $ownGroupBalance !== null && $ownGroupBalance < 50): ?>
-<section class="mb-8">
-  <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 p-8 text-white shadow-2xl animate-pulse">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 bg-black/20"></div>
-    <div class="absolute inset-0 opacity-20">
-      <div class="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full blur-xl"></div>
-      <div class="absolute bottom-4 left-4 w-20 h-20 bg-white/20 rounded-full blur-2xl"></div>
+<div class="flex items-center gap-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/50 rounded-2xl p-4 mb-6">
+  <div class="p-3 bg-red-100 dark:bg-red-900/40 rounded-xl flex-shrink-0">
+    <i class="fa-solid fa-triangle-exclamation text-red-600 dark:text-red-400 text-xl"></i>
+  </div>
+  <div class="flex-1 min-w-0">
+    <p class="font-bold text-red-700 dark:text-red-400"><?= __('low_balance') ?>!</p>
+    <p class="text-sm text-red-600 dark:text-red-500"><?= __('low_balance_warning') ?> — <?= __('current') ?>: <strong>$<?= number_format((float)$ownGroupBalance, 2) ?></strong></p>
+  </div>
+  <a href="<?= \App\Helpers\Url::to('/balance/topup') ?>"
+     class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors text-sm">
+    <i class="fa-solid fa-plus"></i><?= __('topup') ?>
+  </a>
+</div>
+<?php endif; ?>
+
+<!-- ══════════════════════════════════════════════════ TOP STAT CARDS -->
+<div class="grid grid-cols-2 <?= $isSuper ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4 mb-6">
+
+  <?php if ($isSuper): ?>
+  <!-- API Balance -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-5 text-white shadow-lg shadow-indigo-500/20">
+    <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-wallet text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide"><?= __('main_balance_api') ?></span>
+      </div>
+      <div class="text-3xl font-bold mb-1" id="balance">
+        <?= $balanceValue !== null ? '$' . number_format($balanceValue, 2) : '—' ?>
+      </div>
+      <div class="text-xs opacity-70"><?= __('current_status') ?></div>
+    </div>
+  </div>
+
+  <!-- Groups Total -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-5 text-white shadow-lg shadow-blue-500/20">
+    <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-layer-group text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide"><?= __('groups_total') ?></span>
+      </div>
+      <div class="text-3xl font-bold mb-1">$<?= number_format($groupsTotal, 2) ?></div>
+      <div class="text-xs opacity-70"><?= $totalGroups ?> <?= __('group') ?> · <?= $totalUsers ?> <?= __('user') ?></div>
+    </div>
+  </div>
+
+  <!-- Diff -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 text-white shadow-lg shadow-amber-500/20">
+    <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-scale-balanced text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide"><?= __('balance_difference') ?></span>
+      </div>
+      <div class="text-3xl font-bold mb-1"><?= $diff !== null ? '$'.number_format($diff, 2) : '—' ?></div>
+      <div class="text-xs opacity-70"><?= __('difference_main_groups') ?></div>
+    </div>
+  </div>
+
+  <!-- Weekly Profit -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl p-5 text-white shadow-lg shadow-emerald-500/20">
+    <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-arrow-trend-up text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide"><?= __('weekly_profit') ?></span>
+      </div>
+      <div class="text-3xl font-bold mb-1">$<?= number_format($weeklyProfit, 2) ?></div>
+      <div class="text-xs opacity-70"><?= __('last_7_days') ?></div>
+    </div>
+  </div>
+
+  <?php elseif (!$isGroupMember): ?>
+  <!-- Group Balance -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 text-white shadow-lg shadow-emerald-500/20">
+    <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-piggy-bank text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide"><?= __('group_balance') ?></span>
+      </div>
+      <div class="text-3xl font-bold mb-1">$<?= number_format((float)($ownGroupBalance ?? 0), 2) ?></div>
+      <div class="text-xs opacity-70"><?= __('current_balance') ?></div>
+    </div>
+  </div>
+
+  <!-- Weekly Spending -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl p-5 text-white shadow-lg shadow-rose-500/20">
+    <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-sack-dollar text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide"><?= __('this_week_spending') ?></span>
+      </div>
+      <div class="text-3xl font-bold mb-1">$<?= number_format($weeklyRevenue, 2) ?></div>
+      <div class="text-xs opacity-70"><?= __('last_7_days') ?></div>
+    </div>
+  </div>
+
+  <!-- Active Agents -->
+  <div class="relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-5 text-white shadow-lg shadow-violet-500/20">
+    <div class="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative">
+      <div class="flex items-center gap-2 mb-3 opacity-80">
+        <i class="fa-solid fa-headset text-sm"></i>
+        <span class="text-xs font-semibold uppercase tracking-wide"><?= __('agent_status') ?></span>
+      </div>
+      <div class="text-3xl font-bold mb-1"><?= $activeAgents ?><span class="text-lg opacity-60"> / <?= $totalAgents ?></span></div>
+      <div class="text-xs opacity-70">Aktif / Toplam</div>
+    </div>
+  </div>
+  <?php endif; ?>
+</div>
+
+<!-- ══════════════════════════════════════════════════ TODAY STATS -->
+<?php if ($todayTotal > 0 || true): ?>
+<div class="mb-6">
+  <div class="flex items-center gap-2 mb-3">
+    <i class="fa-solid fa-sun text-amber-500"></i>
+    <h2 class="text-base font-bold text-slate-800 dark:text-white">Bugün — <span class="text-slate-500 dark:text-slate-400 font-normal text-sm"><?= date('d.m.Y') ?></span></h2>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 <?= $canSeeCost ? 'lg:grid-cols-5' : 'lg:grid-cols-4' ?> gap-3">
+    <!-- Total calls -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+          <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400 text-xs"></i>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Çağrı</span>
+      </div>
+      <div class="text-2xl font-bold text-slate-800 dark:text-white"><?= number_format($todayTotal) ?></div>
+      <div class="text-xs text-slate-400 mt-0.5">Toplam</div>
     </div>
 
-    <!-- Warning Content -->
-    <div class="relative z-10 text-center">
-      <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-6 animate-bounce">
-        <i class="fa-solid fa-exclamation-triangle text-4xl text-yellow-300"></i>
-      </div>
-      
-      <h2 class="text-3xl lg:text-4xl font-bold mb-4">
-        ⚠️ <?= __('low_balance') ?>!
-      </h2>
-      
-      <p class="text-xl lg:text-2xl mb-6 font-medium opacity-90">
-        <?= __('low_balance_warning') ?>
-      </p>
-      
-      <div class="flex items-center justify-center gap-4 mb-6">
-        <div class="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3">
-          <span class="text-lg font-bold"><?= __('current') ?>: $<?= number_format((float)$ownGroupBalance, 2) ?></span>
+    <!-- Answered -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-emerald-700/40 p-4 shadow-sm">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+          <i class="fa-solid fa-check text-emerald-600 dark:text-emerald-400 text-xs"></i>
         </div>
-        <div class="bg-yellow-500/30 backdrop-blur-sm rounded-full px-6 py-3">
-          <span class="text-lg font-bold"><?= __('minimum_balance') ?>: $50.00</span>
-        </div>
+        <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase">Cevap</span>
       </div>
-      
-      <a href="<?= \App\Helpers\Url::to('/balance/topup') ?>"
-         class="inline-flex items-center gap-3 px-8 py-4 bg-white text-red-600 font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:bg-red-50 transition-all duration-300 transform hover:scale-105">
-        <i class="fa-solid fa-plus-circle text-xl"></i>
-        <span><?= __('topup') ?></span>
-        <i class="fa-solid fa-arrow-right"></i>
+      <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400"><?= number_format($todayAnswered) ?></div>
+      <div class="text-xs text-slate-400 mt-0.5"><?= $todayAnswerRate ?>% oran</div>
+    </div>
+
+    <!-- Missed -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-700/40 p-4 shadow-sm">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+          <i class="fa-solid fa-phone-slash text-red-500 dark:text-red-400 text-xs"></i>
+        </div>
+        <span class="text-xs font-semibold text-red-500 dark:text-red-400 uppercase">Cevapsız</span>
+      </div>
+      <div class="text-2xl font-bold text-red-500 dark:text-red-400"><?= number_format($todayTotal - $todayAnswered) ?></div>
+      <div class="text-xs text-slate-400 mt-0.5"><?= $todayTotal > 0 ? round(($todayTotal - $todayAnswered) / $todayTotal * 100, 1) : 0 ?>% oran</div>
+    </div>
+
+    <!-- Billsec -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-blue-700/40 p-4 shadow-sm">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+          <i class="fa-solid fa-stopwatch text-blue-600 dark:text-blue-400 text-xs"></i>
+        </div>
+        <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">Konuşma</span>
+      </div>
+      <div class="text-xl font-bold text-blue-600 dark:text-blue-400"><?= $billsecFmt($todayBillsec) ?></div>
+      <div class="text-xs text-slate-400 mt-0.5">Toplam süre</div>
+    </div>
+
+    <?php if ($canSeeCost): ?>
+    <!-- Charged -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-cyan-200 dark:border-cyan-700/40 p-4 shadow-sm">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center">
+          <i class="fa-solid fa-coins text-cyan-600 dark:text-cyan-400 text-xs"></i>
+        </div>
+        <span class="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase">Tahsil</span>
+      </div>
+      <div class="text-xl font-bold text-cyan-600 dark:text-cyan-400">$<?= number_format($todayCharged, 2) ?></div>
+      <div class="text-xs text-slate-400 mt-0.5">Bugün</div>
+    </div>
+    <?php endif; ?>
+  </div>
+</div>
+<?php endif; ?>
+
+<!-- ══════════════════════════════════════════════════ CHARTS + DONUT -->
+<?php if (!$isGroupMember): ?>
+<div class="grid lg:grid-cols-3 gap-5 mb-6">
+  <!-- Trend Chart (2/3) -->
+  <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="font-bold text-slate-800 dark:text-white text-sm">
+          <?= $isSuper ? 'Gelir / Maliyet Trendi' : 'Harcama Trendi' ?>
+        </h3>
+        <p class="text-xs text-slate-400 mt-0.5"><?= __('last_7_days_analysis') ?></p>
+      </div>
+      <div class="p-2.5 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl">
+        <i class="fa-solid fa-chart-line text-white text-sm"></i>
+      </div>
+    </div>
+    <div style="height:220px;position:relative">
+      <canvas id="trendLine"></canvas>
+    </div>
+  </div>
+
+  <!-- Disposition Donut (1/3) -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="font-bold text-slate-800 dark:text-white text-sm">Çağrı Dağılımı</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Bugün</p>
+      </div>
+      <div class="p-2.5 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl">
+        <i class="fa-solid fa-chart-pie text-white text-sm"></i>
+      </div>
+    </div>
+    <div style="height:180px;position:relative">
+      <canvas id="dispositionDonut"></canvas>
+    </div>
+    <!-- Legend -->
+    <div class="grid grid-cols-2 gap-1.5 mt-3">
+      <?php
+      $dispColors = ['ANSWERED'=>['bg-emerald-500','Cevap'], 'NO ANSWER'=>['bg-slate-400','Cevapsız'], 'BUSY'=>['bg-amber-500','Meşgul'], 'FAILED'=>['bg-red-500','Başarısız']];
+      foreach ($dispColors as $d => [$color, $label]):
+      ?>
+      <div class="flex items-center gap-1.5">
+        <div class="w-2.5 h-2.5 rounded-full <?= $color ?> flex-shrink-0"></div>
+        <span class="text-xs text-slate-500 dark:text-slate-400 truncate"><?= $label ?>: <strong class="text-slate-700 dark:text-slate-200"><?= $dispositionData[$d] ?? 0 ?></strong></span>
+      </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</div>
+
+<!-- Call Count Bar Chart (full width) -->
+<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h3 class="font-bold text-slate-800 dark:text-white text-sm"><?= __('daily_call_count') ?></h3>
+      <p class="text-xs text-slate-400 mt-0.5"><?= __('call_count_last_7_days') ?></p>
+    </div>
+    <div class="p-2.5 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl">
+      <i class="fa-solid fa-phone text-white text-sm"></i>
+    </div>
+  </div>
+  <div style="height:200px;position:relative">
+    <canvas id="callsBar"></canvas>
+  </div>
+</div>
+<?php endif; ?>
+
+<!-- ══════════════════════════════════════════════════ BOTTOM GRID: Quick Access + Recent Calls + System Status -->
+<div class="grid lg:grid-cols-3 gap-5 mb-6">
+
+  <!-- Quick Access (1/3) -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+    <h3 class="font-bold text-slate-800 dark:text-white text-sm mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-bolt text-yellow-500"></i><?= __('quick_access') ?>
+    </h3>
+    <div class="space-y-2">
+      <?php
+      $quickLinks = [
+          ['/calls/history',    'fa-phone',       'bg-blue-500',    'Çağrı Geçmişi',   'CDR sorguları'],
+          ['/reports',          'fa-chart-bar',   'bg-purple-500',  __('reports'),      __('detailed_analysis')],
+      ];
+      if (!$isGroupMember) {
+          array_unshift($quickLinks, ['/agents', 'fa-headset', 'bg-rose-500', __('agent_status'), __('agent_management')]);
+      }
+      if (!$isGroupMember) {
+          $quickLinks[] = ['/numbers', 'fa-address-book', 'bg-amber-500', __('external_numbers'), __('number_management')];
+      }
+      if (!$isGroupMember) {
+          $quickLinks[] = ['/groups', 'fa-layer-group', 'bg-teal-500', __('groups'), __('view_and_manage_groups')];
+      }
+      if (!$isGroupMember) {
+          $quickLinks[] = ['/users', 'fa-users', 'bg-indigo-500', __('users'), __('user_management')];
+      }
+      if ($isSuper) {
+          $quickLinks[] = ['/balance', 'fa-wallet', 'bg-fuchsia-500', __('main_balance'), __('api_balance_management')];
+      }
+      $quickLinks[] = ['/profile', 'fa-user-gear', 'bg-slate-500', __('profile'), __('account_settings')];
+      foreach ($quickLinks as [$href, $icon, $bg, $name, $sub]):
+      ?>
+      <a href="<?= \App\Helpers\Url::to($href) ?>"
+         class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+        <div class="w-9 h-9 rounded-lg <?= $bg ?> flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+          <i class="fa-solid <?= $icon ?> text-white text-sm"></i>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="font-semibold text-slate-800 dark:text-white text-sm truncate"><?= $name ?></div>
+          <div class="text-xs text-slate-400 dark:text-slate-500 truncate"><?= $sub ?></div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors flex-shrink-0"></i>
+      </a>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <!-- Recent Calls (2/3) -->
+  <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
+        <i class="fa-solid fa-clock-rotate-left text-orange-500"></i>Son Çağrılar
+      </h3>
+      <a href="<?= \App\Helpers\Url::to('/calls/history') ?>" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+        Tümünü gör <i class="fa-solid fa-arrow-right text-xs"></i>
       </a>
     </div>
 
-    <!-- Decorative Elements -->
-    <div class="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-  </div>
-</section>
-<?php endif; ?>
-
-<!-- Stats Cards -->
-<section class="mb-8">
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-    <?php if ($isSuper): ?>
-    <!-- Ana Bakiye -->
-    <div class="group relative bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl hover:shadow-indigo-500/25 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-wallet text-2xl"></i>
-          </div>
-          <div class="text-right">
-            <div class="text-sm opacity-80"><?= __('main_balance_api') ?></div>
-            <div class="text-2xl font-bold" id="balance">
-              <?= isset($balanceValue) && $balanceValue!==null ? '$' . number_format((float)$balanceValue, 2) : '...' ?>
-            </div>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80"><?= __('current_status') ?></span>
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-circle text-green-400 mr-1 text-xs"></i><?= __('active') ?>
-          </span>
-        </div>
-      </div>
+    <?php if (!empty($recentCalls)): ?>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-slate-700">
+            <th class="text-left text-xs font-bold text-slate-400 uppercase pb-2 pr-3">Tarih</th>
+            <th class="text-left text-xs font-bold text-slate-400 uppercase pb-2 pr-3">Src</th>
+            <th class="text-left text-xs font-bold text-slate-400 uppercase pb-2 pr-3">Dst</th>
+            <th class="text-left text-xs font-bold text-slate-400 uppercase pb-2 pr-3">Durum</th>
+            <th class="text-right text-xs font-bold text-slate-400 uppercase pb-2">Süre</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50 dark:divide-slate-700/50">
+          <?php foreach ($recentCalls as $c):
+            $disp = strtoupper($c['disposition']);
+            $dispClass = match(true) {
+              $disp === 'ANSWERED' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+              $disp === 'BUSY'     => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+              $disp === 'FAILED'   => 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+              default              => 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400',
+            };
+          ?>
+          <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
+            <td class="py-2 pr-3 whitespace-nowrap">
+              <div class="text-xs font-medium text-slate-700 dark:text-slate-300"><?= date('d.m', strtotime($c['start'])) ?></div>
+              <div class="text-xs text-slate-400"><?= date('H:i', strtotime($c['start'])) ?></div>
+            </td>
+            <td class="py-2 pr-3 font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap"><?= htmlspecialchars($c['src']) ?></td>
+            <td class="py-2 pr-3 font-mono text-xs font-semibold text-purple-600 dark:text-purple-400 whitespace-nowrap"><?= htmlspecialchars($c['dst']) ?></td>
+            <td class="py-2 pr-3">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold <?= $dispClass ?>">
+                <?= $disp ?>
+              </span>
+            </td>
+            <td class="py-2 text-right font-mono text-xs text-slate-600 dark:text-slate-300"><?= gmdate('H:i:s', (int)$c['duration']) ?></td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
     </div>
-
-    <!-- Gruplar Toplam -->
-    <div class="group relative bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-layer-group text-2xl"></i>
-          </div>
-          <div class="text-right">
-            <div class="text-sm opacity-80"><?= __('groups_total') ?></div>
-            <div class="text-2xl font-bold">$<?= number_format((float)($groupsTotal ?? 0), 2) ?></div>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80"><?= __('all_groups') ?></span>
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-users text-blue-300 mr-1 text-xs"></i><?= __('total') ?>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Fark -->
-    <div class="group relative bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl hover:shadow-amber-500/25 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-scale-balanced text-2xl"></i>
-          </div>
-          <div class="text-right">
-            <div class="text-sm opacity-80"><?= __('difference_main_groups') ?></div>
-            <div class="text-2xl font-bold">
-              <?= isset($diff) && $diff!==null ? '$' . number_format((float)$diff, 2) : '...' ?>
-            </div>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80"><?= __('balance_difference') ?></span>
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-chart-line text-orange-300 mr-1 text-xs"></i><?= __('analysis') ?>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Haftalık Kâr -->
-    <div class="group relative bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-chart-trend-up text-2xl"></i>
-          </div>
-          <div class="text-right">
-            <div class="text-sm opacity-80"><?= __('weekly_profit') ?></div>
-            <div class="text-2xl font-bold">$<?= number_format((float)($weeklyProfit ?? 0), 2) ?></div>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80"><?= __('last_7_days') ?></span>
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-arrow-trend-up text-green-300 mr-1 text-xs"></i><?= __('rising') ?>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <?php elseif (!$isGroupMember): ?>
-    <!-- Grup Bakiyesi -->
-    <div class="group relative bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-piggy-bank text-2xl"></i>
-          </div>
-          <div class="text-right">
-            <div class="text-sm opacity-80"><?= __('group_balance') ?></div>
-            <div class="text-2xl font-bold">$<?= number_format((float)($ownGroupBalance ?? 0), 2) ?></div>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80"><?= __('current_balance') ?></span>
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-wallet text-teal-300 mr-1 text-xs"></i><?= __('active') ?>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Grubum Link -->
-    <a href="<?= \App\Helpers\Url::to('/groups') ?>" class="group relative bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden block">
-      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-layer-group text-2xl"></i>
-          </div>
-          <div class="flex items-center text-right">
-            <i class="fa-solid fa-arrow-right text-white/60 ml-2 group-hover:text-white transition-colors duration-300"></i>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="text-sm opacity-80"><?= __('my_group') ?></div>
-            <div class="text-lg font-bold"><?= __('view') ?></div>
-          </div>
-          <div class="p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-external-link-alt text-sm"></i>
-          </div>
-        </div>
-      </div>
-    </a>
-
-    <!-- Haftalık Harcama -->
-    <div class="group relative bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-sack-dollar text-2xl"></i>
-          </div>
-          <div class="text-right">
-            <div class="text-sm opacity-80"><?= __('this_week_spending') ?></div>
-            <div class="text-2xl font-bold">$<?= number_format((float)($weeklyRevenue ?? 0), 2) ?></div>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-sm opacity-80"><?= __('last_7_days') ?></span>
-          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-white/20">
-            <i class="fa-solid fa-chart-pie text-pink-300 mr-1 text-xs"></i><?= __('spending') ?>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Boş Kart -->
-    <div class="group relative bg-gradient-to-br from-slate-500 to-gray-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl hover:shadow-slate-500/25 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10 flex items-center justify-center h-full">
-        <div class="text-center">
-          <div class="p-4 bg-white/20 rounded-full mb-4 inline-block">
-            <i class="fa-solid fa-plus text-2xl"></i>
-          </div>
-          <div class="text-sm opacity-80"><?= __('more_metrics') ?></div>
-          <div class="text-lg font-bold"><?= __('soon') ?></div>
-        </div>
-      </div>
-    </div>
-    <?php endif; ?>
-  </div>
-</section>
-
-<!-- Quick Access Cards -->
-<section class="mb-8">
-  <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
-    <i class="fa-solid fa-bolt text-yellow-500"></i>
-    <?= __('quick_access') ?>
-  </h2>
-
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    <?php if (!$isGroupMember): ?>
-    <!-- Kullanıcılar -->
-    <a href="<?= \App\Helpers\Url::to('/users') ?>" class="group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-indigo-500/25 transition-all duration-300 transform hover:-translate-y-1 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <i class="fa-solid fa-users text-white text-xl"></i>
-          </div>
-          <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-            <i class="fa-solid fa-arrow-right text-indigo-600 dark:text-indigo-400"></i>
-          </div>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('users') ?></h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('user_management') ?></p>
-        </div>
-        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <div class="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-            <span><?= __('view') ?></span>
-            <i class="fa-solid fa-external-link-alt"></i>
-          </div>
-        </div>
-      </div>
-    </a>
-    <?php endif; ?>
-
-    <!-- Çağrılar -->
-    <a href="<?= \App\Helpers\Url::to('/calls/history') ?>" class="group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:-translate-y-1 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <i class="fa-solid fa-phone text-white text-xl"></i>
-          </div>
-          <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-            <i class="fa-solid fa-arrow-right text-blue-600 dark:text-blue-400"></i>
-          </div>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('calls') ?></h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('call_history') ?></p>
-        </div>
-        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <div class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
-            <span><?= __('view') ?></span>
-            <i class="fa-solid fa-external-link-alt"></i>
-          </div>
-        </div>
-      </div>
-    </a>
-
-    <?php if (!$isGroupMember): ?>
-    <!-- Raporlar -->
-    <a href="<?= \App\Helpers\Url::to('/reports') ?>" class="group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 transform hover:-translate-y-1 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <i class="fa-solid fa-chart-line text-white text-xl"></i>
-          </div>
-          <div class="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-            <i class="fa-solid fa-arrow-right text-emerald-600 dark:text-emerald-400"></i>
-          </div>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('reports') ?></h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('detailed_analysis') ?></p>
-        </div>
-        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <div class="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            <span><?= __('view') ?></span>
-            <i class="fa-solid fa-external-link-alt"></i>
-          </div>
-        </div>
-      </div>
-    </a>
-
-    <!-- Agent Durum -->
-    <a href="<?= \App\Helpers\Url::to('/agents') ?>" class="group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:-translate-y-1 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <i class="fa-solid fa-headset text-white text-xl"></i>
-          </div>
-          <div class="p-2 bg-rose-100 dark:bg-rose-900/50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-            <i class="fa-solid fa-arrow-right text-rose-600 dark:text-rose-400"></i>
-          </div>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('agent_status') ?></h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('agent_management') ?></p>
-        </div>
-        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <div class="flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 font-medium">
-            <span><?= __('view') ?></span>
-            <i class="fa-solid fa-external-link-alt"></i>
-          </div>
-        </div>
-      </div>
-    </a>
-
-    <!-- Dış Numaralar -->
-    <a href="<?= \App\Helpers\Url::to('/numbers') ?>" class="group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-amber-500/25 transition-all duration-300 transform hover:-translate-y-1 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <i class="fa-solid fa-address-book text-white text-xl"></i>
-          </div>
-          <div class="p-2 bg-amber-100 dark:bg-amber-900/50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-            <i class="fa-solid fa-arrow-right text-amber-600 dark:text-amber-400"></i>
-          </div>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('external_numbers') ?></h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('number_management') ?></p>
-        </div>
-        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <div class="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-medium">
-            <span><?= __('view') ?></span>
-            <i class="fa-solid fa-external-link-alt"></i>
-          </div>
-        </div>
-      </div>
-    </a>
     <?php else: ?>
-    <!-- Groupmember için Raporlar -->
-    <a href="<?= \App\Helpers\Url::to('/reports') ?>" class="group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 transform hover:-translate-y-1 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <i class="fa-solid fa-chart-line text-white text-xl"></i>
-          </div>
-          <div class="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-            <i class="fa-solid fa-arrow-right text-emerald-600 dark:text-emerald-400"></i>
-          </div>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('reports') ?></h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('my_call_reports') ?></p>
-        </div>
-        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <div class="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            <span><?= __('view') ?></span>
-            <i class="fa-solid fa-external-link-alt"></i>
-          </div>
-        </div>
+    <div class="flex flex-col items-center justify-center py-12 text-center">
+      <div class="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-3">
+        <i class="fa-solid fa-phone-slash text-2xl text-slate-300 dark:text-slate-500"></i>
       </div>
-    </a>
+      <p class="text-slate-500 dark:text-slate-400 text-sm">Henüz çağrı yok</p>
+    </div>
     <?php endif; ?>
-
-    <?php if ($isSuper): ?>
-    <!-- Ana Bakiye -->
-    <a href="<?= \App\Helpers\Url::to('/balance') ?>" class="group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-fuchsia-500/25 transition-all duration-300 transform hover:-translate-y-1 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <i class="fa-solid fa-wallet text-white text-xl"></i>
-          </div>
-          <div class="p-2 bg-fuchsia-100 dark:bg-fuchsia-900/50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-            <i class="fa-solid fa-arrow-right text-fuchsia-600 dark:text-fuchsia-400"></i>
-          </div>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('main_balance') ?></h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('api_balance_management') ?></p>
-        </div>
-        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <div class="flex items-center gap-1 text-xs text-fuchsia-600 dark:text-fuchsia-400 font-medium">
-            <span><?= __('view') ?></span>
-            <i class="fa-solid fa-external-link-alt"></i>
-          </div>
-        </div>
-      </div>
-    </a>
-    <?php endif; ?>
-
-    <!-- Profil -->
-    <a href="<?= \App\Helpers\Url::to('/profile') ?>" class="group relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:shadow-slate-500/25 transition-all duration-300 transform hover:-translate-y-1 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-slate-500/5 to-gray-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-gradient-to-br from-slate-500 to-gray-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <i class="fa-solid fa-user-gear text-white text-xl"></i>
-          </div>
-          <div class="p-2 bg-slate-100 dark:bg-slate-700/50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-            <i class="fa-solid fa-arrow-right text-slate-600 dark:text-slate-400"></i>
-          </div>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><?= __('profile') ?></h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('account_settings') ?></p>
-        </div>
-        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <div class="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 font-medium">
-            <span><?= __('view') ?></span>
-            <i class="fa-solid fa-external-link-alt"></i>
-          </div>
-        </div>
-      </div>
-    </a>
-
-    <!-- Çıkış -->
-    <a href="<?= \App\Helpers\Url::to('/logout') ?>" class="group relative bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl hover:shadow-red-500/25 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-right-from-bracket text-2xl"></i>
-          </div>
-          <div class="text-right">
-            <div class="text-sm opacity-80"><?= __('secure_logout') ?></div>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="text-lg font-bold"><?= __('logout_button') ?></div>
-            <div class="text-sm opacity-80"><?= __('end_session') ?></div>
-          </div>
-          <div class="p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors duration-300">
-            <i class="fa-solid fa-sign-out-alt text-sm"></i>
-          </div>
-        </div>
-      </div>
-    </a>
   </div>
-</section>
+</div>
 
-<!-- Analytics Section -->
-<?php if (!$isGroupMember): ?>
-<section class="mb-8">
-  <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
-    <i class="fa-solid fa-chart-bar text-purple-500"></i>
-    <?= __('analytics') ?>
-  </h2>
-
-  <div class="grid lg:grid-cols-2 gap-8">
-    <!-- Trend Chart -->
-    <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white">
-            <?php echo $isSuper ? 'Gelir/Maliyet Trendi' : 'Harcama Trendi'; ?>
-          </h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('last_7_days_analysis') ?></p>
-        </div>
-        <div class="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg">
-          <i class="fa-solid fa-chart-line text-white text-xl"></i>
-        </div>
-      </div>
-      <div class="relative">
-        <canvas id="trendLine" height="200"></canvas>
-      </div>
-      <div class="flex items-center justify-center mt-4 space-x-6">
-        <?php if ($isSuper): ?>
-        <div class="flex items-center space-x-2">
-          <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
-          <span class="text-sm text-slate-600 dark:text-slate-400"><?= __('revenue') ?></span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-          <span class="text-sm text-slate-600 dark:text-slate-400"><?= __('cost') ?></span>
-        </div>
-        <?php else: ?>
-        <div class="flex items-center space-x-2">
-          <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <span class="text-sm text-slate-600 dark:text-slate-400"><?= __('spending') ?></span>
-        </div>
-        <?php endif; ?>
-      </div>
+<!-- ══════════════════════════════════════════════════ SYSTEM STATUS -->
+<div class="grid sm:grid-cols-3 gap-4 mb-6">
+  <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
+      <i class="fa-solid fa-globe text-emerald-600 dark:text-emerald-400"></i>
     </div>
-
-    <!-- Calls Chart -->
-    <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h3 class="text-lg font-bold text-slate-800 dark:text-white"><?= __('daily_call_count') ?></h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400"><?= __('call_count_last_7_days') ?></p>
-        </div>
-        <div class="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
-          <i class="fa-solid fa-phone text-white text-xl"></i>
-        </div>
-      </div>
-      <div class="relative">
-        <canvas id="callsBar" height="200"></canvas>
-      </div>
-      <div class="flex items-center justify-center mt-4">
-        <div class="flex items-center space-x-2">
-          <div class="w-3 h-3 bg-indigo-500 rounded-full"></div>
-          <span class="text-sm text-slate-600 dark:text-slate-400"><?= __('call_count') ?></span>
-        </div>
-      </div>
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold text-slate-800 dark:text-white text-sm"><?= __('api_connection') ?></div>
+      <div class="text-xs text-slate-400"><?= __('voip_api_status') ?></div>
+    </div>
+    <div class="flex items-center gap-1.5 flex-shrink-0">
+      <i class="fa-solid fa-circle text-emerald-500 text-xs animate-pulse"></i>
+      <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400"><?= __('active') ?></span>
     </div>
   </div>
-</section>
-<?php endif; ?>
-
-<!-- System Status & Recent Activity -->
-<section class="grid lg:grid-cols-3 gap-8 mb-8">
-  <!-- System Status -->
-  <div class="lg:col-span-1">
-    <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
-      <i class="fa-solid fa-server text-green-500"></i>
-      <?= __('system_status') ?>
-    </h2>
-
-    <div class="space-y-4">
-      <!-- API Status -->
-      <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
-            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
-              <i class="fa-solid fa-globe text-green-600 dark:text-green-400"></i>
-            </div>
-            <div>
-              <div class="font-semibold text-slate-800 dark:text-white"><?= __('api_connection') ?></div>
-              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('voip_api_status') ?></div>
-            </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <i class="fa-solid fa-circle text-green-500 text-sm animate-pulse"></i>
-            <span class="text-sm text-green-600 dark:text-green-400 font-medium"><?= __('active') ?></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Database Status -->
-      <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
-            <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
-              <i class="fa-solid fa-database text-blue-600 dark:text-blue-400"></i>
-            </div>
-            <div>
-              <div class="font-semibold text-slate-800 dark:text-white"><?= __('database') ?></div>
-              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('mysql_connection') ?></div>
-            </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <i class="fa-solid fa-circle text-green-500 text-sm animate-pulse"></i>
-            <span class="text-sm text-green-600 dark:text-green-400 font-medium"><?= __('active') ?></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Last Sync -->
-      <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
-            <div class="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
-              <i class="fa-solid fa-sync text-purple-600 dark:text-purple-400"></i>
-            </div>
-            <div>
-              <div class="font-semibold text-slate-800 dark:text-white"><?= __('last_sync') ?></div>
-              <div class="text-sm text-slate-600 dark:text-slate-400"><?= __('data_update') ?></div>
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="text-sm font-medium text-slate-800 dark:text-white"><?= __('2_minutes_ago') ?></div>
-            <div class="text-xs text-slate-500 dark:text-slate-400"><?= __('automatic') ?></div>
-          </div>
-        </div>
-      </div>
+  <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
+      <i class="fa-solid fa-database text-blue-600 dark:text-blue-400"></i>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold text-slate-800 dark:text-white text-sm"><?= __('database') ?></div>
+      <div class="text-xs text-slate-400"><?= __('mysql_connection') ?></div>
+    </div>
+    <div class="flex items-center gap-1.5 flex-shrink-0">
+      <i class="fa-solid fa-circle text-emerald-500 text-xs animate-pulse"></i>
+      <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400"><?= __('active') ?></span>
     </div>
   </div>
-
-  <!-- Coming Soon Activity -->
-  <div class="lg:col-span-2">
-    <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
-      <i class="fa-solid fa-clock-rotate-left text-orange-500"></i>
-      <?= __('recent_activities') ?>
-    </h2>
-
-    <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <div class="p-12 text-center">
-        <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full mb-6">
-          <i class="fa-solid fa-clock text-3xl text-white"></i>
-        </div>
-        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2"><?= __('coming_soon') ?></h3>
-        <p class="text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
-          <?= __('coming_soon_text') ?>
-        </p>
-        <div class="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-300 rounded-lg">
-          <i class="fa-solid fa-tools text-sm"></i>
-          <span class="text-sm font-medium"><?= __('under_development') ?></span>
-        </div>
-      </div>
+  <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3 shadow-sm">
+    <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0">
+      <i class="fa-solid fa-rotate text-purple-600 dark:text-purple-400"></i>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold text-slate-800 dark:text-white text-sm"><?= __('last_sync') ?></div>
+      <div class="text-xs text-slate-400"><?= __('data_update') ?></div>
+    </div>
+    <div class="text-right flex-shrink-0">
+      <div class="text-xs font-semibold text-slate-700 dark:text-slate-300"><?= date('H:i') ?></div>
+      <div class="text-xs text-slate-400"><?= __('automatic') ?></div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- Scripts -->
+<!-- ══════════════════════════════════════════════════ SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Live clock update
-  function updateClock() {
-    const now = new Date();
-    const timeString = now.toLocaleTimeString('tr-TR', {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-    const timeElement = document.getElementById('currentTime');
-    if (timeElement) {
-      timeElement.textContent = timeString;
-    }
-  }
+// Live clock
+setInterval(() => {
+  const el = document.getElementById('currentTime');
+  if (el) el.textContent = new Date().toLocaleTimeString('tr-TR', {hour12:false});
+}, 1000);
 
-  // Update clock every second
-  updateClock();
-  setInterval(updateClock, 1000);
+<?php if (!$isGroupMember): ?>
+const isDark   = document.documentElement.classList.contains('dark');
+const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
+const textColor = isDark ? '#94a3b8' : '#64748b';
 
-  <?php if (!$isGroupMember): ?>
-  // Initialize charts with modern styling
-  function initCharts() {
-    const labels = <?= json_encode($chartLabels ?? []) ?>;
-    const revenue = <?= json_encode($chartRevenue ?? []) ?>;
-    const cost = <?= json_encode($chartCost ?? []) ?>;
-    const calls = <?= json_encode($chartCalls ?? []) ?>;
+const tooltipDefaults = {
+  backgroundColor: 'rgba(15,23,42,0.9)',
+  titleColor: '#fff',
+  bodyColor: '#fff',
+  borderColor: 'rgba(255,255,255,0.1)',
+  borderWidth: 1,
+  cornerRadius: 10,
+  padding: 10,
+};
 
-    // Trend Line Chart
-    const trendCtx = document.getElementById('trendLine');
-    if (trendCtx) {
-      const trendChart = new Chart(trendCtx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            <?php if ($isSuper): ?>
-            {
-              label: 'Gelir',
-              data: revenue,
-              borderColor: 'rgba(16, 185, 129, 1)',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.4,
-              pointBackgroundColor: 'rgba(16, 185, 129, 1)',
-              pointBorderColor: '#ffffff',
-              pointBorderWidth: 2,
-              pointRadius: 6,
-              pointHoverRadius: 8,
-              pointHoverBackgroundColor: 'rgba(16, 185, 129, 1)',
-              pointHoverBorderColor: '#ffffff',
-              pointHoverBorderWidth: 3
-            },
-            {
-              label: 'Maliyet',
-              data: cost,
-              borderColor: 'rgba(239, 68, 68, 1)',
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.4,
-              pointBackgroundColor: 'rgba(239, 68, 68, 1)',
-              pointBorderColor: '#ffffff',
-              pointBorderWidth: 2,
-              pointRadius: 6,
-              pointHoverRadius: 8,
-              pointHoverBackgroundColor: 'rgba(239, 68, 68, 1)',
-              pointHoverBorderColor: '#ffffff',
-              pointHoverBorderWidth: 3
-            }
-            <?php else: ?>
-            {
-              label: 'Harcama',
-              data: revenue,
-              borderColor: 'rgba(59, 130, 246, 1)',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.4,
-              pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-              pointBorderColor: '#ffffff',
-              pointBorderWidth: 2,
-              pointRadius: 6,
-              pointHoverRadius: 8,
-              pointHoverBackgroundColor: 'rgba(59, 130, 246, 1)',
-              pointHoverBorderColor: '#ffffff',
-              pointHoverBorderWidth: 3
-            }
-            <?php endif; ?>
-          ]
+// ── Trend Line ───────────────────────────────────────────────────
+const trendCtx = document.getElementById('trendLine');
+if (trendCtx) {
+  const labels  = <?= json_encode($chartLabels  ?? []) ?>;
+  const revenue = <?= json_encode($chartRevenue ?? []) ?>;
+  const cost    = <?= json_encode($chartCost    ?? []) ?>;
+  new Chart(trendCtx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        <?php if ($isSuper): ?>
+        {
+          label: 'Gelir', data: revenue,
+          borderColor: 'rgba(16,185,129,1)', backgroundColor: 'rgba(16,185,129,0.1)',
+          borderWidth: 2.5, fill: true, tension: 0.4,
+          pointBackgroundColor: 'rgba(16,185,129,1)', pointRadius: 4, pointHoverRadius: 6,
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            intersect: false,
-            mode: 'index'
-          },
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                usePointStyle: true,
-                padding: 20,
-                font: {
-                  size: 12,
-                  weight: '600'
-                }
-              }
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              titleColor: '#ffffff',
-              bodyColor: '#ffffff',
-              borderColor: 'rgba(255, 255, 255, 0.2)',
-              borderWidth: 1,
-              cornerRadius: 8,
-              displayColors: true,
-              callbacks: {
-                label: function(context) {
-                  return context.dataset.label + ': $' + context.parsed.y.toFixed(2);
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(0, 0, 0, 0.1)',
-                borderDash: [5, 5]
-              },
-              ticks: {
-                callback: function(value) {
-                  return '$' + value.toFixed(2);
-                },
-                font: {
-                  size: 11
-                }
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              },
-              ticks: {
-                font: {
-                  size: 11
-                }
-              }
-            }
-          },
-          elements: {
-            point: {
-              hoverBorderWidth: 3
-            }
-          },
-          animation: {
-            duration: 2000,
-            easing: 'easeInOutQuart'
-          }
-        }
-      });
-    }
-
-    // Calls Bar Chart
-    const callsCtx = document.getElementById('callsBar');
-    if (callsCtx) {
-      const callsChart = new Chart(callsCtx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Çağrı Sayısı',
-            data: calls,
-            backgroundColor: 'rgba(99, 102, 241, 0.8)',
-            borderColor: 'rgba(99, 102, 241, 1)',
-            borderWidth: 2,
-            borderRadius: 8,
-            borderSkipped: false,
-            hoverBackgroundColor: 'rgba(99, 102, 241, 1)',
-            hoverBorderColor: 'rgba(255, 255, 255, 1)',
-            hoverBorderWidth: 3
-          }]
+        {
+          label: 'Maliyet', data: cost,
+          borderColor: 'rgba(239,68,68,1)', backgroundColor: 'rgba(239,68,68,0.07)',
+          borderWidth: 2.5, fill: true, tension: 0.4,
+          pointBackgroundColor: 'rgba(239,68,68,1)', pointRadius: 4, pointHoverRadius: 6,
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            intersect: false,
-            mode: 'index'
-          },
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              titleColor: '#ffffff',
-              bodyColor: '#ffffff',
-              borderColor: 'rgba(255, 255, 255, 0.2)',
-              borderWidth: 1,
-              cornerRadius: 8,
-              callbacks: {
-                label: function(context) {
-                  return context.dataset.label + ': ' + context.parsed.y;
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(0, 0, 0, 0.1)',
-                borderDash: [5, 5]
-              },
-              ticks: {
-                font: {
-                  size: 11
-                }
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              },
-              ticks: {
-                font: {
-                  size: 11
-                }
-              }
-            }
-          },
-          animation: {
-            duration: 2000,
-            easing: 'easeInOutQuart',
-            delay: function(context) {
-              return context.dataIndex * 200;
-            }
-          }
-        }
-      });
+        <?php else: ?>
+        {
+          label: 'Harcama', data: revenue,
+          borderColor: 'rgba(99,102,241,1)', backgroundColor: 'rgba(99,102,241,0.1)',
+          borderWidth: 2.5, fill: true, tension: 0.4,
+          pointBackgroundColor: 'rgba(99,102,241,1)', pointRadius: 4, pointHoverRadius: 6,
+        },
+        <?php endif; ?>
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, color: textColor, font: { size: 11, weight: '600' } } },
+        tooltip: { ...tooltipDefaults, callbacks: { label: c => c.dataset.label + ': $' + c.parsed.y.toFixed(2) } }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: v => '$'+v.toFixed(2) } },
+        x: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } } }
+      },
+      animation: { duration: 1200, easing: 'easeInOutQuart' }
     }
-  }
-
-  // Initialize charts
-  initCharts();
-  <?php endif; ?>
-
-  // Add smooth scrolling to sections
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    });
   });
+}
 
-  // Add loading animation for stat cards
-  const statCards = document.querySelectorAll('[id$="Users"], [id$="Total"], [id$="Revenue"], [id$="Profit"]');
-  statCards.forEach(card => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(20px)';
-
-    setTimeout(() => {
-      card.style.transition = 'all 0.6s ease-out';
-      card.style.opacity = '1';
-      card.style.transform = 'translateY(0)';
-    }, Math.random() * 500);
+// ── Calls Bar ────────────────────────────────────────────────────
+const callsCtx = document.getElementById('callsBar');
+if (callsCtx) {
+  const labels = <?= json_encode($chartLabels ?? []) ?>;
+  const calls  = <?= json_encode($chartCalls  ?? []) ?>;
+  new Chart(callsCtx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Çağrı', data: calls,
+        backgroundColor: 'rgba(99,102,241,0.75)', borderColor: 'rgba(99,102,241,1)',
+        borderWidth: 1.5, borderRadius: 6, borderSkipped: false,
+        hoverBackgroundColor: 'rgba(99,102,241,1)',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...tooltipDefaults, callbacks: { label: c => 'Çağrı: ' + c.parsed.y } }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } } }
+      },
+      animation: { duration: 1200, easing: 'easeInOutQuart', delay: c => c.dataIndex * 80 }
+    }
   });
+}
 
-  // Add hover effects for quick access cards
-  document.querySelectorAll('.group').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-      this.style.transform = 'translateY(-8px) scale(1.02)';
-    });
-
-    card.addEventListener('mouseleave', function() {
-      this.style.transform = 'translateY(0) scale(1)';
-    });
+// ── Disposition Donut ────────────────────────────────────────────
+const donutCtx = document.getElementById('dispositionDonut');
+if (donutCtx) {
+  const dispData = [
+    <?= (int)($dispositionData['ANSWERED']  ?? 0) ?>,
+    <?= (int)($dispositionData['NO ANSWER'] ?? 0) ?>,
+    <?= (int)($dispositionData['BUSY']      ?? 0) ?>,
+    <?= (int)($dispositionData['FAILED']    ?? 0) ?>,
+  ];
+  new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Cevap', 'Cevapsız', 'Meşgul', 'Başarısız'],
+      datasets: [{
+        data: dispData,
+        backgroundColor: ['rgba(16,185,129,0.85)','rgba(148,163,184,0.85)','rgba(245,158,11,0.85)','rgba(239,68,68,0.85)'],
+        borderColor: isDark ? '#1e293b' : '#fff',
+        borderWidth: 3,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...tooltipDefaults, callbacks: { label: c => c.label + ': ' + c.parsed } }
+      },
+      animation: { animateRotate: true, duration: 1200 }
+    }
   });
-
-  // Add pulse animation to status indicators
-  document.querySelectorAll('.animate-pulse').forEach(element => {
-    setInterval(() => {
-      element.style.animation = 'none';
-      setTimeout(() => {
-        element.style.animation = 'pulse 2s infinite';
-      }, 10);
-    }, 4000);
-  });
-});
+}
+<?php endif; ?>
 </script>
 
-<?php require __DIR__.'/partials/footer.php'; ?>
-
+<?php require __DIR__ . '/partials/footer.php'; ?>
