@@ -47,37 +47,37 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
   <div class="flex items-center gap-4">
     <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30 flex-shrink-0">
       <i class="fa-solid fa-chart-mixed text-white text-xl"></i>
-    </div>
-    <div>
+      </div>
+      <div>
       <h1 class="text-2xl font-bold text-slate-800 dark:text-white"><?= __('reports_and_analysis') ?></h1>
       <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
         <?= date('d.m.Y', strtotime($from)) ?> — <?= date('d.m.Y', strtotime($to)) ?>
         &nbsp;·&nbsp;
         <span class="text-indigo-600 dark:text-indigo-400 font-medium"><?= number_format($totCalls) ?> çağrı</span>
       </p>
+      </div>
     </div>
-  </div>
   <!-- Export -->
   <div class="flex items-center gap-2 flex-wrap">
     <span class="text-xs text-slate-400 font-medium hidden sm:block">Dışa Aktar:</span>
     <button onclick="exportReport('csv')" class="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-xl text-sm font-semibold transition-all border border-blue-200 dark:border-blue-700/50">
       <i class="fa-solid fa-file-csv text-sm"></i> CSV
-    </button>
+      </button>
     <button onclick="exportReport('excel')" class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-xl text-sm font-semibold transition-all border border-emerald-200 dark:border-emerald-700/50">
       <i class="fa-solid fa-file-excel text-sm"></i> Excel
-    </button>
+      </button>
     <button onclick="exportReport('pdf')" class="inline-flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 rounded-xl text-sm font-semibold transition-all border border-red-200 dark:border-red-700/50">
       <i class="fa-solid fa-file-pdf text-sm"></i> PDF
-    </button>
+      </button>
+    </div>
   </div>
-</div>
 
 <!-- ══════════════ FILTERS -->
 <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 mb-6">
-  <div class="flex items-center gap-2 mb-4">
+    <div class="flex items-center gap-2 mb-4">
     <i class="fa-solid fa-sliders text-indigo-500 text-sm"></i>
     <span class="font-bold text-slate-700 dark:text-slate-200 text-sm"><?= __('filters') ?></span>
-  </div>
+    </div>
   <form method="get" id="filterForm">
     <!-- Quick presets -->
     <div class="flex flex-wrap gap-2 mb-4" id="presetBtns">
@@ -97,53 +97,53 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
                      hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700
                      dark:hover:bg-indigo-900/30 dark:hover:border-indigo-600 dark:hover:text-indigo-300">
         <?= $label ?>
-      </button>
+        </button>
       <?php endforeach; ?>
-    </div>
+      </div>
 
     <!-- Inputs -->
     <div class="grid grid-cols-1 sm:grid-cols-2 <?= $isSuper ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-3">
       <div>
         <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
           <i class="fa-solid fa-calendar-day text-emerald-500 mr-1"></i><?= __('start_date') ?>
-        </label>
-        <input type="datetime-local" name="from" id="from-date"
+          </label>
+          <input type="datetime-local" name="from" id="from-date"
                value="<?= htmlspecialchars(str_replace(' ', 'T', substr($from, 0, 16))) ?>"
                class="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-      </div>
+        </div>
       <div>
         <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
           <i class="fa-solid fa-calendar-day text-rose-500 mr-1"></i><?= __('end_date') ?>
-        </label>
-        <input type="datetime-local" name="to" id="to-date"
+          </label>
+          <input type="datetime-local" name="to" id="to-date"
                value="<?= htmlspecialchars(str_replace(' ', 'T', substr($to, 0, 16))) ?>"
                class="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-      </div>
-      <?php if ($isSuper): ?>
+        </div>
+        <?php if ($isSuper): ?>
       <div>
         <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
           <i class="fa-solid fa-layer-group text-purple-500 mr-1"></i><?= __('group_selection') ?>
-        </label>
-        <input type="number" name="group_id"
+          </label>
+          <input type="number" name="group_id"
                value="<?= isset($_GET['group_id']) ? (int)$_GET['group_id'] : '' ?>"
                placeholder="<?= __('group_id_placeholder') ?>"
                class="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-      </div>
-      <?php endif; ?>
+        </div>
+        <?php endif; ?>
       <div class="flex items-end">
         <button type="submit"
                 class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-indigo-500/20 transition-all">
           <i class="fa-solid fa-magnifying-glass"></i><?= __('apply_filters') ?>
         </button>
       </div>
-    </div>
-  </form>
+      </div>
+    </form>
 </div>
 
 <!-- ══════════════ KPI CARDS ROW 1 -->
 <div class="grid grid-cols-2 <?= $canSeeCost ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4 mb-4">
 
-  <!-- Total Calls -->
+    <!-- Total Calls -->
   <div class="relative overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-5 text-white shadow-lg shadow-indigo-500/20">
     <div class="absolute -right-3 -top-3 w-20 h-20 bg-white/10 rounded-full"></div>
     <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-white/5 rounded-full"></div>
@@ -151,11 +151,11 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
       <div class="flex items-center gap-2 mb-3 opacity-80">
         <i class="fa-solid fa-phone text-sm"></i>
         <span class="text-xs font-semibold uppercase tracking-wide">Toplam Çağrı</span>
-      </div>
+        </div>
       <div class="text-3xl font-black mb-1" id="kpi-total"><?= number_format($totCalls) ?></div>
       <div class="text-xs opacity-60">Seçilen dönem</div>
+      </div>
     </div>
-  </div>
 
   <!-- Answered -->
   <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl p-5 text-white shadow-lg shadow-emerald-500/20">
@@ -164,7 +164,7 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
       <div class="flex items-center gap-2 mb-3 opacity-80">
         <i class="fa-solid fa-circle-check text-sm"></i>
         <span class="text-xs font-semibold uppercase tracking-wide">Cevaplanan</span>
-      </div>
+        </div>
       <div class="text-3xl font-black mb-1"><?= number_format($answered) ?></div>
       <div class="text-xs opacity-80">
         <div class="w-full bg-white/20 rounded-full h-1.5 mt-2 mb-1">
@@ -172,17 +172,17 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
         </div>
         %<?= $answerRate ?> cevap oranı
       </div>
+      </div>
     </div>
-  </div>
 
-  <!-- No Answer -->
+    <!-- No Answer -->
   <div class="relative overflow-hidden bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl p-5 text-white shadow-lg shadow-rose-500/20">
     <div class="absolute -right-3 -top-3 w-20 h-20 bg-white/10 rounded-full"></div>
     <div class="relative">
       <div class="flex items-center gap-2 mb-3 opacity-80">
         <i class="fa-solid fa-phone-slash text-sm"></i>
         <span class="text-xs font-semibold uppercase tracking-wide">Cevapsız</span>
-      </div>
+        </div>
       <div class="text-3xl font-black mb-1"><?= number_format($noans) ?></div>
       <div class="text-xs opacity-80">
         <div class="w-full bg-white/20 rounded-full h-1.5 mt-2 mb-1">
@@ -190,8 +190,8 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
         </div>
         %<?= $totCalls > 0 ? round($noans/$totCalls*100,1) : 0 ?> oran
       </div>
+      </div>
     </div>
-  </div>
 
   <?php if ($canSeeCost): ?>
   <!-- Cost -->
@@ -201,11 +201,11 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
       <div class="flex items-center gap-2 mb-3 opacity-80">
         <i class="fa-solid fa-coins text-sm"></i>
         <span class="text-xs font-semibold uppercase tracking-wide"><?= $isSuper ? 'API Maliyet' : 'Harcama' ?></span>
-      </div>
+        </div>
       <div class="text-2xl font-black mb-1">$<?= number_format($isSuper ? $totCost : ($spent ?? 0), 2) ?></div>
       <div class="text-xs opacity-60">Dönem toplam</div>
-    </div>
-  </div>
+        </div>
+      </div>
   <?php else: ?>
   <!-- Answer Rate % -->
   <div class="relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-5 text-white shadow-lg shadow-violet-500/20">
@@ -218,9 +218,9 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
       <div class="text-3xl font-black mb-1">%<?= $answerRate ?></div>
       <div class="text-xs opacity-60">Başarı oranı</div>
     </div>
-  </div>
+        </div>
   <?php endif; ?>
-</div>
+        </div>
 
 <!-- ══════════════ KPI CARDS ROW 2 (extra metrics) -->
 <div class="grid grid-cols-2 <?= $isSuper ? 'lg:grid-cols-4' : 'lg:grid-cols-3' ?> gap-4 mb-6">
@@ -229,22 +229,22 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
   <div class="bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
     <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
       <i class="fa-solid fa-stopwatch text-blue-600 dark:text-blue-400"></i>
-    </div>
+      </div>
     <div class="min-w-0">
       <div class="text-lg font-bold text-slate-800 dark:text-white"><?= gmdate('i:s', $avgDuration) ?></div>
       <div class="text-xs text-slate-400">Ort. Konuşma Süresi</div>
+      </div>
     </div>
-  </div>
 
   <!-- Total Talk Time -->
   <div class="bg-white dark:bg-slate-800 border border-cyan-200 dark:border-cyan-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
     <div class="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center flex-shrink-0">
       <i class="fa-solid fa-clock text-cyan-600 dark:text-cyan-400"></i>
-    </div>
+        </div>
     <div class="min-w-0">
       <div class="text-sm font-bold text-slate-800 dark:text-white"><?= $billsecFmt($totBillsec) ?></div>
       <div class="text-xs text-slate-400">Toplam Konuşma</div>
-    </div>
+        </div>
   </div>
 
   <?php if ($isSuper): ?>
@@ -252,36 +252,36 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
   <div class="bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
     <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
       <i class="fa-solid fa-sack-dollar text-emerald-600 dark:text-emerald-400"></i>
-    </div>
+        </div>
     <div class="min-w-0">
       <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400">$<?= number_format($totRev, 2) ?></div>
       <div class="text-xs text-slate-400">Toplam Gelir</div>
-    </div>
-  </div>
+        </div>
+      </div>
 
   <!-- Net Profit -->
   <div class="bg-white dark:bg-slate-800 border border-fuchsia-200 dark:border-fuchsia-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
     <div class="w-10 h-10 rounded-xl bg-fuchsia-100 dark:bg-fuchsia-900/40 flex items-center justify-center flex-shrink-0">
       <i class="fa-solid fa-arrow-trend-up text-fuchsia-600 dark:text-fuchsia-400"></i>
-    </div>
+      </div>
     <div class="min-w-0">
       <div class="text-lg font-bold text-fuchsia-600 dark:text-fuchsia-400">$<?= number_format($totProfit, 2) ?></div>
       <div class="text-xs text-slate-400">Net Kâr &nbsp;·&nbsp; %<?= $profitMargin ?> marjin</div>
     </div>
-  </div>
+        </div>
   <?php else: ?>
   <!-- Busy/Failed -->
   <div class="bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/40 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
     <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
       <i class="fa-solid fa-signal text-amber-600 dark:text-amber-400"></i>
-    </div>
+        </div>
     <div class="min-w-0">
       <div class="text-lg font-bold text-slate-800 dark:text-white"><?= number_format($busy + $failed) ?></div>
       <div class="text-xs text-slate-400">Meşgul / Başarısız</div>
-    </div>
-  </div>
+      </div>
+      </div>
   <?php endif; ?>
-</div>
+    </div>
 
 <!-- ══════════════ CHARTS 2-col -->
 <div class="grid lg:grid-cols-3 gap-5 mb-6">
@@ -293,7 +293,7 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
         <div class="flex items-center gap-2 mb-1">
           <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
             <i class="fa-solid fa-chart-line text-white text-sm"></i>
-          </div>
+        </div>
           <h3 class="font-bold text-slate-800 dark:text-white"><?= __('daily_trend_analysis') ?></h3>
         </div>
         <p class="text-xs text-slate-400 ml-10"><?= __('cost_and_revenue_trends') ?></p>
@@ -309,8 +309,8 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
           <i class="fa-solid fa-circle text-xs mr-1"></i><?= __('revenue') ?>
         </button>
         <?php endif; ?>
+          </div>
       </div>
-    </div>
     <div style="height:230px;position:relative">
       <canvas id="trendChart"></canvas>
     </div>
@@ -321,15 +321,15 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
     <div class="flex items-center gap-2 mb-5">
       <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center">
         <i class="fa-solid fa-chart-pie text-white text-sm"></i>
-      </div>
+        </div>
       <div>
         <h3 class="font-bold text-slate-800 dark:text-white text-sm"><?= __('call_status_distribution') ?></h3>
         <p class="text-xs text-slate-400"><?= __('disposition_analysis') ?></p>
+        </div>
       </div>
-    </div>
     <div style="height:185px;position:relative">
       <canvas id="dispChart"></canvas>
-    </div>
+      </div>
     <!-- Legend pills -->
     <div class="grid grid-cols-2 gap-1.5 mt-3">
       <?php
@@ -343,11 +343,11 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
       <div class="flex items-center gap-1.5">
         <div class="w-2.5 h-2.5 rounded-full <?= $color ?> flex-shrink-0"></div>
         <span class="text-xs text-slate-500 dark:text-slate-400 truncate"><?= $label ?>: <strong class="text-slate-700 dark:text-slate-200"><?= number_format($val) ?></strong></span>
-      </div>
-      <?php endforeach; ?>
     </div>
-  </div>
-</div>
+      <?php endforeach; ?>
+        </div>
+        </div>
+      </div>
 
 <!-- ══════════════ CALL COUNT BAR + TOP AGENTS -->
 <div class="grid lg:grid-cols-2 gap-5 mb-6">
@@ -357,16 +357,16 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
     <div class="flex items-center gap-2 mb-5">
       <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
         <i class="fa-solid fa-bars-staggered text-white text-sm"></i>
-      </div>
+        </div>
       <div>
         <h3 class="font-bold text-slate-800 dark:text-white text-sm"><?= __('daily_call_count') ?></h3>
         <p class="text-xs text-slate-400">Günlük çağrı sayısı trendi</p>
-      </div>
-    </div>
+        </div>
+        </div>
     <div style="height:210px;position:relative">
       <canvas id="callsBar"></canvas>
+      </div>
     </div>
-  </div>
 
   <!-- Top Agents Bar -->
   <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
@@ -374,12 +374,12 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
           <i class="fa-solid fa-trophy text-white text-sm"></i>
-        </div>
-        <div>
+      </div>
+      <div>
           <h3 class="font-bold text-slate-800 dark:text-white text-sm">Top 10 Agent</h3>
           <p class="text-xs text-slate-400">En aktif agentler</p>
-        </div>
       </div>
+    </div>
       <div class="flex gap-1.5">
         <button onclick="switchAgentMetric('calls')" id="btn-agent-calls"
                 class="agent-metric-btn active px-2 py-1 rounded-lg text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/40">
@@ -393,9 +393,9 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
     </div>
     <div style="height:210px;position:relative">
       <canvas id="topAgentsChart"></canvas>
+      </div>
     </div>
   </div>
-</div>
 
 <!-- ══════════════ SUPERADMIN GROUP TABLE -->
 <?php if ($isSuper && !empty($summary)): ?>
@@ -404,17 +404,17 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
     <div class="flex items-center gap-2">
       <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
         <i class="fa-solid fa-layer-group text-white text-sm"></i>
-      </div>
-      <div>
+        </div>
+        <div>
         <h3 class="font-bold text-slate-800 dark:text-white text-sm">Grup Bazlı Özet</h3>
         <p class="text-xs text-slate-400"><?= count($summary) ?> grup</p>
+        </div>
       </div>
-    </div>
     <!-- Sort hint -->
     <span class="text-xs text-slate-400 hidden sm:block">Kâra göre sıralı</span>
-  </div>
+      </div>
   <div class="overflow-x-auto">
-    <table class="min-w-full">
+            <table class="min-w-full">
       <thead>
         <tr class="bg-slate-50 dark:bg-slate-700/50">
           <th class="px-5 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Grup</th>
@@ -424,8 +424,8 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
           <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Gelir</th>
           <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Kâr</th>
           <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Kâr %</th>
-        </tr>
-      </thead>
+                </tr>
+              </thead>
       <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
         <?php
         usort($summary, fn($a,$b) => (float)$b['profit'] <=> (float)$a['profit']);
@@ -442,31 +442,31 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
         ?>
         <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-700/20 transition-colors">
           <td class="px-5 py-3.5">
-            <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3">
               <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 <?= $i + 1 ?>
-              </div>
-              <div>
+                      </div>
+                      <div>
                 <div class="font-semibold text-sm text-slate-800 dark:text-white"><?= htmlspecialchars($groups[$gid] ?? ('#'.$gid)) ?></div>
                 <div class="text-xs text-slate-400">ID: <?= $gid ?></div>
-              </div>
-            </div>
-          </td>
+                      </div>
+                    </div>
+                  </td>
           <td class="px-4 py-3.5 text-center">
             <span class="font-bold text-slate-700 dark:text-slate-200"><?= number_format($gCalls) ?></span>
-          </td>
+                  </td>
           <td class="px-4 py-3.5 text-center">
-            <div class="flex items-center justify-center gap-2">
+                    <div class="flex items-center justify-center gap-2">
               <div class="w-12 bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 hidden sm:block">
                 <div class="h-1.5 rounded-full transition-all duration-700
                   <?= $gRate >= 70 ? 'bg-emerald-500' : ($gRate >= 40 ? 'bg-amber-500' : 'bg-red-500') ?>"
                   style="width:<?= $gRate ?>%"></div>
-              </div>
+                      </div>
               <span class="font-semibold text-sm <?= $gRate >= 70 ? 'text-emerald-600 dark:text-emerald-400' : ($gRate >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-red-500 dark:text-red-400') ?>">
                 %<?= $gRate ?>
-              </span>
-            </div>
-          </td>
+                      </span>
+                    </div>
+                  </td>
           <td class="px-4 py-3.5 text-center font-semibold text-sm text-amber-600 dark:text-amber-400">$<?= number_format($gCost, 2) ?></td>
           <td class="px-4 py-3.5 text-center font-semibold text-sm text-blue-600 dark:text-blue-400">$<?= number_format($gRev, 2) ?></td>
           <td class="px-4 py-3.5 text-center">
@@ -482,9 +482,9 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
               %<?= $gMargin ?>
             </span>
           </td>
-        </tr>
-        <?php endforeach; ?>
-      </tbody>
+                </tr>
+                <?php endforeach; ?>
+              </tbody>
       <!-- Footer totals -->
       <tfoot>
         <tr class="bg-slate-50 dark:bg-slate-700/50 border-t-2 border-slate-200 dark:border-slate-600">
@@ -497,9 +497,9 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
           <td class="px-4 py-3 text-center font-bold text-sm text-fuchsia-600 dark:text-fuchsia-400">%<?= $profitMargin ?></td>
         </tr>
       </tfoot>
-    </table>
-  </div>
-</div>
+            </table>
+          </div>
+        </div>
 <?php endif; ?>
 
 <!-- ══════════════ AGENT PERFORMANCE TABLE -->
@@ -541,26 +541,26 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
             <th class="px-5 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Agent</th>
             <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               <i class="fa-solid fa-phone text-indigo-400 mr-1"></i>Çağrı
-            </th>
+              </th>
             <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               <i class="fa-solid fa-check text-emerald-400 mr-1"></i>Cevap
             </th>
             <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               <i class="fa-solid fa-phone-slash text-red-400 mr-1"></i>Cevapsız
-            </th>
-            <?php if (!$isGroupMember): ?>
+              </th>
+              <?php if (!$isGroupMember): ?>
             <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               <i class="fa-solid fa-clock text-blue-400 mr-1"></i>Süre
-            </th>
-            <?php endif; ?>
+              </th>
+              <?php endif; ?>
             <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cevap %</th>
             <?php if ($canSeeCost): ?>
             <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               <i class="fa-solid fa-coins text-amber-400 mr-1"></i>Maliyet
             </th>
             <?php endif; ?>
-          </tr>
-        </thead>
+            </tr>
+          </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
           <?php
           usort($agents, fn($a,$b) => (int)$b['calls'] <=> (int)$a['calls']);
@@ -580,7 +580,7 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
           ?>
           <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-700/20 transition-colors agent-row">
             <td class="px-5 py-3 agent-name">
-              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3">
                 <div class="relative flex-shrink-0">
                   <div class="w-8 h-8 rounded-full bg-gradient-to-br <?= $grad ?> flex items-center justify-center text-white text-xs font-bold">
                     <?= $initials ?>
@@ -588,57 +588,57 @@ $billsecFmt   = fn(int $s) => sprintf('%dsa %02ddak', floor($s/3600), floor(($s%
                   <?php if ($rank === 0): ?>
                   <div class="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
                     <i class="fa-solid fa-star text-white" style="font-size:7px"></i>
-                  </div>
+                    </div>
                   <?php endif; ?>
-                </div>
+                    </div>
                 <div>
                   <div class="font-semibold text-sm text-slate-800 dark:text-white"><?= htmlspecialchars($displayName) ?></div>
                   <div class="text-xs text-slate-400 font-mono"><?= htmlspecialchars($r['voip_exten'] ?? $r['src'] ?? '') ?></div>
+                  </div>
                 </div>
-              </div>
-            </td>
+              </td>
             <td class="px-4 py-3 text-center font-bold text-sm text-slate-700 dark:text-slate-200"><?= number_format($aCalls) ?></td>
             <td class="px-4 py-3 text-center">
               <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
                 <?= number_format($aAns) ?>
               </span>
-            </td>
+              </td>
             <td class="px-4 py-3 text-center">
               <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
                 <?= number_format($aNoAns) ?>
-              </span>
-            </td>
-            <?php if (!$isGroupMember): ?>
+                </span>
+              </td>
+              <?php if (!$isGroupMember): ?>
             <td class="px-4 py-3 text-center font-mono text-xs text-slate-600 dark:text-slate-300"><?= gmdate('H:i:s', $aBill) ?></td>
-            <?php endif; ?>
+              <?php endif; ?>
             <td class="px-4 py-3">
-              <div class="flex items-center justify-center gap-2">
+                <div class="flex items-center justify-center gap-2">
                 <div class="w-14 bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 hidden sm:block">
                   <div class="<?= $barColor ?> h-1.5 rounded-full transition-all duration-700" style="width:<?= $aRate ?>%"></div>
-                </div>
+                  </div>
                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold <?= $rateColor ?>">
                   %<?= $aRate ?>
-                </span>
-              </div>
-            </td>
+                  </span>
+                </div>
+              </td>
             <?php if ($canSeeCost): ?>
             <td class="px-4 py-3 text-center font-semibold text-xs text-amber-600 dark:text-amber-400">
               $<?= number_format($aCost, 2) ?>
             </td>
             <?php endif; ?>
-          </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
   </div>
   <?php endforeach; ?>
-</div>
-<?php endif; ?>
+        </div>
+          <?php endif; ?>
 
 <!-- ══════════════ SCRIPTS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
 const isDark   = document.documentElement.classList.contains('dark');
 const gridC    = isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.05)';
 const textC    = isDark ? '#94a3b8' : '#64748b';
@@ -664,12 +664,12 @@ let trendChart, agentChart, callsBarChart, dispChart;
   const revenue = trendData.map(t => t.revenue);
   const ctx = document.getElementById('trendChart');
   if (!ctx) return;
-  trendChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
+      trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
           label: 'Maliyet', data: cost,
           borderColor:'rgba(239,68,68,1)', backgroundColor:'rgba(239,68,68,.1)',
           borderWidth:2.5, fill:true, tension:.4,
@@ -683,9 +683,9 @@ let trendChart, agentChart, callsBarChart, dispChart;
           pointBackgroundColor:'rgba(16,185,129,1)', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
         },
         <?php endif; ?>
-      ]
-    },
-    options: {
+          ]
+        },
+        options: {
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
       plugins:{ legend:{ display:false }, tooltip:{ ...tipOpts, callbacks:{ label: c => c.dataset.label+': $'+c.parsed.y.toFixed(2) } } },
@@ -733,7 +733,7 @@ let trendChart, agentChart, callsBarChart, dispChart;
   const data   = dispData.map(d => +d.n||0);
   const ctx = document.getElementById('dispChart');
   if (!ctx) return;
-  dispChart = new Chart(ctx, {
+      dispChart = new Chart(ctx, {
     type:'doughnut',
     data:{
       labels,
@@ -770,9 +770,9 @@ function buildAgentChart(metric) {
         y:{ grid:{ display:false }, ticks:{ color:textC, font:{size:11,weight:'600'} } }
       },
       animation:{ duration:900, easing:'easeInOutQuart', delay: c=>c.dataIndex*60 }
+        }
+      });
     }
-  });
-}
 buildAgentChart('calls');
 
 function switchAgentMetric(metric) {
@@ -851,10 +851,10 @@ document.getElementById('filterForm').addEventListener('submit', () => {
 
 // ── Resize charts
 window.addEventListener('resize', () => {
-  setTimeout(() => {
+      setTimeout(() => {
     [trendChart, agentChart, callsBarChart, dispChart].forEach(c => c?.resize());
   }, 200);
 }, {passive:true});
-</script>
+  </script>
 
 <?php require dirname(__DIR__) . '/partials/footer.php'; ?>
