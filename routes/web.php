@@ -7,6 +7,9 @@ $router->add('GET', '/register', 'AuthController@register');
 $router->add('POST', '/register', 'AuthController@register');
 $router->add('GET', '/logout', 'AuthController@logout');
 
+// Landing
+$router->add('GET', '/landing', 'LandingController@index');
+
 // Dashboard
 $router->add('GET', '/', 'DashboardController@index');
 
@@ -33,6 +36,7 @@ $router->add('POST', '/groups/topup', 'GroupController@topup');
 $router->add('POST', '/groups/cancel-crypto-payment', 'GroupController@cancelCryptoPayment');
 $router->add('GET', '/groups/show', 'GroupController@show');
 $router->add('POST', '/groups/send-balance-report', 'GroupController@sendBalanceReport');
+$router->add('POST', '/groups/delete', 'GroupController@delete');
 
 // Calls
 $router->add('GET', '/calls', 'CallsController@index');
