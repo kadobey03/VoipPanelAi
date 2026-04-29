@@ -1,3 +1,11 @@
 .env
 .roo/mcp.json
 storage/logs/*.log
+
+# Sunucu tarafı - deploy edilmeyecekler
+vendor/
+composer.lock
+error_log
+api/error_log
+*.log
+logs/
