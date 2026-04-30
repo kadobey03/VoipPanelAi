@@ -14,29 +14,14 @@ class DashboardController {
         $isGroupMember = ($user['role'] ?? '') === 'groupmember';
         $gid     = (int)($user['group_id'] ?? 0);
 
-        // ── API Balance (superadmin only) ────────────────────────────────
+        // ── API Balance (superadmin only) — async AJAX endpoint ─────────
+        // Balance artık sayfa yüklenirken beklemiyor; /balance/api endpoint'i AJAX ile çağrılıyor
         $balanceValue = null;
         if ($isSuper) {
             $cacheFile = sys_get_temp_dir() . '/voip_balance_cache.json';
-            $cacheTtl  = 300; // 5 dakika
-            $cacheValid = file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl;
-            if ($cacheValid) {
+            if (file_exists($cacheFile)) {
                 $cached = json_decode(file_get_contents($cacheFile), true);
                 $balanceValue = $cached['balance'] ?? null;
-            } else {
-                try {
-                    $api = new ApiClient();
-                    $balanceData  = $api->getBalance();
-                    $balanceValue = is_array($balanceData) && isset($balanceData['balance']) ? (float)$balanceData['balance'] : null;
-                    file_put_contents($cacheFile, json_encode(['balance' => $balanceValue, 'ts' => time()]));
-                } catch (\Throwable $e) {
-                    $balanceValue = null;
-                    // Eski cache varsa kullan
-                    if (file_exists($cacheFile)) {
-                        $cached = json_decode(file_get_contents($cacheFile), true);
-                        $balanceValue = $cached['balance'] ?? null;
-                    }
-                }
             }
         }
 
@@ -165,5 +150,36 @@ class DashboardController {
         $diff = $isSuper && $balanceValue !== null ? $balanceValue - $groupsTotal : null;
 
         require __DIR__.'/../Views/dashboard.php';
+    }
+
+    // AJAX endpoint — balance'ı arka planda getir, cache'e yaz
+    public function balanceApi() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        header('Content-Type: application/json');
+        if (!isset($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'superadmin') {
+            echo json_encode(['error' => 'forbidden']);
+            return;
+        }
+        $cacheFile = sys_get_temp_dir() . '/voip_balance_cache.json';
+        $cacheTtl  = 300;
+        $cacheValid = file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl;
+        if ($cacheValid) {
+            echo file_get_contents($cacheFile);
+            return;
+        }
+        try {
+            $api = new ApiClient();
+            $balanceData  = $api->getBalance();
+            $balanceValue = is_array($balanceData) && isset($balanceData['balance']) ? (float)$balanceData['balance'] : null;
+            $payload = json_encode(['balance' => $balanceValue, 'ts' => time()]);
+            file_put_contents($cacheFile, $payload);
+            echo $payload;
+        } catch (\Throwable $e) {
+            if (file_exists($cacheFile)) {
+                echo file_get_contents($cacheFile);
+            } else {
+                echo json_encode(['balance' => null, 'error' => $e->getMessage()]);
+            }
+        }
     }
 }

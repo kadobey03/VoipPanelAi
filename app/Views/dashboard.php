@@ -113,7 +113,7 @@ $billsecFmt    = function(int $s): string { return sprintf('%dsa %02ddak', floor
         <i class="fa-solid fa-scale-balanced text-sm"></i>
         <span class="text-xs font-semibold uppercase tracking-wide"><?= __('balance_difference') ?></span>
       </div>
-      <div class="text-3xl font-bold mb-1"><?= $diff !== null ? '$'.number_format($diff, 2) : '—' ?></div>
+      <div class="text-3xl font-bold mb-1" id="balance-diff"><?= $diff !== null ? '$'.number_format($diff, 2) : '—' ?></div>
       <div class="text-xs opacity-70"><?= __('difference_main_groups') ?></div>
     </div>
   </div>
@@ -603,5 +603,38 @@ if (donutCtx) {
 }
 <?php endif; ?>
 </script>
+
+<?php if ($isSuper): ?>
+<script>
+// Balance AJAX — sayfa yüklendikten sonra arka planda çek
+(function() {
+  var balanceEl = document.getElementById('balance');
+  var diffEl    = document.getElementById('balance-diff');
+  var groupsTotal = <?= json_encode($groupsTotal) ?>;
+
+  if (!balanceEl) return;
+
+  fetch('/VoipPanelAi/api/balance')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (data && data.balance !== null && data.balance !== undefined) {
+        var val = parseFloat(data.balance);
+        balanceEl.textContent = '$' + val.toLocaleString('tr-TR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        if (diffEl) {
+          var diff = val - groupsTotal;
+          diffEl.textContent = '$' + diff.toLocaleString('tr-TR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        }
+      } else {
+        balanceEl.textContent = '—';
+        if (diffEl) diffEl.textContent = '—';
+      }
+    })
+    .catch(function(){
+      balanceEl.textContent = '—';
+      if (diffEl) diffEl.textContent = '—';
+    });
+})();
+</script>
+<?php endif; ?>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>

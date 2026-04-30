@@ -81,8 +81,7 @@ class DB {
                 `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         } else {
-            // Alter enum to include debit_call_stat
-            $db->query("ALTER TABLE `transactions` MODIFY COLUMN `type` ENUM('topup','debit_call','debit_call_stat','adjust') NOT NULL");
+            if($res) $res->free();
         }
 
         // call_stats table
@@ -187,15 +186,28 @@ class DB {
         }
 
         // transactions type enum — include agent_purchase, agent_subscription, commission
-        $db->query("ALTER TABLE `transactions` MODIFY COLUMN `type` ENUM('topup','debit_call','debit_call_stat','adjust','agent_purchase','agent_subscription','commission') NOT NULL");
+        $res = $db->query("SHOW COLUMNS FROM `transactions` LIKE 'type'");
+        if ($res) {
+            $col = $res->fetch_assoc();
+            $res->free();
+            if ($col && strpos($col['Type'], 'agent_subscription') === false) {
+                $db->query("ALTER TABLE `transactions` MODIFY COLUMN `type` ENUM('topup','debit_call','debit_call_stat','adjust','agent_purchase','agent_subscription','commission') NOT NULL");
+            }
+        }
 
         // users table migrations
         if (!$hasCol('users', 'agent_id')) {
             $db->query('ALTER TABLE `users` ADD COLUMN `agent_id` INT NULL AFTER `group_id`');
         }
-        // Update role enum to include groupmember
-        $db->query('ALTER TABLE `users` MODIFY COLUMN `role` ENUM(\'superadmin\',\'groupadmin\',\'user\',\'groupmember\') DEFAULT \'groupmember\'');
-        // Update empty or null roles to groupmember
-        $db->query('UPDATE users SET role=\'groupmember\' WHERE role=\'\' OR role IS NULL');
+        // Update role enum to include groupmember — only if not already present
+        $res = $db->query("SHOW COLUMNS FROM `users` LIKE 'role'");
+        if ($res) {
+            $col = $res->fetch_assoc();
+            $res->free();
+            if ($col && strpos($col['Type'], 'groupmember') === false) {
+                $db->query('ALTER TABLE `users` MODIFY COLUMN `role` ENUM(\'superadmin\',\'groupadmin\',\'user\',\'groupmember\') DEFAULT \'groupmember\'');
+                $db->query('UPDATE users SET role=\'groupmember\' WHERE role=\'\' OR role IS NULL');
+            }
+        }
     }
 }

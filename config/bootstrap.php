@@ -44,13 +44,25 @@ $debugEnv = getenv('APP_DEBUG');
 $debug = is_string($debugEnv) ? in_array(strtolower($debugEnv), ['1','true','on','yes'], true) : false;
 \App\Core\ErrorHandler::register($debug);
 
-// Lightweight migrations (safe ALTERs)
+// Lightweight migrations — run once per server process via APCu, fallback to once per session
 try {
     if (class_exists('App\\Helpers\\DB')) {
-        \App\Helpers\DB::migrate();
+        $migrationDone = false;
+        if (function_exists('apcu_fetch')) {
+            $migrationDone = (bool) apcu_fetch('db_migrated');
+        } elseif (isset($_SESSION['db_migrated'])) {
+            $migrationDone = true;
+        }
+        if (!$migrationDone) {
+            \App\Helpers\DB::migrate();
+            if (function_exists('apcu_store')) {
+                apcu_store('db_migrated', true, 3600);
+            } else {
+                $_SESSION['db_migrated'] = true;
+            }
+        }
     }
 } catch (Throwable $e) {
-    // Log but do not break the app
     if (class_exists('App\\Helpers\\Logger')) { \App\Helpers\Logger::log('Migration error: '.$e->getMessage()); }
 }
 

@@ -135,3 +135,6 @@ $router->add('POST', '/change-lang', 'SettingsController@changeLang');
 
 // Balance helper (topup select)
 $router->add('GET', '/balance/topup', 'BalanceMenuController@topupSelect');
+
+// Balance API (async AJAX endpoint for dashboard)
+$router->add('GET', '/api/balance', 'DashboardController@balanceApi');
