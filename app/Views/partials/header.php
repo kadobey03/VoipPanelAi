@@ -21,7 +21,13 @@ Lang::load(Lang::current());
    <meta property="og:image" content="/VoipPanelAi/public/assets/images/seo-image.png">
    <meta property="og:type" content="website">
    <title><?= isset($title) ? htmlspecialchars($title) : __('papam_voip_panel') ?></title>
-   <link rel="stylesheet" href="/VoipPanelAi/assets/css/tailwind.min.css">
+   <script src="https://cdn.tailwindcss.com"></script>
+   <script>
+     tailwind.config = {
+       darkMode: 'class',
+       theme: { extend: {} }
+     }
+   </script>
    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet" media="print" onload="this.media='all'">
    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.css" rel="stylesheet"></noscript>
    <?php if (isset($title) && strpos($title, 'Giriş') !== false): ?>
