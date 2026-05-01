@@ -17,14 +17,35 @@ class AuthController {
             $login = $_POST['login'] ?? '';
             $password = $_POST['password'] ?? '';
 
+            $debugInfo = [];
+            $debugInfo[] = 'METHOD: POST';
+            $debugInfo[] = 'login: [' . htmlspecialchars($login) . '] uzunluk=' . strlen($login);
+            $debugInfo[] = 'password uzunluk: ' . strlen($password);
+            $debugInfo[] = 'POST keys: ' . implode(', ', array_keys($_POST));
+
             try {
                 $mysqli = DB::conn();
+                $debugInfo[] = 'DB: OK';
+
                 $stmt = $mysqli->prepare('SELECT id, login, password, role, group_id FROM users WHERE login=? LIMIT 1');
                 $stmt->bind_param('s', $login);
                 $stmt->execute();
                 $res = $stmt->get_result();
                 $user = $res->fetch_assoc();
                 $stmt->close();
+
+                if ($user) {
+                    $debugInfo[] = 'Kullanıcı BULUNDU: id=' . $user['id'] . ' role=' . $user['role'];
+                    $verify = Security::verify($password, $user['password']);
+                    $debugInfo[] = 'password_verify: ' . ($verify ? 'TRUE ✅' : 'FALSE ❌');
+                } else {
+                    $debugInfo[] = 'Kullanıcı BULUNAMADI ❌';
+                    // Tüm kullanıcıları listele
+                    $res2 = $mysqli->query('SELECT id, login FROM users LIMIT 5');
+                    $users = [];
+                    while ($row = $res2->fetch_assoc()) $users[] = $row['id'].':'.$row['login'];
+                    $debugInfo[] = 'DB kullanıcılar: ' . implode(', ', $users);
+                }
 
                 if ($user && Security::verify($password, $user['password'])) {
                     session_regenerate_id(true);
@@ -36,10 +57,14 @@ class AuthController {
                     ];
                     Url::redirect('/');
                 } else {
+                    $debugInfo[] = 'SONUÇ: GİRİŞ BAŞARISIZ ❌';
                     $error = Lang::get('invalid_credentials');
+                    $error .= '<br><br><div style="background:#0f172a;color:#94a3b8;padding:10px;border-radius:6px;font-size:11px;font-family:monospace;text-align:left;margin-top:8px"><b style="color:#f87171">DEBUG:</b><br>' . implode('<br>', $debugInfo) . '</div>';
                 }
             } catch (\Throwable $e) {
-                $error = Lang::get('login_error').$e->getMessage();
+                $debugInfo[] = 'EXCEPTION: ' . $e->getMessage();
+                $error = 'HATA: ' . $e->getMessage();
+                $error .= '<br><div style="background:#0f172a;color:#94a3b8;padding:10px;border-radius:6px;font-size:11px;font-family:monospace;text-align:left"><b style="color:#f87171">DEBUG:</b><br>' . implode('<br>', $debugInfo) . '</div>';
             }
         }
         require __DIR__.'/../Views/auth/login.php';
