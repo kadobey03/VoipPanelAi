@@ -76,7 +76,7 @@ function initLoadingState() {
         btn.style.opacity = '0.8';
         var span = btn.querySelector('span');
         if (span) span.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Giriş yapılıyor...';
-        form.querySelectorAll('input').forEach(function(i) { i.disabled = true; });
+        form.querySelectorAll('input').forEach(function(i) { i.readOnly = true; });
     });
 }
 

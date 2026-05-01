@@ -17,16 +17,8 @@ class AuthController {
             $login = $_POST['login'] ?? '';
             $password = $_POST['password'] ?? '';
 
-            // DEBUG BAŞLANGICI
-            $debugInfo = [];
-            $debugInfo[] = 'METHOD: ' . $_SERVER['REQUEST_METHOD'];
-            $debugInfo[] = 'POST login: ' . htmlspecialchars($login);
-            $debugInfo[] = 'POST password length: ' . strlen($password);
-
             try {
                 $mysqli = DB::conn();
-                $debugInfo[] = 'DB bağlantısı: OK';
-
                 $stmt = $mysqli->prepare('SELECT id, login, password, role, group_id FROM users WHERE login=? LIMIT 1');
                 $stmt->bind_param('s', $login);
                 $stmt->execute();
@@ -34,19 +26,7 @@ class AuthController {
                 $user = $res->fetch_assoc();
                 $stmt->close();
 
-                if ($user) {
-                    $debugInfo[] = 'Kullanıcı bulundu: ID=' . $user['id'] . ', role=' . $user['role'];
-                    $debugInfo[] = 'Hash preview: ' . substr($user['password'], 0, 10) . '...';
-                    $verify = Security::verify($password, $user['password']);
-                    $debugInfo[] = 'password_verify sonucu: ' . ($verify ? 'TRUE ✅' : 'FALSE ❌');
-                } else {
-                    $debugInfo[] = 'Kullanıcı BULUNAMADI ❌ (login: ' . htmlspecialchars($login) . ')';
-                }
-
                 if ($user && Security::verify($password, $user['password'])) {
-                    $debugInfo[] = 'Giriş başarılı, redirect ediliyor...';
-                    // DEBUG çıktısını logla
-                    \App\Helpers\Logger::log('LOGIN DEBUG: ' . implode(' | ', $debugInfo));
                     session_regenerate_id(true);
                     $_SESSION['user'] = [
                         'id' => (int)$user['id'],
@@ -57,17 +37,10 @@ class AuthController {
                     Url::redirect('/');
                 } else {
                     $error = Lang::get('invalid_credentials');
-                    $debugInfo[] = 'GİRİŞ BAŞARISIZ ❌';
-                    // DEBUG çıktısını sayfada göster
-                    $error .= '<br><br><div style="background:#1e293b;color:#94a3b8;padding:12px;border-radius:8px;font-size:12px;font-family:monospace;text-align:left"><b style="color:#f87171">DEBUG:</b><br>' . implode('<br>', $debugInfo) . '</div>';
-                    \App\Helpers\Logger::log('LOGIN DEBUG FAIL: ' . implode(' | ', $debugInfo));
                 }
             } catch (\Throwable $e) {
-                $debugInfo[] = 'EXCEPTION: ' . $e->getMessage();
-                $error = Lang::get('login_error') . $e->getMessage();
-                $error .= '<br><div style="background:#1e293b;color:#94a3b8;padding:12px;border-radius:8px;font-size:12px;font-family:monospace;text-align:left"><b style="color:#f87171">DEBUG:</b><br>' . implode('<br>', $debugInfo) . '</div>';
+                $error = Lang::get('login_error').$e->getMessage();
             }
-            // DEBUG SONU
         }
         require __DIR__.'/../Views/auth/login.php';
     }
