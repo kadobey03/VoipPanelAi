@@ -54,7 +54,7 @@
       <div class="error-message mb-5 p-4 rounded-xl bg-red-500/25 border border-red-500/40 text-white font-semibold">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-exclamation-triangle text-red-300"></i>
-          <span class="label-text"><?= htmlspecialchars($error) ?></span>
+          <span class="label-text"><?= $error ?></span>
         </div>
       </div>
       <?php endif; ?>
