@@ -139,5 +139,5 @@ function changeLanguage(lang) {
   form.submit();
 }
 </script>
-<script src="<?= \App\Helpers\Url::to('/assets/js/login.js') ?>" defer></script>
+<!-- <script src="<?= \App\Helpers\Url::to('/assets/js/login.js') ?>" defer> --></script>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>
