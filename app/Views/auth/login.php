@@ -60,7 +60,7 @@
       <?php endif; ?>
 
       <!-- Login Form -->
-      <form method="post" action="/VoipPanelAi/login" class="space-y-5" id="loginForm">
+      <form method="post" action="<?= \App\Helpers\Url::to('/login') ?>" class="space-y-5" id="loginForm">
 
         <!-- Username -->
         <div class="input-group">
@@ -116,7 +116,7 @@
         <p class="label-text text-white/60 text-sm mb-3">
           <i class="fa-solid fa-user-plus text-cyan-300 mr-1"></i><?= __('no_account') ?>
         </p>
-        <a href="/VoipPanelAi/register"
+        <a href="<?= \App\Helpers\Url::to('/register') ?>"
            class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/30">
           <i class="fa-solid fa-user-plus"></i>
           <span><?= __('sign_up_here') ?></span>
@@ -131,7 +131,7 @@
 function changeLanguage(lang) {
   var form = document.createElement('form');
   form.method = 'POST';
-  form.action = '/VoipPanelAi/change-lang';
+  form.action = '<?= \App\Helpers\Url::to('/change-lang') ?>';
   var input = document.createElement('input');
   input.type = 'hidden'; input.name = 'lang'; input.value = lang;
   form.appendChild(input);
@@ -139,5 +139,5 @@ function changeLanguage(lang) {
   form.submit();
 }
 </script>
-<script src="/VoipPanelAi/assets/js/login.js" defer></script>
+<script src="<?= \App\Helpers\Url::to('/assets/js/login.js') ?>" defer></script>
 <?php require dirname(__DIR__).'/partials/footer.php'; ?>

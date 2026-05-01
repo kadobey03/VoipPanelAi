@@ -90,7 +90,7 @@
         <?php endif; ?>
 
         <!-- Register Form -->
-        <form method="post" action="/VoiPanelAi/register" class="space-y-6" id="registerForm">
+        <form method="post" action="<?= \App\Helpers\Url::to('/register') ?>" class="space-y-6" id="registerForm">
           <!-- Username Field -->
           <div class="input-group animate-scale-in" style="animation-delay: 0.1s;">
             <label class="block label-text text-base font-semibold mb-3 flex items-center gap-2">
@@ -223,7 +223,7 @@
           <div class="text-center animate-fade-in-up" style="animation-delay: 0.4s;">
             <p class="label-text text-base">
               <?= __('already_have_account') ?> 
-              <a href="/VoipPanelAi/" class="text-emerald-300 hover:text-emerald-200 font-semibold underline transition-colors duration-300">
+              <a href="<?= \App\Helpers\Url::to('/login') ?>" class="text-emerald-300 hover:text-emerald-200 font-semibold underline transition-colors duration-300">
                 <?= __('login_here') ?>
               </a>
             </p>
@@ -235,7 +235,7 @@
             // Create form and submit
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '/VoipPanelAi/change-lang';
+            form.action = '<?= \App\Helpers\Url::to('/change-lang') ?>';
             
             const langInput = document.createElement('input');
             langInput.type = 'hidden';
