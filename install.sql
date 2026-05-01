@@ -71,5 +71,5 @@ CREATE TABLE transactions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Varsayılan admin
-INSERT INTO users (login, password, role) VALUES ('admin', '$2y$10$examplehash', 'superadmin');
+-- Varsayılan admin (şifre kurulum sihirbazından güncellenir)
+INSERT INTO users (login, password, role) VALUES ('admin', '$2y$10$PLACEHOLDER_REPLACE_VIA_WIZARD', 'superadmin');
